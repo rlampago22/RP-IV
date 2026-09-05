@@ -1,0 +1,67 @@
+@startuml componentes-logicos-mvp
+title Diagrama de Componentes Lógicos — estruturado nos pacotes (MVP)
+skinparam componentStyle uml2
+skinparam shadowing false
+
+package "InfraestruturaEventos" {
+  component [EventBus] as Bus
+  interface "IEventPublisher" as Pub
+  interface "IEventSubscriber" as Sub
+  Bus -up- Pub
+  Bus -up- Sub
+}
+
+package "ControleReator" {
+  component [ReatorFacade] as RF <<Facade>>
+  component [AvaliadorLimiar] as AL <<Strategy>>
+  component [Reator] as R
+  component [Sensor] as S
+  component [MedicaoReator] as MR
+  RF --> AL
+  RF --> R
+  RF --> MR
+  MR --> S
+  RF ..> Pub : publica MedicaoRegistrada
+  RF ..> Sub : consome (opcional)
+}
+
+package "Alarmes" {
+  component [AlarmeFacade] as AF <<Facade>>
+  component [Alarme] as A
+  component [AlarmeFactory] as AFact <<Factory>>
+  AF --> A
+  AF --> AFact
+  AF ..> Pub : publica AlarmeEmitido
+  AF ..> Sub : consome MedicaoRegistrada / LimiarViolado
+}
+
+package "PersistenciaReator" {
+  component [ReatorRepository] as RR <<Repository>>
+  RF --> RR
+}
+
+package "AuditoriaLogs" {
+  component [AuditoriaSubscriber] as AS
+  component [RegistroAuditoria] as RA
+  AS --> RA
+  AS ..> Sub : consome eventos
+}
+
+package "SegurancaAcesso" <<future>> {
+  component [AcessoFacade] as AcF
+  component [RegistroAcesso] as RegA
+  AcF --> RegA
+}
+
+note right of A
+  Métodos exigidos (feedback APS):
+  +emitirAlerta()
+  +registrarEvento()
+end note
+
+note right of MR
+  Método exigido (feedback APS):
+  +registrarMedicao()
+end note
+
+@enduml

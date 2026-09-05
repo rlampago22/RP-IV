@@ -1,0 +1,24 @@
+@startuml seq-uc02-alarme
+title SEQ-UC02 — Emitir Alarme por Limiar (violação)
+skinparam shadowing false
+
+participant "AlarmeFacade" as AF
+participant "AlarmeFactory" as Fact
+participant "Alarme" as A
+participant "ReatorRepository" as RR
+participant "EventBus" as Bus
+actor "Operador" as Op
+actor "Supervisão Central" as Sup
+participant "AuditoriaSubscriber" as Aud
+
+AF -> Fact: criar(medicao, tipo)
+Fact --> AF: alarme
+AF -> A: emitirAlerta([Operador, Supervisão])
+A --> Op: notificação de alerta
+A --> Sup: notificação de alerta
+AF -> A: registrarEvento()
+AF -> RR: salvarAlarme(alarme)
+AF -> Bus: publicar(AlarmeEmitido)
+Bus -> Aud: onEvento(AlarmeEmitido)
+
+@enduml

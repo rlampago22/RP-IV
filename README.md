@@ -50,9 +50,12 @@ src/main/java/   # Esqueleto de pacotes alinhado à arquitetura
 
 ## Entrega Marco 1
 
-Documentação em [`docs/marco1/`](docs/marco1/).  
-Checklist de correções APS: [`docs/marco1/checklist-feedback-aps.md`](docs/marco1/checklist-feedback-aps.md).  
-PDF consolidado: [`docs/marco1/ENTREGA-MARCO1.md`](docs/marco1/ENTREGA-MARCO1.md) (fonte para exportar PDF).
+- Documentação: [`docs/marco1/`](docs/marco1/)
+- Checklist feedback APS: [`docs/marco1/checklist-feedback-aps.md`](docs/marco1/checklist-feedback-aps.md)
+- Consolidado: [`docs/marco1/ENTREGA-MARCO1.md`](docs/marco1/ENTREGA-MARCO1.md)
+- PDF: [`docs/marco1/ENTREGA-MARCO1.pdf`](docs/marco1/ENTREGA-MARCO1.pdf)
+- HTML: [`docs/marco1/ENTREGA-MARCO1.html`](docs/marco1/ENTREGA-MARCO1.html)
+- Repositório: https://github.com/rlampago22/RP-IV
 
 ## Como acompanhar o progresso
 

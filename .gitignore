@@ -1,0 +1,14 @@
+# Ignore
+*.class
+*.jar
+*.war
+target/
+.idea/
+*.iml
+.vscode/
+*.log
+.DS_Store
+Thumbs.db
+# Manter PDF consolidado da entrega versionado
+docs/marco1/*.pdf
+!docs/marco1/ENTREGA-MARCO1.pdf

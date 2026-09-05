@@ -1,0 +1,135 @@
+@startuml classes-projeto-mvp
+title Classes de Projeto — Núcleo MVP (+ Should/Could marcados)
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+package "infraestrutura.eventos" {
+  interface IEventPublisher {
+    +publicar(e: EventoDominio)
+  }
+  interface IEventSubscriber {
+    +onEvento(e: EventoDominio)
+  }
+  class EventBus {
+    +publicar(e: EventoDominio)
+    +assinar(tipo: String, s: IEventSubscriber)
+  }
+  class EventoDominio {
+    -tipo: String
+    -timestamp: DateTime
+    -payload: Object
+    +getTipo()
+    +getTimestamp()
+    +getPayload()
+  }
+  EventBus ..|> IEventPublisher
+  EventBus ..|> IEventSubscriber
+}
+
+package "controle.reator" {
+  class ReatorFacade {
+    +receberLeitura(sensorId, valores)
+    +consultarHistorico(reatorId)
+  }
+  class Reator {
+    -id: Long
+    +getStatusOperacional()
+    +associarSensor(s: Sensor)
+  }
+  class Sensor {
+    -id: Long
+    +getTipo()
+    +getStatus()
+    +obterLocalizacao()
+  }
+  class MedicaoReator {
+    -valor: Double
+    -timestamp: DateTime
+    +registrarMedicao(valor, sensor, timestamp)
+    +getValor()
+    +getSensor()
+  }
+  class Limiar {
+    +getParametro()
+    +getValorMax()
+    +getValorMin()
+  }
+  interface AvaliadorLimiar {
+    +avaliar(m: MedicaoReator, l: Limiar): ResultadoAvaliacao
+  }
+  class ResultadoAvaliacao {
+    +isViolado()
+    +getMedicao()
+  }
+  ReatorFacade --> Reator
+  ReatorFacade --> AvaliadorLimiar
+  ReatorFacade --> MedicaoReator
+  Reator "1" o-- "*" Sensor
+  Sensor "1" o-- "*" MedicaoReator
+  ReatorFacade ..> IEventPublisher
+}
+
+package "alarmes" {
+  class AlarmeFacade {
+    +processarAvaliacao(r: ResultadoAvaliacao)
+  }
+  class Alarme {
+    +emitirAlerta(destinatarios)
+    +registrarEvento()
+    +getStatus()
+    +getTipo()
+  }
+  class AlarmeFactory {
+    +criar(m: MedicaoReator, tipo): Alarme
+  }
+  AlarmeFacade --> AlarmeFactory
+  AlarmeFacade --> Alarme
+  Alarme --> MedicaoReator
+  AlarmeFacade ..> IEventPublisher
+  AlarmeFacade ..> IEventSubscriber
+}
+
+package "persistencia.reator" {
+  class ReatorRepository {
+    +salvarMedicao(m: MedicaoReator)
+    +salvarAlarme(a: Alarme)
+    +buscarHistorico(reatorId)
+  }
+  ReatorFacade --> ReatorRepository
+}
+
+package "auditoria.logs" {
+  class AuditoriaSubscriber {
+    +onEvento(e: EventoDominio)
+  }
+  class RegistroAuditoria {
+    +registrar(e: EventoDominio)
+  }
+  AuditoriaSubscriber --> RegistroAuditoria
+  AuditoriaSubscriber ..|> IEventSubscriber
+}
+
+package "seguranca.acesso" <<future>> {
+  class AcessoFacade {
+    +solicitarAcesso(credencial, area)
+  }
+  class RegistroAcesso {
+    +registrar(credencial, area, resultado)
+    +getResultado()
+  }
+  AcessoFacade --> RegistroAcesso
+}
+
+package "gestao.emergencias" <<future>> {
+  class Emergencia {
+    +criarEmergencia(tipo, descricao)
+    +getStatus()
+  }
+  class ProtocoloEmergencia {
+    +ativar()
+    +associarEmergencia(e: Emergencia)
+  }
+  ProtocoloEmergencia --> Emergencia
+}
+
+@enduml
