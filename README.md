@@ -2,21 +2,36 @@
 
 Repositório da disciplina **AL0343 — Resolução de Problemas IV** (UNIPAMPA Alegrete).
 
-## Equipe
+## Equipe e papéis
 
-- Álvaro Domingues
-- Bruno Rocha
-- Bernardo Dorneles
-- José Guilherme Monteiro
-- Marcus Querol
+| Integrante | Trilha |
+|------------|--------|
+| Álvaro Domingues | Requisitos, MoSCoW, aceite, checklist feedback |
+| Bruno Rocha | Arquitetura EDA, EventBus, pacotes/componentes |
+| Bernardo Dorneles | ControleReator, medições, persistência |
+| José Guilherme Monteiro | Alarmes, limiares, padrões GoF |
+| Marcus Querol | UCs/sequências, auditoria, demo, acesso (Should) |
+
+## Como trabalhamos (importante)
+
+Entregamos **semana a semana**, com evidência **individual** para a verificação parcial.
+
+- **Plano operacional:** [`docs/plano-semanal-rp4.md`](docs/plano-semanal-rp4.md)
+- **Status da semana:** [`docs/semanas/STATUS.md`](docs/semanas/STATUS.md)
+- **Semana atual (0):** [`docs/semanas/2026-09-07/`](docs/semanas/2026-09-07/)
+
+### Sobre `docs/marco1/`
+
+O conteúdo em [`docs/marco1/`](docs/marco1/) (incluindo PDF/HTML) é **rascunho / draft**.  
+Serve de base para validar e corrigir até o **Marco 1 oficial em 05/10/2026**. Não tratar como entrega fechada: cada aluno adota a parte da sua trilha nas Semanas 0–4.
 
 ## Sistema
 
-Sistema de monitoramento e controle lógico de uma usina nuclear, com foco em medições de reatores, alarmes, auditoria de eventos e (em etapas posteriores) controle de acesso e protocolos de contingência.
+Monitoramento e controle lógico de usina nuclear: medições de reatores, alarmes, auditoria de eventos; depois acesso restrito e (se couber) contingência.
 
 ## Arquitetura
 
-Mantida do projeto de Análise e Projeto de Software:
+Mantida do legado APS:
 
 - Arquitetura Orientada a Eventos (EDA)
 - Módulos independentes
@@ -24,47 +39,34 @@ Mantida do projeto de Análise e Projeto de Software:
 
 ## Escopo do MVP
 
-**Must (núcleo):**
-
-1. Ingestão e histórico de medições de reatores
-2. Emissão e registro de alarmes por limiar
-3. Persistência mínima do módulo de reator
-4. Traço de eventos (auditoria/log)
-
-**Should:** controle de acesso a áreas restritas  
-**Could:** ativação manual de protocolo de contingência  
-**Won't (nesta disciplina):** evacuação completa, RH/treinamentos, conformidade regulatória ampla, predição por IA
+**Must:** medições + histórico + alarmes por limiar + persistência mínima + auditoria  
+**Should:** controle de acesso (`RegistroAcesso`)  
+**Could:** protocolo de contingência  
+**Won't:** evacuação completa, RH, conformidade ampla, IA preditiva
 
 ## Stack
 
-- Java (módulos por pacote de negócio)
+- Java (pacotes por módulo)
 - Barramento de eventos in-process no MVP
-- Persistência inicial simples (H2/SQLite/arquivo — a definir na implementação do Marco 2)
+- Persistência simples (arquivo/H2/SQLite) conforme implementação semanal
 
-## Estrutura do repositório
+## Estrutura
 
 ```text
-docs/marco1/     # Entrega Marco 1 (requisitos, MVP, diagramas, UCs, classes, sequências, ER)
-src/main/java/   # Esqueleto de pacotes alinhado à arquitetura
+docs/plano-semanal-rp4.md   # calendário + papéis + template
+docs/semanas/               # entregas individuais por semana
+docs/marco1/                # RASCUNHO até 05/10
+src/main/java/              # esqueleto → implementação semana a semana
 ```
 
-## Entrega Marco 1
+## Marcos
 
-- Documentação: [`docs/marco1/`](docs/marco1/)
-- Checklist feedback APS: [`docs/marco1/checklist-feedback-aps.md`](docs/marco1/checklist-feedback-aps.md)
-- Consolidado: [`docs/marco1/ENTREGA-MARCO1.md`](docs/marco1/ENTREGA-MARCO1.md)
-- PDF: [`docs/marco1/ENTREGA-MARCO1.pdf`](docs/marco1/ENTREGA-MARCO1.pdf)
-- HTML: [`docs/marco1/ENTREGA-MARCO1.html`](docs/marco1/ENTREGA-MARCO1.html)
-- Repositório: https://github.com/rlampago22/RP-IV
-
-## Como acompanhar o progresso
-
-| Marco | Foco |
-|-------|------|
-| 1 | Requisitos, priorização, MVP, pacotes/componentes, artefatos refatorados |
-| 2 | Implementação do núcleo + padrões GoF |
-| 3 | Fluxo extra (acesso ou contingência) + polish |
+| Marco | Data | Foco |
+|-------|------|------|
+| 1 | 05/10/2026 | Docs validados + demo parcial Must |
+| 2 | 16/11/2026 | Núcleo + GoF + Should parcial |
+| 3 | 16–17/12/2026 | Demo final |
 
 ## Licença acadêmica
 
-Material produzido para avaliação na UNIPAMPA — uso interno do grupo e da disciplina.
+Material para avaliação na UNIPAMPA — uso interno do grupo e da disciplina.
