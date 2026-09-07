@@ -2,61 +2,55 @@
 
 Repositório da disciplina **AL0343 — Resolução de Problemas IV** (UNIPAMPA Alegrete).
 
-## Equipe e papéis
+> **Importante:** o desenvolvimento acontece na branch [`desenvolvimento`](https://github.com/rlampago22/RP-IV/tree/desenvolvimento).  
+> A `main` permanece limpa até a consolidação final.
 
-| Integrante | Trilha |
-|------------|--------|
-| Álvaro Domingues | Requisitos, MoSCoW, aceite, checklist feedback |
-| Bruno Rocha | Arquitetura EDA, EventBus, pacotes/componentes |
-| Bernardo Dorneles | ControleReator, medições, persistência |
-| José Guilherme Monteiro | Alarmes, limiares, padrões GoF |
-| Marcus Querol | UCs/sequências, auditoria, demo, acesso (Should) |
+## Equipe
 
-## Como trabalhamos (importante)
+| Integrante | Branch | Trilha |
+|------------|--------|--------|
+| Álvaro Domingues | `alvaro` | Requisitos, MoSCoW, aceite, checklist |
+| Bruno Rocha | `bruno` | EDA, EventBus, pacotes/componentes |
+| Bernardo Dorneles | `bernardo` | ControleReator, medições, persistência |
+| José Guilherme Monteiro | `jose` | Alarmes, limiares, GoF |
+| Marcus Querol | `marcus` | UCs/sequências, auditoria, demo, acesso |
 
-Entregamos **semana a semana**, com evidência **individual** para a verificação parcial.
+## Como trabalhar
 
-- **Plano operacional:** [`docs/plano-semanal-rp4.md`](docs/plano-semanal-rp4.md)
-- **Status da semana:** [`docs/semanas/STATUS.md`](docs/semanas/STATUS.md)
-- **Semana atual (0):** [`docs/semanas/2026-09-07/`](docs/semanas/2026-09-07/)
+1. Atualize `desenvolvimento`
+2. Trabalhe na sua branch pessoal (`alvaro`, `bernardo`, `bruno`, `jose`, `marcus`)
+3. Abra PR para `desenvolvimento`
+4. Deixe evidência em `docs/semanas/YYYY-MM-DD/<seu-nome>.md`
 
-### Sobre `docs/marco1/`
+Leia também: [`AGENTS.md`](AGENTS.md) (obrigatório para qualquer IA).
 
-O conteúdo em [`docs/marco1/`](docs/marco1/) (incluindo PDF/HTML) é **rascunho / draft**.  
-Serve de base para validar e corrigir até o **Marco 1 oficial em 05/10/2026**. Não tratar como entrega fechada: cada aluno adota a parte da sua trilha nas Semanas 0–4.
+## Semana 1 — pedido do professor
 
-## Sistema
+- Lista de RF e RNF
+- Priorização desses requisitos
+- Proposta de MVP
+- Projeto refatorado (pacotes + componentes lógico/físico)
+- Outros artefatos necessários (UCs, classes, sequência, etc.)
 
-Monitoramento e controle lógico de usina nuclear: medições de reatores, alarmes, auditoria de eventos; depois acesso restrito e (se couber) contingência.
+## Sistema e arquitetura
 
-## Arquitetura
-
-Mantida do legado APS:
+Monitoramento lógico de usina nuclear: medições, alarmes, auditoria; depois acesso restrito.
 
 - Arquitetura Orientada a Eventos (EDA)
 - Módulos independentes
 - Persistência dedicada por módulo
 
-## Escopo do MVP
-
-**Must:** medições + histórico + alarmes por limiar + persistência mínima + auditoria  
-**Should:** controle de acesso (`RegistroAcesso`)  
-**Could:** protocolo de contingência  
-**Won't:** evacuação completa, RH, conformidade ampla, IA preditiva
-
-## Stack
-
-- Java (pacotes por módulo)
-- Barramento de eventos in-process no MVP
-- Persistência simples (arquivo/H2/SQLite) conforme implementação semanal
-
 ## Estrutura
 
 ```text
-docs/plano-semanal-rp4.md   # calendário + papéis + template
-docs/semanas/               # entregas individuais por semana
-docs/marco1/                # RASCUNHO até 05/10
-src/main/java/              # esqueleto → implementação semana a semana
+AGENTS.md / CLAUDE.md / GEMINI.md
+.github/copilot-instructions.md
+.cursor/rules/  .cursor/hooks/
+.githooks/      scripts/
+docs/requisitos  docs/mvp  docs/arquitetura  docs/diagramas
+docs/marco1/     # rascunho até 05/10/2026
+docs/semanas/    # evidências individuais
+src/main/java/.../usina/
 ```
 
 ## Marcos
@@ -66,6 +60,12 @@ src/main/java/              # esqueleto → implementação semana a semana
 | 1 | 05/10/2026 | Docs validados + demo parcial Must |
 | 2 | 16/11/2026 | Núcleo + GoF + Should parcial |
 | 3 | 16–17/12/2026 | Demo final |
+
+## Hooks Git (opcional local)
+
+```bash
+git config core.hooksPath .githooks
+```
 
 ## Licença acadêmica
 

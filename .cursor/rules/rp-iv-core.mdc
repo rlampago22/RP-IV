@@ -1,0 +1,25 @@
+---
+description: Contexto obrigatório do RP-IV — ler antes de qualquer alteração
+alwaysApply: true
+---
+
+# RP-IV — regra sempre ativa
+
+Antes de editar, considere:
+
+- Branch ativa de trabalho: `desenvolvimento` (main fica limpa até o final)
+- Sistema: Controle de Usina Nuclear (EDA)
+- Equipe: Álvaro, Bruno, Bernardo, José Guilherme, Marcus
+- Fonte de contexto: `AGENTS.md`, `README.md`, `docs/plano-semanal-rp4.md`
+
+## Entrega Semana 1 (professor)
+
+RF/RNF, priorização MoSCoW, MVP, diagramas de pacotes e componentes (lógico/físico), demais artefatos necessários.
+
+## Conduta
+
+- Não inventar escopo fora do MoSCoW
+- Preservar autoria dos membros
+- Explicar o porquê das mudanças
+- Conventional Commits
+- `docs/marco1/` é rascunho até 05/10/2026

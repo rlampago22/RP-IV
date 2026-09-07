@@ -1,14 +1,31 @@
-# Ignore
+# Local AI context (nao versionar)
+ai/
+
+# Editor
+.vscode/
+.idea/
+*.iml
+
+# Build Java
 *.class
 *.jar
 *.war
 target/
-.idea/
-*.iml
-.vscode/
+build/
+out/
+
+# Logs / temp
 *.log
+*.lock
+*.bak
+*.swp
+*.swo
+/tmp/
+
+# OS
 .DS_Store
 Thumbs.db
+
 # Manter PDF consolidado da entrega versionado
 docs/marco1/*.pdf
 !docs/marco1/ENTREGA-MARCO1.pdf

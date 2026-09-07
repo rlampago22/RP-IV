@@ -1,0 +1,14 @@
+---
+description: Convenções do código Java modular EDA
+globs: src/**/*.java
+alwaysApply: false
+---
+
+# Código Java (MVP EDA)
+
+- Pacotes por módulo sob `br.edu.unipampa.usina.*`
+- Comunicação entre módulos via EventBus (in-process no MVP)
+- Preferir Facade na porta de entrada do módulo
+- Alarmes: Strategy de limiar + Factory quando couber
+- Não acoplar módulos por dependência direta de implementação
+- Mudanças devem acompanhar a trilha do aluno e a issue da semana

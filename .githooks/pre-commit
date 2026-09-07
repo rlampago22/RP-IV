@@ -1,0 +1,11 @@
+#!/bin/sh
+# Bloqueia commit acidental na main (trabalho deve ir em desenvolvimento)
+
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+  echo "Commit bloqueado na branch '$branch'."
+  echo "Use a branch 'desenvolvimento' (ou sua branch pessoal) e abra PR depois."
+  exit 1
+fi
+
+exit 0

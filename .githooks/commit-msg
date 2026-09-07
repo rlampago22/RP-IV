@@ -1,0 +1,11 @@
+#!/bin/sh
+# Valida Conventional Commits (feat|fix|docs|chore|refactor|test|style|ci|build|perf)
+
+if command -v pwsh >/dev/null 2>&1; then
+  pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/check-conventional-commit.ps1 "$1"
+elif command -v powershell >/dev/null 2>&1; then
+  powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-conventional-commit.ps1 "$1"
+else
+  echo "Commit bloqueado: PowerShell nao encontrado para validar Conventional Commits."
+  exit 1
+fi

@@ -1,0 +1,36 @@
+name: Entrega semanal
+description: Issue de entrega para RP-IV até o Marco 1
+title: "[Semana X] "
+labels: ["marco-1"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use este template para entregas semanais. Trabalho na branch `desenvolvimento` (ou branch pessoal → PR).
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo da semana
+    validations:
+      required: true
+  - type: textarea
+    id: entregaveis
+    attributes:
+      label: Entregáveis
+      placeholder: |
+        - [ ] item
+    validations:
+      required: true
+  - type: dropdown
+    id: responsavel
+    attributes:
+      label: Ownership principal
+      options:
+        - Álvaro
+        - Bruno
+        - Bernardo
+        - José
+        - Marcus
+        - Grupo
+    validations:
+      required: true

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/session-start.ps1"
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "type": "prompt",
+        "prompt": "O usuário está pedindo algo no repositório RP-IV (Usina Nuclear / EDA). Antes de agir, confirme mentalmente: (1) leu AGENTS.md? (2) a mudança deve ir em desenvolvimento, não na main limpa? (3) respeita MoSCoW/MVP e a trilha do aluno? Se o pedido violar isso, avise no início da resposta. Input: $ARGUMENTS",
+        "timeout": 15
+      }
+    ]
+  }
+}

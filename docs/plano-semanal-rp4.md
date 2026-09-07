@@ -32,10 +32,11 @@ O material em [`docs/marco1/`](marco1/) e o esqueleto em `src/` são **rascunho 
 
 ## Formato padrão de entrega semanal (todos)
 
-1. Branch `semana-NN/<primeiro-nome>` **ou** commits claros no `main` com mensagem identificando o autor
+1. Branch pessoal (`alvaro` / `bernardo` / `bruno` / `jose` / `marcus`) a partir de `desenvolvimento` — **nunca** desenvolver na `main`
 2. Arquivo curto `docs/semanas/YYYY-MM-DD/<nome>.md` (usar o template abaixo)
 3. Código ou diagrama na trilha do aluno
 4. Atualizar **uma linha** no [`semanas/STATUS.md`](semanas/STATUS.md)
+5. Abrir PR para `desenvolvimento` (Conventional Commits)
 
 ### Template de relatório individual
 
@@ -83,19 +84,27 @@ Pasta: [`semanas/2026-09-07/`](semanas/2026-09-07/)
 
 ---
 
-### Semana 1 — 08 a 14/09
+### Semana 1 — 08 a 14/09  ★ pedido do professor (entrega na segunda)
 
-**Objetivo:** priorização oficial + 1º código mínimo do bus.
+**Objetivo (sala de aula):** entregar o pacote pedido pelo professor:
+
+1. Lista de requisitos funcionais e não funcionais  
+2. Priorização desses requisitos (MoSCoW)  
+3. Proposta de MVP do software  
+4. Projeto refatorado — **diagrama de componentes** e **diagrama de pacotes** (pode haver componentes físico + lógico)  
+5. Outros artefatos necessários (casos de uso, classes, sequência, etc.)
 
 | Aluno | Entrega |
 |-------|---------|
-| Álvaro | MoSCoW fechado (Must/Should/Could/Won't) revisado em grupo |
-| Bruno | `EventBus` funcional in-process (publicar/assinar) + teste manual simples |
-| Bernardo | `MedicaoReator` + `ReatorFacade.receberLeitura` salvando em memória |
-| José | Interface `AvaliadorLimiar` + 1 implementação Strategy |
-| Marcus | Diagrama UC MVP (boundary + include alarme) em PlantUML revisado |
+| Álvaro | RF/RNF revisados + MoSCoW fechado + proposta de MVP (aceite do grupo) |
+| Bruno | Diagrama de pacotes + componentes lógico e físico refatorados para o MVP |
+| Bernardo | Classes/núcleo alinhados ao MVP (listagem + esqueleto `MedicaoReator`/`ReatorFacade`) |
+| José | Padrões GoF previstos no projeto refatorado (Strategy/Factory/Facade em alarmes) |
+| Marcus | Casos de uso / sequências do núcleo MVP (UC01 + alarme) revisados |
 
 **Semipresencial 12/09:** Álvaro ou Bruno resume **1 padrão arquitetural diferente** dos vídeos (ex.: Duto e Filtro); os outros comentam no PR.
+
+> Código mínimo do EventBus / medições fica para a **Semana 2**, após fechar os artefatos da entrega do professor.
 
 ---
 

@@ -1,0 +1,14 @@
+---
+description: Convenções de documentação e UML do Marco 1
+globs: docs/**/*
+alwaysApply: false
+---
+
+# Docs e diagramas
+
+- Manter RF/RNF em `docs/requisitos/`
+- MVP em `docs/mvp/`
+- UML PlantUML em `docs/diagramas/` e/ou `docs/marco1/diagramas/`
+- Evidência semanal individual em `docs/semanas/YYYY-MM-DD/<nome>.md`
+- Diagramas obrigatórios do pedido do professor: pacotes + componentes lógico + componentes físico
+- Ao refatorar diagramas da APS, reduzir ao escopo do MVP (não copiar o sistema inteiro sem corte)
