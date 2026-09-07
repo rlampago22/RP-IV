@@ -24,13 +24,27 @@ Repositório da disciplina **AL0343 — Resolução de Problemas IV** (UNIPAMPA 
 
 Leia também: [`AGENTS.md`](AGENTS.md) (obrigatório para qualquer IA).
 
-## Semana 1 — pedido do professor
+## Plano até Marco 1
 
-- Lista de RF e RNF
-- Priorização desses requisitos
-- Proposta de MVP
-- Projeto refatorado (pacotes + componentes lógico/físico)
-- Outros artefatos necessários (UCs, classes, sequência, etc.)
+Documento vigente: [`docs/plano-marco1.md`](docs/plano-marco1.md)
+
+| Entrega | Data |
+|---------|------|
+| Semana 1 (pedido do professor) | **08/09/2026** |
+| Semana 2 | 15/09/2026 |
+| Semana 3 | 22/09/2026 |
+| Semana 4 (ensaio) | 29/09/2026 |
+| **Marco 1** | **05/10/2026** |
+
+Padrão: **1 issue por pessoa por semana** → branch pessoal → PR para `desenvolvimento`.
+
+## Semana 1 — pedido do professor (todos uma parte)
+
+- Álvaro (#11): RF/RNF + MoSCoW + MVP
+- Bruno (#12): pacotes + componentes lógico/físico
+- Bernardo (#13): classes do núcleo
+- José (#14): GoF alarmes
+- Marcus (#15): UCs + sequência
 
 ## Sistema e arquitetura
 

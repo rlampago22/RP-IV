@@ -1,35 +1,31 @@
 # Status semanal do grupo — RP4
 
-Atualizar a coluna **Status** e o **Link** toda semana.  
-Plano completo: [`../plano-semanal-rp4.md`](../plano-semanal-rp4.md)
+Plano vigente até Marco 1: [`../plano-marco1.md`](../plano-marco1.md)  
+Issues: https://github.com/rlampago22/RP-IV/issues
 
 Legenda: `Pendente` · `Em andamento` · `Entregue` · `Bloqueado`
 
-## Semana atual: 0 (05–07/09/2026) — pasta [`2026-09-07/`](2026-09-07/)
+## Semana atual: 1 — entrega **08/09/2026** — pasta [`2026-09-08/`](2026-09-08/)
 
-| Aluno | Entrega da semana | Status | Relatório |
-|-------|-------------------|--------|-----------|
-| Álvaro Domingues | Revisar RF/RNF; escopo congelado parcial | Pendente | [alvaro.md](2026-09-07/alvaro.md) |
-| Bruno Rocha | Semipresencial Pacotes+Componentes + validar pacotes | Pendente | [bruno.md](2026-09-07/bruno.md) |
-| Bernardo Dorneles | Lista classes núcleo + `registrarMedicao` | Pendente | [bernardo.md](2026-09-07/bernardo.md) |
-| José Guilherme Monteiro | Lista GoF (Strategy, Factory, Facade) | Pendente | [jose.md](2026-09-07/jose.md) |
-| Marcus Querol | UC01 linear + system boundary | Pendente | [marcus.md](2026-09-07/marcus.md) |
+| Aluno | Issue | Entrega | Status | Relatório |
+|-------|-------|---------|--------|-----------|
+| Álvaro | #11 | RF/RNF + MoSCoW + MVP | Em andamento | `2026-09-08/alvaro.md` |
+| Bruno | #12 | Pacotes + componentes L/F | Em andamento | `2026-09-08/bruno.md` |
+| Bernardo | #13 | Classes do núcleo MVP | Em andamento | `2026-09-08/bernardo.md` |
+| José | #14 | GoF alarmes | Em andamento | `2026-09-08/jose.md` |
+| Marcus | #15 | UCs + sequência | Em andamento | `2026-09-08/marcus.md` |
 
-## Histórico rápido
+## Próximas entregas (segunda)
 
-| Semana | Datas | Objetivo | Pasta |
-|--------|-------|----------|-------|
-| 0 | 05–07/09 | Alinhar escopo (não fechar Marco 1) | [2026-09-07](2026-09-07/) |
-| 1 | 08–14/09 | MoSCoW + EventBus mínimo | _(criar na segunda)_ |
-| 2 | 15–21/09 | Eventos + auditoria | |
-| 3 | 22–28/09 | Alarme completo | |
-| 4 | 29/09–05/10 | **Marco 1** | |
-| 5–7 | out | GoF + polish Must | |
-| 8–10 | out/nov | Should + **Marco 2** | |
-| 11–15 | nov/dez | Could + **Marco 3** | |
+| Semana | Data | Issues | Foco |
+|--------|------|--------|------|
+| 2 | 15/09 | #16–#20 | EventBus + medição + limiar + auditoria |
+| 3 | 22/09 | #21–#25 | Alarme completo + UML=código |
+| 4 | 29/09 | #26–#30 | Ensaio / polish |
+| Marco 1 | 05/10 | #31–#35 | Apresentação + demo |
 
-## Próxima ação do grupo
+## Próxima ação (agora)
 
-1. Cada um preenche o relatório da Semana 0 até **07/09**.
-2. Commit/PR com evidência na própria trilha.
-3. Atualizar este STATUS para `Entregue`.
+1. Cada um pega **sua issue da Semana 1** e a branch pessoal.
+2. Entrega amanhã **08/09** com PR → `desenvolvimento` + relatório.
+3. Adicionar José e Marcus como collaborators no GitHub para assign automático.

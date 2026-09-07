@@ -6,9 +6,12 @@
 
 ## Premissa
 
-Não entregar o Marco 1 de uma vez. Cada **semana** o grupo sobe algo no GitHub e cada aluno deixa **evidência individual** para a verificação parcial (NOk → TOk).
+O calendário **oficial até Marco 1** (entregas às segundas, 1 issue/pessoa) está em:
 
-O material em [`docs/marco1/`](marco1/) e o esqueleto em `src/` são **rascunho base**: o time revisa, corrige (feedback APS) e implementa em fatias até a data oficial do Marco 1.
+→ [`plano-marco1.md`](plano-marco1.md)
+
+Este arquivo permanece como histórico/detalhe estendido do semestre.
+
 
 | Marco | Data |
 |-------|------|
