@@ -110,15 +110,15 @@ Pasta: [`semanas/2026-09-07/`](semanas/2026-09-07/)
 
 ### Semana 2 — 15 a 21/09
 
-**Objetivo:** medições disparam eventos; auditoria consome.
+**Objetivo:** 1º código mínimo do bus + medições disparam eventos; auditoria consome.
 
 | Aluno | Entrega |
 |-------|---------|
 | Álvaro | Critérios de aceite do Must (checklist testável) |
-| Bruno | Eventos tipados `MedicaoRegistrada` / contrato do payload |
-| Bernardo | Persistência mínima (arquivo ou H2) de medições |
-| José | Ao limiar violado, criar `Alarme` (ainda sem notificação completa) |
-| Marcus | `AuditoriaSubscriber` gravando log append-only |
+| Bruno | `EventBus` funcional in-process + eventos tipados `MedicaoRegistrada` |
+| Bernardo | `MedicaoReator` + `ReatorFacade.receberLeitura` + persistência mínima |
+| José | `AvaliadorLimiar` (Strategy) + criar `Alarme` ao limiar violado |
+| Marcus | UC MVP revisado + `AuditoriaSubscriber` append-only |
 
 **Demo interna:** 1 `main` que simula 3 medições e mostra log.
 
