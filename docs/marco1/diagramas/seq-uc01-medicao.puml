@@ -10,13 +10,14 @@ participant "EventBus" as Bus
 participant "AvaliadorLimiar" as AL
 participant "AlarmeFacade" as AF
 participant "AuditoriaSubscriber" as Aud
+participant "RegistroAuditoria" as Reg
 
-Sensor -> RF: receberLeitura(sensorId, valores)
+Sensor -> RF: receberLeitura(sensorId, valor)
 RF -> MR: registrarMedicao(valor, sensor, timestamp)
 RF -> RR: salvarMedicao(medicao)
 RF -> Bus: publicar(MedicaoRegistrada)
 Bus -> Aud: onEvento(MedicaoRegistrada)
-Aud -> Aud: RegistroAuditoria.registrar(evento)
+Aud -> Reg: registrar(evento)
 RF -> AL: avaliar(medicao, limiar)
 AL --> RF: ResultadoAvaliacao
 RF -> AF: processarAvaliacao(resultado)
