@@ -13,7 +13,7 @@ Legenda: `Pendente` · `Em andamento` · `Entregue` · `Bloqueado`
 | Bruno | #12 | Pacotes + componentes L/F | Em andamento | `2026-09-08/bruno.md` |
 | Bernardo | #13 | Classes do núcleo MVP | Em andamento | `2026-09-08/bernardo.md` |
 | José | #14 | GoF alarmes | Em andamento | `2026-09-08/jose.md` |
-| Marcus | #15 | UCs + sequência | Em andamento | `2026-09-08/marcus.md` |
+| Marcus | #15 | UCs + sequência | Entregue | `2026-09-08/marcus.md` |
 
 ## Próximas entregas (segunda)
 
