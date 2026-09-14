@@ -7,7 +7,8 @@ O sistema é o **Controle de Usina Nuclear**, legado da APS, com arquitetura **E
 
 **Branch de trabalho:** `desenvolvimento`  
 **Branch limpa:** `main` (só consolidação final)  
-**Branches individuais:** `alvaro`, `bernardo`, `bruno`, `jose`, `marcus` (baseadas em `desenvolvimento`)
+**Branches individuais:** `alvaro`, `bernardo`, `bruno`, `jose`, `marcus` (baseadas em `desenvolvimento`)  
+**Stack:** **Java** (`src/main/java/br/edu/unipampa/usina/...`) — decisão do grupo.
 
 Não faça commits diretos na `main`. Não altere o repositório de referência de outros grupos.
 
