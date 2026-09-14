@@ -5,6 +5,15 @@ public class Sensor {
     private String tipo;
     private String status;
 
+    public Sensor() {
+    }
+
+    public Sensor(long id, String tipo, String status) {
+        this.id = id;
+        this.tipo = tipo;
+        this.status = status;
+    }
+
     public long getId() { return id; }
     public String getTipo() { return tipo; }
     public String getStatus() { return status; }

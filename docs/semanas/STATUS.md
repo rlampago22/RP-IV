@@ -1,31 +1,40 @@
-# Status semanal do grupo — RP4
+# Status semanal — RP4
 
-Plano vigente até Marco 1: [`../plano-marco1.md`](../plano-marco1.md)  
-Issues: https://github.com/rlampago22/RP-IV/issues
+Plano: [`../plano-marco1.md`](../plano-marco1.md) · Fonte: [`../legado-aps/`](../legado-aps/) · Checklist hoje: [#38](https://github.com/rlampago22/RP-IV/issues/38)
 
-Legenda: `Pendente` · `Em andamento` · `Entregue` · `Bloqueado`
+## Hoje — 14/09/2026 (segunda) = Semana 2 + fechamento S1
 
-## Semana atual: 1 — entrega **08/09/2026** — pasta [`2026-09-08/`](2026-09-08/)
+### Semana 1 (docs professor) — situação
 
-| Aluno | Issue | Entrega | Status | Relatório |
-|-------|-------|---------|--------|-----------|
-| Álvaro | #11 | RF/RNF + MoSCoW + MVP | Em andamento | `2026-09-08/alvaro.md` |
-| Bruno | #12 | Pacotes + componentes L/F | Em andamento | `2026-09-08/bruno.md` |
-| Bernardo | #13 | Classes do núcleo MVP | Entregue | [bernardo.md](2026-09-08/bernardo.md) |
-| José | #14 | GoF alarmes | Em andamento | `2026-09-08/jose.md` |
-| Marcus | #15 | UCs + sequência | Em andamento | `2026-09-08/marcus.md` |
+| Aluno | Issue | Status real |
+|-------|-------|-------------|
+| Álvaro | #11 | **Falta** commit/PR/relatório |
+| Bruno | #12 | **Falta** commit/PR/relatório |
+| Bernardo | #13 | PR **#37** aberto (ok; merge pendente) |
+| José | #14 | **Falta** commit/PR/relatório |
+| Marcus | #15 | PR **#36** aberto (ok; merge pendente) |
 
-## Próximas entregas (segunda)
+### Semana 2 (código) — situação
 
-| Semana | Data | Issues | Foco |
-|--------|------|--------|------|
-| 2 | 15/09 | #16–#20 | EventBus + medição + limiar + auditoria |
-| 3 | 22/09 | #21–#25 | Alarme completo + UML=código |
-| 4 | 29/09 | #26–#30 | Ensaio / polish |
-| Marco 1 | 05/10 | #31–#35 | Apresentação + demo |
+| Aluno | Issue | Status |
+|-------|-------|--------|
+| Álvaro | #16 | Pendente |
+| Bruno | #17 | Pendente |
+| Bernardo | #18 | Entregue (PR desta semana) |
+| José | #19 | Pendente |
+| Marcus | #20 | Pendente |
 
-## Próxima ação (agora)
+## O que falta para apresentar hoje
 
-1. Cada um pega **sua issue da Semana 1** e a branch pessoal.
-2. Entrega amanhã **08/09** com PR → `desenvolvimento` + relatório.
-3. Adicionar José e Marcus como collaborators no GitHub para assign automático.
+1. **Álvaro / Bruno / José** — pelo menos evidência S1 no Git (mesmo que rascunho já exista em `docs/marco1/`, precisa PR + relatório individual).
+2. **Merge** #36 e #37.
+3. **Código S2** — Bernardo com `receberLeitura` em memória; demais trilhas ainda pendentes.
+4. Narrativa: PDF atualizado = base APS; entrega = **MVP Must** (não o sistema inteiro).
+
+## Próximas segundas
+
+| Data | Semana |
+|------|--------|
+| 21/09 | S3 #21–#25 |
+| 28/09 | S4 #26–#30 |
+| 05/10 | Marco 1 #31–#35 |

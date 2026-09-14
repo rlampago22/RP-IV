@@ -61,6 +61,8 @@ AGENTS.md / CLAUDE.md / GEMINI.md
 .github/copilot-instructions.md
 .cursor/rules/  .cursor/hooks/
 .githooks/      scripts/
+docs/legado-aps/   # PDF APS atualizado + changelog
+docs/diagramas/astah/  # fonte Astah (UCs)
 docs/requisitos  docs/mvp  docs/arquitetura  docs/diagramas
 docs/marco1/     # rascunho até 05/10/2026
 docs/semanas/    # evidências individuais
