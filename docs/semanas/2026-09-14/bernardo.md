@@ -24,8 +24,18 @@
 
 ## Como rodar a demo
 
-```bash
-javac -d out src/main/java/br/edu/unipampa/usina/controlereator/*.java
+No Explorer ou no terminal (mais fácil no Windows):
+
+```bat
+scripts\run-demo-medicoes.bat
+```
+
+Ou manualmente (PowerShell — listar os `.java`, sem `*`):
+
+```powershell
+cd c:\Users\bNd\Desktop\RP4\RP-IV
+mkdir out -Force
+javac -encoding UTF-8 -d out (Get-ChildItem src\main\java\br\edu\unipampa\usina\controlereator\*.java).FullName
 java -cp out br.edu.unipampa.usina.controlereator.DemoMedicoes
 ```
 
