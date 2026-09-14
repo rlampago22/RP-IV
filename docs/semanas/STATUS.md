@@ -1,41 +1,40 @@
-# Status semanal do grupo — RP4
+# Status semanal — RP4
 
-Plano vigente até Marco 1: [`../plano-marco1.md`](../plano-marco1.md)  
-Fonte APS atualizada: [`../legado-aps/README.md`](../legado-aps/README.md)  
-Issues: https://github.com/rlampago22/RP-IV/issues
+Plano: [`../plano-marco1.md`](../plano-marco1.md) · Fonte: [`../legado-aps/`](../legado-aps/) · Checklist hoje: [#38](https://github.com/rlampago22/RP-IV/issues/38)
 
-Legenda: `Pendente` · `Em andamento` · `Entregue` · `Bloqueado`
+## Hoje — 14/09/2026 (segunda) = Semana 2 + fechamento S1
 
-## Semana atual: 2 — entrega **15/09/2026**
+### Semana 1 (docs professor) — situação
 
-| Aluno | Issue | Entrega | Status | Relatório |
-|-------|-------|---------|--------|-----------|
-| Álvaro | #16 | Critérios de aceite Must | Pendente | `2026-09-15/alvaro.md` |
-| Bruno | #17 | EventBus + MedicaoRegistrada | Pendente | `2026-09-15/bruno.md` |
-| Bernardo | #18 | Medicao + Facade (memória) | Pendente | `2026-09-15/bernardo.md` |
-| José | #19 | Strategy limiar + Alarme | Pendente | `2026-09-15/jose.md` |
-| Marcus | #20 | AuditoriaSubscriber | Pendente | `2026-09-15/marcus.md` |
+| Aluno | Issue | Status real |
+|-------|-------|-------------|
+| Álvaro | #11 | **Falta** commit/PR/relatório |
+| Bruno | #12 | **Falta** commit/PR/relatório |
+| Bernardo | #13 | PR **#37** aberto (ok; merge pendente) |
+| José | #14 | **Falta** commit/PR/relatório |
+| Marcus | #15 | PR **#36** aberto (ok; merge pendente) |
 
-## Semana 1 — entrega 08/09 (fechar merges)
+### Semana 2 (código) — situação
 
-| Aluno | Issue | Status | Notas |
-|-------|-------|--------|-------|
-| Álvaro | #11 | Em andamento / conferir | |
-| Bruno | #12 | Em andamento / conferir | |
-| Bernardo | #13 | Entregue (PR #37) | Merge pendente em `desenvolvimento` |
-| José | #14 | Em andamento / conferir | |
-| Marcus | #15 | Entregue? (PR #36) | Merge pendente |
+| Aluno | Issue | Status |
+|-------|-------|--------|
+| Álvaro | #16 | Pendente |
+| Bruno | #17 | Pendente |
+| Bernardo | #18 | Pendente |
+| José | #19 | Pendente |
+| Marcus | #20 | Pendente |
 
-## Próximas entregas
+## O que falta para apresentar hoje
 
-| Semana | Data | Issues | Foco |
-|--------|------|--------|------|
-| 3 | 22/09 | #21–#25 | Alarme completo + UML=código |
-| 4 | 29/09 | #26–#30 | Ensaio / polish |
-| Marco 1 | 05/10 | #31–#35 | Apresentação + demo |
+1. **Álvaro / Bruno / José** — pelo menos evidência S1 no Git (mesmo que rascunho já exista em `docs/marco1/`, precisa PR + relatório individual).
+2. **Merge** #36 e #37.
+3. **Código S2** — se não der na aula, mostrar plano + esqueleto e comprometer DoD da demo nesta semana.
+4. Narrativa: PDF atualizado = base APS; entrega = **MVP Must** (não o sistema inteiro).
 
-## Ação imediata do grupo
+## Próximas segundas
 
-1. Mergear PRs #36 e #37 em `desenvolvimento`.
-2. Cada um puxar a issue da **Semana 2** (entrega amanhã 15/09).
-3. Usar o PDF/Astah atualizados em `docs/legado-aps` e `docs/diagramas/astah` só como base — entregar o **recorte MVP**.
+| Data | Semana |
+|------|--------|
+| 21/09 | S3 #21–#25 |
+| 28/09 | S4 #26–#30 |
+| 05/10 | Marco 1 #31–#35 |
