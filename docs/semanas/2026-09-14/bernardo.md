@@ -15,7 +15,7 @@
 
 ## Evidências
 
-- Issue: https://github.com/rlampago22/RP-IV/issues/18
+- Issue: [https://github.com/rlampago22/RP-IV/issues/18](https://github.com/rlampago22/RP-IV/issues/18)
 - Arquivos:
   - `src/main/java/.../controlereator/ReatorFacade.java`
   - `src/main/java/.../controlereator/Sensor.java`
@@ -46,3 +46,4 @@ java -cp out br.edu.unipampa.usina.controlereator.DemoMedicoes
 ## Próxima semana (previsto)
 
 - Issue #23 — histórico + alinhar SEQ-UC01 ao código
+
