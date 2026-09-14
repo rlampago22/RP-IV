@@ -6,7 +6,7 @@ Plano: [`../plano-marco1.md`](../plano-marco1.md) · Stack: **Java** · Fonte: [
 
 | Aluno | Issue | Entrega | Status |
 |-------|-------|---------|--------|
-| Álvaro | #16 | Critérios de aceite Must | Pendente |
+| Álvaro | #16 | Critérios de aceite Must | **Entregue na branch `alvaro`** |
 | Bruno | #17 | EventBus + MedicaoRegistrada | Pendente |
 | Bernardo | #18 | receberLeitura + demo memória | **Entregue** (merge em `desenvolvimento`) |
 | José | #19 | Strategy limiar + criar Alarme | Pendente |
