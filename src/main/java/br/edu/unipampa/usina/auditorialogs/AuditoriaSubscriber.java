@@ -10,4 +10,8 @@ public class AuditoriaSubscriber implements IEventSubscriber {
     public void onEvento(EventoDominio evento) {
         registro.registrar(evento);
     }
+
+    public RegistroAuditoria getRegistro() {
+        return registro;
+    }
 }

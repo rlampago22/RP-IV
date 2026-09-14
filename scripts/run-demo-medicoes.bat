@@ -1,23 +1,19 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
 cd /d "%~dp0.."
 
 set "OUT=out"
 if not exist "%OUT%" mkdir "%OUT%"
 
-set "SRC=src\main\java\br\edu\unipampa\usina\controlereator"
+set "SRC=src\main\java"
+
+set "SOURCES="
+for /r "%SRC%" %%f in (*.java) do set "SOURCES=!SOURCES! "%%f""
 
 echo Pasta: %CD%
 echo Compilando...
 javac -encoding UTF-8 -d "%OUT%" ^
-  "%SRC%\Sensor.java" ^
-  "%SRC%\MedicaoReator.java" ^
-  "%SRC%\Reator.java" ^
-  "%SRC%\Limiar.java" ^
-  "%SRC%\AvaliadorLimiar.java" ^
-  "%SRC%\ResultadoAvaliacao.java" ^
-  "%SRC%\ReatorFacade.java" ^
-  "%SRC%\DemoMedicoes.java"
+  !SOURCES!
 
 if errorlevel 1 (
   echo.
