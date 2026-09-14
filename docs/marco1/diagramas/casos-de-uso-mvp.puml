@@ -17,7 +17,6 @@ rectangle "SistemaControleUsina" {
 }
 
 Sen --> UC01
-Op --> UC01
 Op --> UC02
 Sup --> UC02
 Guarda --> UC04

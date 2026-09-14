@@ -21,13 +21,14 @@ sequenceDiagram
   participant AvaliadorLimiar
   participant AlarmeFacade
   participant AuditoriaSubscriber
+  participant RegistroAuditoria
 
-  Sensor->>ReatorFacade: receberLeitura(sensorId, valores)
-  ReatorFacade->>MedicaoReator: registrarMedicao(valor, sensor, ts)
+  Sensor->>ReatorFacade: receberLeitura(sensorId, valor)
+  ReatorFacade->>MedicaoReator: registrarMedicao(valor, sensor, timestamp)
   ReatorFacade->>ReatorRepository: salvarMedicao(medicao)
   ReatorFacade->>EventBus: publicar(MedicaoRegistrada)
   EventBus->>AuditoriaSubscriber: onEvento(MedicaoRegistrada)
-  AuditoriaSubscriber->>AuditoriaSubscriber: RegistroAuditoria.registrar
+  AuditoriaSubscriber->>RegistroAuditoria: registrar(evento)
   ReatorFacade->>AvaliadorLimiar: avaliar(medicao, limiar)
   AvaliadorLimiar-->>ReatorFacade: ResultadoAvaliacao
   ReatorFacade->>AlarmeFacade: processarAvaliacao(resultado)
