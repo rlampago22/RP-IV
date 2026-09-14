@@ -25,7 +25,6 @@ flowchart TB
   Supervisao[Supervisao Central]
   Guarda[Guarda Acesso]
   Sensor --> UC01
-  Operador --> UC01
   Operador --> UC02
   Supervisao --> UC02
   Guarda --> UC04
@@ -45,10 +44,10 @@ Fonte PlantUML: [diagramas/casos-de-uso-mvp.puml](diagramas/casos-de-uso-mvp.pum
 |-------|----------|
 | Nome | Registrar Medição de Reator |
 | Resumo | Persiste uma medição proveniente de sensor e dispara avaliação de limiar. |
-| Ator primário | Operador de Reator (ou processo automático alimentado pelo Sensor) |
-| Atores secundários | Sensor (sistema externo) |
+| Ator primário | Sensor (sistema externo) |
+| Atores secundários | Operador de Reator (acompanha o resultado em caso de alarme) |
 | Pré-condições | Sensor identificado; reator cadastrado; limiares configurados |
-| Pós-condições | Medição persistida; evento `MedicaoRegistrada` publicado; UC02 e UC03 incluídos quando aplicável |
+| Pós-condições | Medição persistida; evento `MedicaoRegistrada` publicado; UC02 e UC03 executados por inclusão |
 
 ### Fluxo principal (linear)
 
@@ -61,7 +60,8 @@ Fonte PlantUML: [diagramas/casos-de-uso-mvp.puml](diagramas/casos-de-uso-mvp.pum
 | 5 | Sistema | Publica `MedicaoRegistrada` no EventBus |
 | 6 | Sistema | Inclui **UC02 Emitir Alarme por Limiar** |
 | 7 | Sistema | Inclui **UC03 Auditar Evento** |
-| 8 | Operador | Consulta medição no histórico |
+
+O fluxo termina após registrar, avaliar e auditar a medição. Consultar o histórico é outro objetivo e, portanto, não integra o UC01.
 
 ### Fluxos alternativos / exceção
 
