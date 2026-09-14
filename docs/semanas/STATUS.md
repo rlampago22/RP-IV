@@ -6,7 +6,7 @@ Plano: [`../plano-marco1.md`](../plano-marco1.md) · Stack: **Java** · Fonte: [
 
 | Aluno | Issue | Entrega | Status |
 |-------|-------|---------|--------|
-| Álvaro | #16 | Critérios de aceite Must | **Entregue na branch `alvaro`** |
+| Álvaro | #16 | Critérios de aceite Must | **Entregue** |
 | Bruno | #17 | EventBus + MedicaoRegistrada | Pendente |
 | Bernardo | #18 | receberLeitura + demo memória | **Entregue** |
 | José | #19 | Strategy limiar + criar Alarme | Pendente |
@@ -16,7 +16,7 @@ Plano: [`../plano-marco1.md`](../plano-marco1.md) · Stack: **Java** · Fonte: [
 
 | Aluno | Issue | Status | Relatório |
 |-------|-------|--------|-----------|
-| Álvaro | #11 | Pendente evidência Git | — |
+| Álvaro | #11 | **Entregue** (baseline em `docs/mvp/`) | [alvaro.md](2026-09-14/alvaro.md) |
 | Bruno | #12 | Pendente evidência Git | — |
 | Bernardo | #13 | **Entregue** | [bernardo.md](2026-09-08/bernardo.md) |
 | José | #14 | Pendente evidência Git | — |
@@ -30,7 +30,7 @@ Plano: [`../plano-marco1.md`](../plano-marco1.md) · Stack: **Java** · Fonte: [
 | 28/09 | S4 | #26–#30 |
 | 05/10 | Marco 1 | #31–#35 |
 
-## Como rodar a demo atual (Bernardo)
+## Como rodar a demo atual
 
 ```bat
 scripts\run-demo-medicoes.bat
