@@ -1,6 +1,10 @@
 # Local AI context (nao versionar)
 ai/
 
+# Astah / lixo local na raiz
+/EntityStore
+*.asta.bak
+
 # Editor
 .vscode/
 .idea/

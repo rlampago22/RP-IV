@@ -1,31 +1,37 @@
-# Status semanal do grupo — RP4
+# Status semanal — RP4
 
-Plano vigente até Marco 1: [`../plano-marco1.md`](../plano-marco1.md)  
-Issues: https://github.com/rlampago22/RP-IV/issues
+Plano: [`../plano-marco1.md`](../plano-marco1.md) · Stack: **Java** · Fonte: [`../legado-aps/`](../legado-aps/)
 
-Legenda: `Pendente` · `Em andamento` · `Entregue` · `Bloqueado`
+## Semana 2 — 14/09/2026
 
-## Semana atual: 1 — entrega **08/09/2026** — pasta [`2026-09-08/`](2026-09-08/)
+| Aluno | Issue | Entrega | Status |
+|-------|-------|---------|--------|
+| Álvaro | #16 | Critérios de aceite Must | Pendente |
+| Bruno | #17 | EventBus + MedicaoRegistrada | Pendente |
+| Bernardo | #18 | receberLeitura + demo memória | **Entregue** |
+| José | #19 | Strategy limiar + criar Alarme | Pendente |
+| Marcus | #20 | AuditoriaSubscriber | Pendente |
 
-| Aluno | Issue | Entrega | Status | Relatório |
-|-------|-------|---------|--------|-----------|
-| Álvaro | #11 | RF/RNF + MoSCoW + MVP | Em andamento | `2026-09-08/alvaro.md` |
-| Bruno | #12 | Pacotes + componentes L/F | Em andamento | `2026-09-08/bruno.md` |
-| Bernardo | #13 | Classes do núcleo MVP | Em andamento | `2026-09-08/bernardo.md` |
-| José | #14 | GoF alarmes | Em andamento | `2026-09-08/jose.md` |
-| Marcus | #15 | UCs + sequência | Entregue | `2026-09-08/marcus.md` |
+## Semana 1 — 08/09
 
-## Próximas entregas (segunda)
+| Aluno | Issue | Status | Relatório |
+|-------|-------|--------|-----------|
+| Álvaro | #11 | Pendente evidência Git | — |
+| Bruno | #12 | Pendente evidência Git | — |
+| Bernardo | #13 | **Entregue** | [bernardo.md](2026-09-08/bernardo.md) |
+| José | #14 | Pendente evidência Git | — |
+| Marcus | #15 | **Entregue** | [marcus.md](2026-09-08/marcus.md) |
 
-| Semana | Data | Issues | Foco |
-|--------|------|--------|------|
-| 2 | 15/09 | #16–#20 | EventBus + medição + limiar + auditoria |
-| 3 | 22/09 | #21–#25 | Alarme completo + UML=código |
-| 4 | 29/09 | #26–#30 | Ensaio / polish |
-| Marco 1 | 05/10 | #31–#35 | Apresentação + demo |
+## Próximas
 
-## Próxima ação (agora)
+| Data | Semana | Issues |
+|------|--------|--------|
+| 21/09 | S3 | #21–#25 |
+| 28/09 | S4 | #26–#30 |
+| 05/10 | Marco 1 | #31–#35 |
 
-1. Cada um pega **sua issue da Semana 1** e a branch pessoal.
-2. Entrega amanhã **08/09** com PR → `desenvolvimento` + relatório.
-3. Adicionar José e Marcus como collaborators no GitHub para assign automático.
+## Como rodar a demo atual (Bernardo)
+
+```bat
+scripts\run-demo-medicoes.bat
+```

@@ -9,6 +9,23 @@ Fonte PlantUML: [diagramas/classes-projeto-mvp.puml](diagramas/classes-projeto-m
 
 ---
 
+## 0. Recorte Bernardo — ControleReator (Must)
+
+Classes da trilha de implementação até o Marco 1 (sem inventar tipo novo):
+
+| Classe | Situação no esqueleto | Próximo passo |
+|--------|----------------------|---------------|
+| `Reator` | presente | manter entidade |
+| `Sensor` | presente | manter entidade |
+| `MedicaoReator` | presente com `registrarMedicao(...)` | usar no fluxo de leitura |
+| `ReatorFacade` | presente (stub) | implementar `receberLeitura` |
+| `Limiar` | presente | usado na avaliação (junto com Strategy do José) |
+| `ReatorRepository` | presente (stub) | persistência mínima depois |
+
+`AvaliadorLimiar` / `ResultadoAvaliacao` ficam no pacote, com ownership de implementação do limiar/alarme no José. Should/Could (`RegistroAcesso`, `Emergencia`, etc.) ficam fora deste recorte.
+
+---
+
 ## 1. Classes do núcleo (Must)
 
 ### InfraestruturaEventos

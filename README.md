@@ -28,23 +28,23 @@ Leia também: [`AGENTS.md`](AGENTS.md) (obrigatório para qualquer IA).
 
 Documento vigente: [`docs/plano-marco1.md`](docs/plano-marco1.md)
 
+**Stack:** Java (`src/main/java/.../usina/`)
+
 | Entrega | Data |
 |---------|------|
-| Semana 1 (pedido do professor) | **08/09/2026** |
-| Semana 2 | 15/09/2026 |
-| Semana 3 | 22/09/2026 |
-| Semana 4 (ensaio) | 29/09/2026 |
+| Semana 1 (docs professor) | 08/09/2026 |
+| Semana 2 (1ª fatia código) | **14/09/2026** |
+| Semana 3 | 21/09/2026 |
+| Semana 4 (ensaio) | 28/09/2026 |
 | **Marco 1** | **05/10/2026** |
 
 Padrão: **1 issue por pessoa por semana** → branch pessoal → PR para `desenvolvimento`.
 
-## Semana 1 — pedido do professor (todos uma parte)
+## Demo atual
 
-- Álvaro (#11): RF/RNF + MoSCoW + MVP
-- Bruno (#12): pacotes + componentes lógico/físico
-- Bernardo (#13): classes do núcleo
-- José (#14): GoF alarmes
-- Marcus (#15): UCs + sequência
+```bat
+scripts\run-demo-medicoes.bat
+```
 
 ## Sistema e arquitetura
 
@@ -61,6 +61,8 @@ AGENTS.md / CLAUDE.md / GEMINI.md
 .github/copilot-instructions.md
 .cursor/rules/  .cursor/hooks/
 .githooks/      scripts/
+docs/legado-aps/   # PDF APS atualizado + changelog
+docs/diagramas/astah/  # fonte Astah (UCs)
 docs/requisitos  docs/mvp  docs/arquitetura  docs/diagramas
 docs/marco1/     # rascunho até 05/10/2026
 docs/semanas/    # evidências individuais
