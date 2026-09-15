@@ -10,7 +10,7 @@ Plano: [`../plano-marco1.md`](../plano-marco1.md) · Stack: **Java** · Fonte: [
 | Bruno | #17 | EventBus + MedicaoRegistrada | Pendente |
 | Bernardo | #18 | receberLeitura + demo memória | **Entregue** |
 | José | #19 | Strategy limiar + criar Alarme | Pendente |
-| Marcus | #20 | AuditoriaSubscriber | Pendente |
+| Marcus | #20 | AuditoriaSubscriber + MVP SCADA | **Entregue** |
 
 ## Semana 1 — 08/09
 
@@ -30,8 +30,19 @@ Plano: [`../plano-marco1.md`](../plano-marco1.md) · Stack: **Java** · Fonte: [
 | 28/09 | S4 | #26–#30 |
 | 05/10 | Marco 1 | #31–#35 |
 
-## Como rodar a demo atual
+## Como rodar as demonstrações e testes do MVP
 
-```bat
-scripts\run-demo-medicoes.bat
-```
+- **Demonstração em memória (Bernardo)**:
+  ```bat
+  scripts\run-demo-medicoes.bat
+  ```
+
+- **Suíte de 11 testes de aceite Must (Álvaro/Marcus)**:
+  ```bat
+  scripts\run-testes-mvp.bat
+  ```
+
+- **Central Digital de Supervisão SCADA (MVP Usina Nuclear)**:
+  ```bat
+  scripts\run-sistema-scada.bat
+  ```

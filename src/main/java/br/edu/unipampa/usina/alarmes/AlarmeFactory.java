@@ -1,10 +1,10 @@
 package br.edu.unipampa.usina.alarmes;
 
-import br.edu.unipampa.usina.controlereator.MedicaoReator;
+import br.edu.unipampa.usina.infraestruturaeventos.MedicaoRegistrada;
 
-/** Factory de alarmes — implementação no Marco 2. */
-public class AlarmeFactory {
-    public Alarme criar(MedicaoReator medicao, String tipo) {
-        throw new UnsupportedOperationException("Marco 2");
+/** Factory responsável pela criação consistente da entidade Alarme. */
+public final class AlarmeFactory {
+    public Alarme criar(MedicaoRegistrada medicao) {
+        return new Alarme(medicao);
     }
 }
