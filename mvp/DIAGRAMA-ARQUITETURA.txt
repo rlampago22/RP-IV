@@ -1,0 +1,55 @@
+ARQUITETURA E FLUXOS DE EVENTOS DO MVP (EDA / MOSCOW MUST)
+===========================================================
+
+ [Sensores Físicos Simulados]
+  - 1: TEMPERATURA (0 - 350 °C)
+  - 2: PRESSÃO (0 - 160 bar)
+  - 3: RADIAÇÃO (0 - 5 mSv/h)
+  - 4: FLUXO DE RESFRIAMENTO (500 - 1500 m³/h)
+          |
+          | receberLeitura(id, valor) / simularFalhaSensor(id, motivo)
+          v
+   [ReatorFacade / ControleReator] -- registra --> [MedicaoReator (Histórico)]
+          |
+          | publica fatos de domínio
+          v
+   [EventBus (InfraestruturaEventos - EDA)]
+          |
+          +---> [ObservacaoRegistrada]  (Fluxo Alternativo 1 - Atenção Preventiva)
+          |        └──> [AuditoriaSubscriber] --> dados/auditoria.log
+          |
+          +---> [FalhaSensorDetectada]  (Fluxo de Exceções - Alerta Manutenção)
+          |        └──> [AuditoriaSubscriber] --> Notifica Equipe Técnica
+          |
+          +---> [MedicaoRegistrada] ─────┐
+          |                              |
+          v                              v
+   [AlarmeFacade]                 [AuditoriaSubscriber]
+          |                              |
+          +--> [AvaliadorFaixaSegura / Strategy]
+          |       |
+          |       v (limite violado?)
+          +--> [AlarmeFactory] --> [Alarme (Ciclo: ATIVO / RECONHECIDO / RESOLVIDO)]
+                                         |
+                                         +--> publica [AlarmeEmitido]
+                                         |       ├──> [EventBus] --> [Auditoria]
+                                         |       └──> Notifica Operador e Supervisão
+                                         |
+                                         +--> reconhecer(operador) --> publica [AlarmeReconhecido]
+                                         |
+                                         +--> resolver(solução)  --> publica [AlarmeResolvido]
+
+PERSISTÊNCIA E AUDITORIA (RNF-03 / RNF-05 / RNF-09)
+===================================================
+- RegistroAuditoria: exclusivamente append-only.
+- Formato: Seq | Timestamp | Tipo | Resumo | anterior=SHA256 | hash=SHA256
+- Continuidade Multi-Sessão: carrega histórico na inicialização sem recomeçar do zero.
+- Verificação Anti-Adulteração: leitura física do arquivo com recálculo de cada elo SHA-256.
+
+PADRÕES DE PROJETO APLICADOS
+============================
+- Facade: ReatorFacade e AlarmeFacade.
+- Observer / Pub-Sub: EventBus com isolamento de falhas (RNF-04).
+- Strategy: AvaliadorFaixaSegura / AvaliadorLimiar.
+- Factory: AlarmeFactory.
+- Append-Only Log: Auditoria com cadeia criptográfica de blocos encadeados.

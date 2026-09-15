@@ -10,7 +10,7 @@ Plano: [`../plano-marco1.md`](../plano-marco1.md) · Stack: **Java** · Fonte: [
 | Bruno | #17 | EventBus + MedicaoRegistrada | Pendente |
 | Bernardo | #18 | receberLeitura + demo memória | **Entregue** |
 | José | #19 | Strategy limiar + criar Alarme | Pendente |
-| Marcus | #20 | AuditoriaSubscriber + MVP SCADA | **Entregue** |
+| Marcus | #20 | AuditoriaSubscriber + MVP Completo | **Entregue** ([mvp/](../../mvp/)) |
 
 ## Semana 1 — 08/09
 
@@ -30,19 +30,19 @@ Plano: [`../plano-marco1.md`](../plano-marco1.md) · Stack: **Java** · Fonte: [
 | 28/09 | S4 | #26–#30 |
 | 05/10 | Marco 1 | #31–#35 |
 
-## Como rodar as demonstrações e testes do MVP
+## Como rodar o MVP (pasta dedicada `mvp/`)
 
-- **Demonstração em memória (Bernardo)**:
-  ```bat
-  scripts\run-demo-medicoes.bat
-  ```
+Todo o MVP funcional da usina nuclear (com telemetria dos 4 sensores, auditoria append-only SHA-256 e console SCADA) está centralizado na pasta [`mvp/`](../../mvp/):
 
-- **Suíte de 11 testes de aceite Must (Álvaro/Marcus)**:
-  ```bat
-  scripts\run-testes-mvp.bat
-  ```
+- **Abrir a Central de Supervisão SCADA**:
+  - Duplo-clique em `mvp\0-ABRIR-SISTEMA-GRAFICO.vbs` (ou execute `mvp\abrir-sistema.ps1`).
+- **Rodar a suíte dos 11 testes de aceite Must**:
+  - Duplo-clique em `mvp\2-TESTAR-MVP.bat` (ou execute `mvp\executar-mvp.ps1 -Testar`).
+- **Demonstração em linha de comando**:
+  - Duplo-clique em `mvp\1-EXECUTAR-MVP.bat`.
 
-- **Central Digital de Supervisão SCADA (MVP Usina Nuclear)**:
-  ```bat
-  scripts\run-sistema-scada.bat
-  ```
+## Como rodar a demo em memória da Semana 2 (Bernardo)
+
+```bat
+scripts\run-demo-medicoes.bat
+```

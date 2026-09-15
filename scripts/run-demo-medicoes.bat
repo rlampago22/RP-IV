@@ -6,13 +6,18 @@ set "OUT=out"
 if not exist "%OUT%" mkdir "%OUT%"
 
 set "SRC=src\main\java\br\edu\unipampa\usina\controlereator"
-set "INFRA=src\main\java\br\edu\unipampa\usina\infraestruturaeventos"
 
 echo Pasta: %CD%
 echo Compilando...
 javac -encoding UTF-8 -d "%OUT%" ^
-  "%INFRA%\*.java" ^
-  "%SRC%\*.java"
+  "%SRC%\Sensor.java" ^
+  "%SRC%\MedicaoReator.java" ^
+  "%SRC%\Reator.java" ^
+  "%SRC%\Limiar.java" ^
+  "%SRC%\AvaliadorLimiar.java" ^
+  "%SRC%\ResultadoAvaliacao.java" ^
+  "%SRC%\ReatorFacade.java" ^
+  "%SRC%\DemoMedicoes.java"
 
 if errorlevel 1 (
   echo.
