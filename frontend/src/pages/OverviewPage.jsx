@@ -1,10 +1,12 @@
+import { SENSORES_RF1, statusSensor, pctBarra, corTipo } from '../data/sensores.js'
+
 export default function OverviewPage() {
   return (
     <section>
       <p className="scada-kicker">T01 · Overview</p>
       <h1 className="scada-heading">Visão Geral</h1>
       <p className="scada-lead">
-        Núcleo + telemetria RF-1 + timeline EDA. Mock — ligar à API Java.
+        Núcleo + telemetria RF-1 + timeline EDA. KPIs alinhados ao contrato T02.
       </p>
 
       <div className="scada-split">
@@ -14,26 +16,24 @@ export default function OverviewPage() {
             <div className="scada-core">ESTÁVEL</div>
           </div>
           <div className="scada-sensors">
-            <div className="scada-sensor">
-              <div className="name">Temperatura</div>
-              <div className="val" style={{ color: 'var(--crit)' }}>312.00 °C</div>
-              <div className="scada-bar"><i style={{ width: '78%', background: 'var(--crit)' }} /></div>
-            </div>
-            <div className="scada-sensor">
-              <div className="name">Pressão</div>
-              <div className="val" style={{ color: 'var(--warn)' }}>155.00 bar</div>
-              <div className="scada-bar"><i style={{ width: '86%', background: 'var(--warn)' }} /></div>
-            </div>
-            <div className="scada-sensor">
-              <div className="name">Radiação</div>
-              <div className="val" style={{ color: 'var(--purple)' }}>0.12 mSv/h</div>
-              <div className="scada-bar"><i style={{ width: '12%', background: 'var(--purple)' }} /></div>
-            </div>
-            <div className="scada-sensor">
-              <div className="name">Fluxo resfriamento</div>
-              <div className="val" style={{ color: 'var(--cyan)' }}>980.00 m³/h</div>
-              <div className="scada-bar"><i style={{ width: '82%', background: 'var(--cyan)' }} /></div>
-            </div>
+            {SENSORES_RF1.map((s) => {
+              const st = statusSensor(s)
+              const cor = corTipo(s.tipo)
+              return (
+                <div className="scada-sensor" key={s.id}>
+                  <div className="name">{s.tipo}</div>
+                  <div className="val" style={{ color: cor }}>
+                    {s.valor.toFixed(2)} {s.unidade}
+                  </div>
+                  <div className="scada-bar">
+                    <i style={{ width: `${pctBarra(s)}%`, background: cor }} />
+                  </div>
+                  <span className={`scada-pill ${st.cls}`} style={{ gridColumn: '1 / -1', justifySelf: 'start' }}>
+                    {st.label}
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </div>
 
