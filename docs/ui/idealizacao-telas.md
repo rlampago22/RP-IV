@@ -1,8 +1,8 @@
 # Idealização de telas — Central de Supervisão (EDA)
 
 **Stack-alvo:** React (Vite) + backend Java EDA  
-**Status:** idealização — ver setup Figma em [`FIGMA.md`](FIGMA.md) · issue [#40](https://github.com/rlampago22/RP-IV/issues/40)  
-**Legado:** UI Swing em `mvp/.../SistemaMvpUI.java` (referência de fluxo, **não** o visual final)
+**Status:** **Opção A escolhida** — SCADA escuro (DNA Marcus) · [`direcao-opcao-a.md`](direcao-opcao-a.md) · protótipo [`propostas/opcao-a.html`](propostas/opcao-a.html) · issue [#40](https://github.com/rlampago22/RP-IV/issues/40)  
+**Legado:** UI Swing em `mvp/.../SistemaMvpUI.java` (fluxo + paleta de base; visual final = React Opção A)
 
 ---
 

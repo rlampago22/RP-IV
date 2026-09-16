@@ -1,5 +1,8 @@
 # Plano semanal RP4 — entregas por aluno
 
+> **Canônico atual:** [`PLANEJAMENTO_DESENVOLVIMENTO.md`](PLANEJAMENTO_DESENVOLVIMENTO.md) · [`plano-entregas.md`](plano-entregas.md) · [`semanas/STATUS.md`](semanas/STATUS.md)  
+> Este arquivo permanece como **histórico/detalhe** do início do semestre.
+
 **Disciplina:** AL0343 — Resolução de Problemas IV  
 **Sistema:** Controle de Usina Nuclear (arquitetura EDA mantida)  
 **Repositório:** [https://github.com/rlampago22/RP-IV](https://github.com/rlampago22/RP-IV)
@@ -8,7 +11,7 @@
 
 O calendário **oficial até Marco 1** (entregas às segundas, 1 issue/pessoa) está em:
 
-→ `[plano-marco1.md](plano-marco1.md)`
+→ [`PLANEJAMENTO_DESENVOLVIMENTO.md`](PLANEJAMENTO_DESENVOLVIMENTO.md) e [`plano-marco1.md`](plano-marco1.md)
 
 Este arquivo permanece como histórico/detalhe estendido do semestre.
 
