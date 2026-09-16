@@ -5,6 +5,10 @@ ai/
 /EntityStore
 *.asta.bak
 
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
 # Editor
 .vscode/
 .idea/
@@ -17,6 +21,7 @@ ai/
 target/
 build/
 out/
+mvp/**/*.class
 
 # Logs / temp
 *.log
@@ -25,6 +30,8 @@ out/
 *.swp
 *.swo
 /tmp/
+mvp/dados/*.log
+mvp/dados/*.txt
 
 # OS
 .DS_Store

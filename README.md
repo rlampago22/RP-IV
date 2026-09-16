@@ -1,88 +1,66 @@
 # RP-IV — Sistema de Controle de Usina Nuclear
 
-Repositório da disciplina **AL0343 — Resolução de Problemas IV** (UNIPAMPA Alegrete).
+Repositório **AL0343 — Resolução de Problemas IV** (UNIPAMPA Alegrete).
 
-> **Importante:** o desenvolvimento acontece na branch [`desenvolvimento`](https://github.com/rlampago22/RP-IV/tree/desenvolvimento).  
-> A `main` permanece limpa até a consolidação final.
+> Trabalho em [`desenvolvimento`](https://github.com/rlampago22/RP-IV/tree/desenvolvimento). A `main` fica limpa até o final.
 
-## Equipe
+## Arquitetura (única)
+
+**Arquitetura Orientada a Eventos (EDA)** — ver [`docs/marco1/04-arquitetura-eda.md`](docs/marco1/04-arquitetura-eda.md).
+
+## Stack
+
+| Camada | Tecnologia |
+|--------|------------|
+| Backend | Java + EventBus (pasta `mvp/` hoje → migrar para `backend/`) |
+| Frontend | React + Vite (`frontend/`) |
+| UI idealizada | [`docs/ui/idealizacao-telas.md`](docs/ui/idealizacao-telas.md) |
+
+A UI **Swing** em `mvp/` é **legado de fluxo**, não o visual final.
+
+## Equipe e entrega vertical
+
+Cada semana: **back + front** na trilha + relatório [`docs/semanas/_template-entrega-vertical.md`](docs/semanas/_template-entrega-vertical.md).  
+Ao mergear a sprint: [`docs/semanas/_template-resumo-merge.md`](docs/semanas/_template-resumo-merge.md).
 
 | Integrante | Branch | Trilha |
 |------------|--------|--------|
-| Álvaro Domingues | `alvaro` | Requisitos, MoSCoW, aceite, checklist |
-| Bruno Rocha | `bruno` | EDA, EventBus, pacotes/componentes |
-| Bernardo Dorneles | `bernardo` | ControleReator, medições, persistência |
-| José Guilherme Monteiro | `jose` | Alarmes, limiares, GoF |
-| Marcus Querol | `marcus` | UCs/sequências, auditoria, demo, acesso |
+| Álvaro Domingues | `alvaro` | Requisitos, aceite, contratos |
+| Bruno Rocha | `bruno` | EventBus, pacotes/componentes, API eventos |
+| Bernardo Dorneles | `bernardo` | Medições / ControleReator + UI sensores |
+| José Guilherme Monteiro | `jose` | Alarmes / GoF + UI alarmes |
+| Marcus Querol | `marcus` | Auditoria / UCs + UI auditoria/demo |
 
-## Como trabalhar
+## Plano
 
-1. Atualize `desenvolvimento`
-2. Trabalhe na sua branch pessoal (`alvaro`, `bernardo`, `bruno`, `jose`, `marcus`)
-3. Abra PR para `desenvolvimento`
-4. Deixe evidência em `docs/semanas/YYYY-MM-DD/<seu-nome>.md`
-
-Leia também: [`AGENTS.md`](AGENTS.md) (obrigatório para qualquer IA).
-
-## Plano até Marco 1
-
-Documento vigente: [`docs/plano-marco1.md`](docs/plano-marco1.md)
-
-**Stack:** Java (`src/main/java/.../usina/`)
+[`docs/plano-marco1.md`](docs/plano-marco1.md) · Status: [`docs/semanas/STATUS.md`](docs/semanas/STATUS.md)
 
 | Entrega | Data |
 |---------|------|
-| Semana 1 (docs professor) | 08/09/2026 |
-| Semana 2 (1ª fatia código) | **14/09/2026** |
+| Semana 2 | 14/09/2026 |
 | Semana 3 | 21/09/2026 |
-| Semana 4 (ensaio) | 28/09/2026 |
-| **Marco 1** | **05/10/2026** |
+| Semana 4 | 28/09/2026 |
+| Marco 1 | 05/10/2026 |
 
-Padrão: **1 issue por pessoa por semana** → branch pessoal → PR para `desenvolvimento`.
-
-## Demo atual
+## Como rodar
 
 ```bat
-scripts\run-demo-medicoes.bat
+REM Domínio Java (legado MVP)
+mvp\1-EXECUTAR-MVP.bat
+
+REM Front React (idealização)
+cd frontend
+npm install
+npm run dev
 ```
-
-## Sistema e arquitetura
-
-Monitoramento lógico de usina nuclear: medições, alarmes, auditoria; depois acesso restrito.
-
-- Arquitetura Orientada a Eventos (EDA)
-- Módulos independentes
-- Persistência dedicada por módulo
 
 ## Estrutura
 
 ```text
-AGENTS.md / CLAUDE.md / GEMINI.md
-.github/copilot-instructions.md
-.cursor/rules/  .cursor/hooks/
-.githooks/      scripts/
-docs/legado-aps/   # PDF APS atualizado + changelog
-docs/diagramas/astah/  # fonte Astah (UCs)
-docs/requisitos  docs/mvp  docs/arquitetura  docs/diagramas
-docs/marco1/     # rascunho até 05/10/2026
-docs/semanas/    # evidências individuais
-src/main/java/.../usina/
+frontend/          # React — supervisão web
+mvp/               # Java EDA executável (legado Swing)
+docs/ui/           # Idealização de telas + exports
+docs/marco1/       # Artefatos Marco 1 (diagramas essenciais)
+docs/semanas/      # Entregas individuais + RESUMO-MERGE
+docs/legado-aps/   # PDF APS histórico
 ```
-
-## Marcos
-
-| Marco | Data | Foco |
-|-------|------|------|
-| 1 | 05/10/2026 | Docs validados + demo parcial Must |
-| 2 | 16/11/2026 | Núcleo + GoF + Should parcial |
-| 3 | 16–17/12/2026 | Demo final |
-
-## Hooks Git (opcional local)
-
-```bash
-git config core.hooksPath .githooks
-```
-
-## Licença acadêmica
-
-Material para avaliação na UNIPAMPA — uso interno do grupo e da disciplina.

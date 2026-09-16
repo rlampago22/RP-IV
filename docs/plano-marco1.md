@@ -1,8 +1,8 @@
 # Plano até Marco 1 — issues e entregas
 
-**Stack decidida pelo grupo:** **Java** (esqueleto em `src/main/java/.../usina/`).  
-**Fonte de domínio:** [`legado-aps/APS-RPIV-ATUALIZADO-Diagrama-Implantacao.pdf`](legado-aps/APS-RPIV-ATUALIZADO-Diagrama-Implantacao.pdf)  
-**Recorte:** MVP Must em [`marco1/`](marco1/) — não o APS inteiro.
+**Stack decidida pelo grupo:** **Java (EDA) + React (Vite)**  
+**Arquitetura (única):** Orientada a Eventos — [`marco1/04-arquitetura-eda.md`](marco1/04-arquitetura-eda.md)  
+**UI:** idealização em [`ui/idealizacao-telas.md`](ui/idealizacao-telas.md) (Swing = legado)
 
 | Marco | Data |
 |-------|------|

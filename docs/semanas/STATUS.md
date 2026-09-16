@@ -1,48 +1,37 @@
 # Status semanal — RP4
 
-Plano: [`../plano-marco1.md`](../plano-marco1.md) · Stack: **Java** · Fonte: [`../legado-aps/`](../legado-aps/)
+Plano: [`../plano-marco1.md`](../plano-marco1.md) · Arquitetura: **EDA only** · UI: [`../ui/idealizacao-telas.md`](../ui/idealizacao-telas.md)
 
-## Semana 2 — 14/09/2026
+## Direção atual
 
-| Aluno | Issue | Entrega | Status |
-|-------|-------|---------|--------|
-| Álvaro | #16 | Critérios de aceite Must | **Entregue** |
-| Bruno | #17 | EventBus + MedicaoRegistrada | Pendente |
-| Bernardo | #18 | receberLeitura + demo memória | **Entregue** |
-| José | #19 | Strategy limiar + criar Alarme | Pendente |
-| Marcus | #20 | AuditoriaSubscriber + MVP Completo | **Entregue** ([mvp/](../../mvp/)) |
+Entrega **vertical** (Java back + React front). Swing em `mvp/` = legado.  
+Resumo Semana 2: [`2026-09-14/RESUMO-MERGE.md`](2026-09-14/RESUMO-MERGE.md)
 
-## Semana 1 — 08/09
+## Semana 2 — 14/09 (consolidada)
 
-| Aluno | Issue | Status | Relatório |
-|-------|-------|--------|-----------|
-| Álvaro | #11 | **Entregue** (baseline em `docs/mvp/`) | [alvaro.md](2026-09-14/alvaro.md) |
-| Bruno | #12 | Pendente evidência Git | — |
-| Bernardo | #13 | **Entregue** | [bernardo.md](2026-09-08/bernardo.md) |
-| José | #14 | Pendente evidência Git | — |
-| Marcus | #15 | **Entregue** | [marcus.md](2026-09-08/marcus.md) |
+| Aluno | Issues | Status |
+|-------|--------|--------|
+| Álvaro | #11 #16 | Entregue |
+| Bernardo | #13 #18 | Entregue |
+| Marcus | #15 #20 | Entregue (MVP em `mvp/`) |
+| Bruno | #12 #17 | Pendente evidência / fechar |
+| José | #14 #19 | Código no MVP; fechar evidência |
 
-## Próximas
+## Semana 3 — 21/09 (próxima · vertical)
 
-| Data | Semana | Issues |
-|------|--------|--------|
-| 21/09 | S3 | #21–#25 |
-| 28/09 | S4 | #26–#30 |
-| 05/10 | Marco 1 | #31–#35 |
+Cada um: pedaço **API/domínio** + pedaço **tela React** (T0X) + relatório no template vertical.
 
-## Como rodar o MVP (pasta dedicada `mvp/`)
+| Aluno | Issue | Back | Front |
+|-------|-------|------|-------|
+| Álvaro | #21 | Checklist APS núcleo | — / critérios UI |
+| Bruno | #22 | Componentes físicos + EventBus estável | Shell / overview data |
+| Bernardo | #23 | Histórico medições | T02 Sensores |
+| José | #24 | Alarme completo | T03 Alarmes |
+| Marcus | #25 | SEQ-UC02 | T04 Auditoria |
 
-Todo o MVP funcional da usina nuclear (com telemetria dos 4 sensores, auditoria append-only SHA-256 e console SCADA) está centralizado na pasta [`mvp/`](../../mvp/):
-
-- **Abrir a Central de Supervisão SCADA**:
-  - Duplo-clique em `mvp\0-ABRIR-SISTEMA-GRAFICO.vbs` (ou execute `mvp\abrir-sistema.ps1`).
-- **Rodar a suíte dos 11 testes de aceite Must**:
-  - Duplo-clique em `mvp\2-TESTAR-MVP.bat` (ou execute `mvp\executar-mvp.ps1 -Testar`).
-- **Demonstração em linha de comando**:
-  - Duplo-clique em `mvp\1-EXECUTAR-MVP.bat`.
-
-## Como rodar a demo em memória da Semana 2 (Bernardo)
+## Como rodar
 
 ```bat
-scripts\run-demo-medicoes.bat
+mvp\1-EXECUTAR-MVP.bat
+cd frontend && npm install && npm run dev
 ```

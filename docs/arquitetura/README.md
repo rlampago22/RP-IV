@@ -1,8 +1,9 @@
 # Arquitetura
 
-Arquitetura Orientada a Eventos (EDA), herdada da APS e recortada para o MVP.
+**Única arquitetura do projeto:** Orientada a Eventos (**EDA**).
 
-- Justificativa / visão: [`../marco1/04-arquitetura-eda.md`](../marco1/04-arquitetura-eda.md)
-- Diagramas: [`../diagramas/`](../diagramas/) e [`../marco1/diagramas/`](../marco1/diagramas/)
+Documento canônico: [`../marco1/04-arquitetura-eda.md`](../marco1/04-arquitetura-eda.md)
 
-Ownership: **Bruno Rocha**.
+Idealização de UI (React): [`../ui/idealizacao-telas.md`](../ui/idealizacao-telas.md)
+
+Backend Java (direção): [`../backend-java.md`](../backend-java.md)

@@ -1,5 +1,7 @@
 # Central de Supervisão — MVP Usina Nuclear
 
+> **Nota (set/2026):** esta UI **Swing** permanece como legado de fluxo/demo. O visual oficial do grupo passa a ser **React** (`frontend/`) + idealização em [`docs/ui/idealizacao-telas.md`](../docs/ui/idealizacao-telas.md). Arquitetura: **EDA only**.
+
 Aplicação desktop local desenvolvida em Java (Zero External Dependencies) para demonstrar o caminho crítico completo do sistema conforme documentado no projeto oficial da disciplina de Resolução de Problemas IV / Análise e Projeto de Software.
 
 ---
