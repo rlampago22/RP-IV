@@ -29,4 +29,4 @@ Este projeto é acadêmico (AL0343 — RP IV). Sistema: Controle de Usina Nuclea
 - Expandir Won't do MVP (evacuação completa, RH amplo, IA preditiva)
 - Reintroduzir Opção B (painel claro) ou tema neon decorativo
 - Incluir pasta `ai/` ou `.cursor/mcp.json` no versionamento
-- Commit/push em repositórios de outros grupos (SafePlace, Sentinela = só leitura)
+- Commit/push em repositórios de terceiros

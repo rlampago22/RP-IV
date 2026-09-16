@@ -1,6 +1,6 @@
 # Planejamento de Desenvolvimento — RP-IV
 
-Documento canônico de calendário e papéis (padrão Sentinela: um `PLANEJAMENTO_*` na raiz de `docs/`).
+Documento canônico de calendário e papéis (um `PLANEJAMENTO_*` na raiz de `docs/`).
 
 **Detalhe operacional / DoD:** [`plano-entregas.md`](plano-entregas.md)  
 **Status vivo das issues:** [`semanas/STATUS.md`](semanas/STATUS.md)  

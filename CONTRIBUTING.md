@@ -40,9 +40,6 @@ Templates: `docs/semanas/_template-entrega-vertical.md`
 Referência visual obrigatória: [`docs/ui/propostas/opcao-a.html`](docs/ui/propostas/opcao-a.html)  
 Spec: [`docs/ui/direcao-opcao-a.md`](docs/ui/direcao-opcao-a.md)
 
-## Referências externas (somente leitura)
+## Wiki
 
-- SafePlace (Iuri): estrutura monorepo / README rico  
-- Sentinela: `docs/DOCUMENTACAO_*`, `PLANEJAMENTO_*`, `implementacao/`, `analise/`
-
-Não altere repositórios de outros grupos.
+Base de conhecimento do grupo: [Wiki do RP-IV](https://github.com/rlampago22/RP-IV/wiki)
