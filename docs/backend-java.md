@@ -5,7 +5,7 @@ Código de domínio e EventBus.
 ## Estado atual
 
 A implementação **executável** do MVP está em [`../mvp/`](../mvp/) (inclui Swing legado de fluxo).  
-A pasta [`../backend/`](../backend/) é o **destino** no monorepo (padrão SafePlace/Sentinela).  
+A pasta [`../backend/`](../backend/) é o **destino** no monorepo (`backend/` + `frontend/`).  
 `src/` na raiz é esqueleto legado — ver [`../src/README.md`](../src/README.md).
 
 ## Direção

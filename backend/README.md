@@ -1,6 +1,6 @@
 # backend/ — API Java (destino)
 
-Pasta reservada no padrão monorepo (**backend/** + **frontend/**), como SafePlace/Sentinela.
+Pasta reservada no monorepo (**backend/** + **frontend/**).
 
 ## Estado atual
 

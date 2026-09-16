@@ -1,6 +1,6 @@
 # Rastreabilidade da implementação — índice
 
-O que já existe no código × o que ainda é idealização (padrão Sentinela `docs/implementacao/`).
+O que já existe no código × o que ainda é idealização.
 
 ## Status por camada
 

@@ -19,7 +19,7 @@ Arquitetura **única:** **EDA** (EventBus).
 - API futura: **`backend/`** (vazio/migração)
 - `src/` = esqueleto legado — **não** é a demo
 
-Não faça commits na `main`. Não altere repositórios de outros grupos (SafePlace, Sentinela = só leitura).
+Não faça commits na `main`. Não altere repositórios de terceiros.
 
 ## Equipe
 

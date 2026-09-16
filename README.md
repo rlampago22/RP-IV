@@ -76,10 +76,13 @@ Protótipo visual Opção A (HTML local): [`docs/ui/propostas/opcao-a.html`](doc
 
 ---
 
-## Documentação
+## Documentação e Wiki
+
+**Wiki (navegação do time):** [`docs/wiki/Home.md`](docs/wiki/Home.md) · aba GitHub: https://github.com/rlampago22/RP-IV/wiki
 
 | Documento | Onde | Descrição |
 |-----------|------|-----------|
+| Wiki / Home | [`docs/wiki/`](docs/wiki/) | Visão geral, EDA, UI, como rodar, equipe |
 | Índice de docs | [`docs/README.md`](docs/README.md) | Mapa de toda a pasta `docs/` |
 | Engenharia (hub) | [`docs/DOCUMENTACAO_DE_ENGENHARIA.md`](docs/DOCUMENTACAO_DE_ENGENHARIA.md) | RF/RNF, MoSCoW, MVP, UML, arquitetura |
 | Planejamento | [`docs/PLANEJAMENTO_DESENVOLVIMENTO.md`](docs/PLANEJAMENTO_DESENVOLVIMENTO.md) | Calendário até Marco 1 + issues |

@@ -1,11 +1,12 @@
 # Documentação — índice
 
-Mapa da pasta `docs/`, no estilo dos monorepos de referência da disciplina (estrutura clara + um hub de engenharia).
+Mapa da pasta `docs/` — hub de engenharia, planejamento, UI e entregas semanais.
 
 ## Comece por aqui
 
 | Prioridade | Documento |
 |------------|-----------|
+| 0 | [`wiki/Home.md`](wiki/Home.md) — **Wiki do projeto** |
 | 1 | [`DOCUMENTACAO_DE_ENGENHARIA.md`](DOCUMENTACAO_DE_ENGENHARIA.md) — hub RF/RNF/MVP/UML/EDA |
 | 2 | [`PLANEJAMENTO_DESENVOLVIMENTO.md`](PLANEJAMENTO_DESENVOLVIMENTO.md) — sprints e issues |
 | 3 | [`ui/direcao-opcao-a.md`](ui/direcao-opcao-a.md) — UI oficial |

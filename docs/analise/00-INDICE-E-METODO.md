@@ -1,6 +1,6 @@
 # Análise — índice e método
 
-Espaço para registrar **divergências doc × código** e lacunas (inspirado em Sentinela `docs/analise/`).
+Espaço para registrar **divergências doc × código** e lacunas.
 
 ## Método
 

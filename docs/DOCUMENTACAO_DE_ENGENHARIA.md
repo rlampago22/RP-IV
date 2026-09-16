@@ -1,6 +1,7 @@
 # Documentação de Engenharia — RP-IV
 
-Hub único (inspirado no padrão Sentinela) que aponta para os artefatos oficiais do grupo.  
+Hub único que aponta para os artefatos oficiais do grupo.  
+Não duplica o conteúdo — só organiza links.  
 **Não duplica** o conteúdo longo: cada seção linka a fonte canônica.
 
 **Sistema:** Central de Supervisão — Usina Nuclear  
