@@ -2,7 +2,7 @@
 
 **Arquitetura (única):** EDA — EventBus Java in-process.  
 **Stack:** Backend Java (`mvp/` hoje) + Frontend React (`frontend/`).  
-**UI oficial:** web (idealização + Figma) — Swing é legado.
+**UI oficial:** web **Opção A — SCADA escuro** ([`ui/direcao-opcao-a.md`](ui/direcao-opcao-a.md), protótipo [`ui/propostas/opcao-a.html`](ui/propostas/opcao-a.html)) — Swing é legado de fluxo.
 
 ---
 
@@ -55,7 +55,7 @@ Ao fechar a sprint: preencher [`semanas/_template-resumo-merge.md`](semanas/_tem
 
 | Sprint | Segunda | Foco do grupo | Issues |
 |--------|---------|---------------|--------|
-| Idealização | **agora → 21/09** | Figma T01–T05 + repo pronto | Epico #idealizacao |
+| Idealização | **agora → 21/09** | Opção A no Figma + shell React (#40) | Epic [#40](https://github.com/rlampago22/RP-IV/issues/40) |
 | S3 | **21/09** | 1ª fatia vertical back+front por pessoa | 5 issues S3 |
 | S4 | **28/09** | Integração, polish, ensaio 8–10 min | 5 issues S4 |
 | Marco 1 | **05/10** | Apresentação + demo Must | 5 issues M1 |

@@ -1,58 +1,45 @@
-# Figma — Central de Supervisão RP-IV
+# Figma — Central de Supervisão RP-IV (Opção A)
 
-## Status no Cursor (este workspace)
+## Direção oficial
 
-O MCP **plugin-figma-figma** ainda **não está habilitado** no projeto RP4 (ferramentas disponíveis hoje: browser + Canva).
+**Opção A — SCADA escuro** (DNA do MVP Marcus).  
+Spec: [`direcao-opcao-a.md`](direcao-opcao-a.md) · Aceite: [`aceite-visual.md`](aceite-visual.md) · Protótipo: [`propostas/opcao-a.html`](propostas/opcao-a.html)
 
-### Como ativar (necessário uma vez)
+**Arquivo:** [RP-IV Usina — Supervisão MVP](https://www.figma.com/design/2rlHQret0408QGTMTibBI4)  
+**Page:** `MVP Screens` · reconstruir T01–T05 no chrome escuro da Opção A
 
-1. Cursor → **Settings → MCP / Plugins**
-2. Ativar o plugin **Figma**
-3. Autenticar a conta Figma
-4. Reabrir o chat neste workspace (`RP4`)
-5. Pedir de novo: “cria os frames T01–T05 no Figma”
+### Como ativar Figma no Cursor
 
-Enquanto isso, a idealização está em [`idealizacao-telas.md`](idealizacao-telas.md) e o export T01 em [`exports/t01-overview-supervisao.png`](exports/t01-overview-supervisao.png).
+1. **Cursor Settings → Tools & MCP** → Figma **Connect**
+2. Abrir chat Agent novo
 
 ---
 
-## Spec dos frames (para `use_figma` / create_new_file)
+## Spec dos frames (Opção A)
 
-**Arquivo:** `RP-IV Usina — Supervisão MVP`  
-**Page:** `MVP Screens`  
-**Desktop:** 1440 × 900
+**Desktop:** 1440 × 900 · fundo `#0B0F19`
 
 | Frame | Nome | Conteúdo |
 |-------|------|----------|
-| T01 | Overview | Topbar + alarm banner + nav + 4 KPIs + mimic leve |
-| T02 | Sensores | Tabela/cards sensores + sparkline |
-| T03 | Alarmes | Lista priorizada + ações reconhecer/resolver |
-| T04 | Auditoria | Log append-only |
-| T05 | Demo | Botões de cenário (normal / anomalia / falha) |
+| T01 | Overview | Topbar + badge + tabs + núcleo/radar + 4 sensores + contadores EDA + timeline + alarmes + ações Tempo Real/ACK/Resolver |
+| T02 | Sensores | Cards/tabela RF-1 (temp, pressão, radiação, fluxo) + barras + status |
+| T03 | Alarmes | Caixa/lista priorizada + Validar/Reconhecer + Normalizar/Encerrar |
+| T04 | Auditoria | Tabela append-only (#, timestamp, evento, hash) |
+| T05 | Demo | 4 cenários: Normal · Observação · Falha Sensor · Anomalia Crítica |
 
-**Tokens de cor (sóbrios):**
-
-- bg `#1A1D23`
-- panel `#232833`
-- text `#E8EAED`
-- muted `#9AA3B2`
-- ok `#3D9A6A`
-- warn `#C9922A`
-- crit `#C44B4B`
-
-**Tipografia:** Inter Regular / Semi Bold
-
-**Componentes:** `TopBar`, `AlarmBanner`, `SideNav`, `KpiCard`, `AlarmRow`, `SensorTile`, `StatusPill`
+**Tokens:** ver `direcao-opcao-a.md`  
+**Tipografia:** Segoe UI / Inter · números Consolas
 
 ---
 
 ## Ligação com entrega vertical
 
-| Frame | Dono front |
-|-------|------------|
-| T01 | Bruno |
-| T02 | Bernardo |
-| T03 | José |
-| T04 | Marcus |
-| T05 | Marcus (+ Bruno API) |
-| Validação UX | Álvaro |
+| Frame | Dono | S3 | S4 |
+|-------|------|----|----|
+| Shell Opção A | Grupo (#40) + Bruno | #40 #44 | #49 |
+| T01 | Bruno | #44 | #49 |
+| T02 | Bernardo | #45 | #50 |
+| T03 | José | #46 | #51 |
+| T04 | Marcus | #47 | #52 |
+| T05 | Marcus | — | #52 |
+| UX | Álvaro | #43 | #48 |

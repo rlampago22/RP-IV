@@ -1,6 +1,9 @@
 # Local AI context (nao versionar)
 ai/
 
+# Cursor local (credenciais / MCP machine-specific)
+.cursor/mcp.json
+
 # Astah / lixo local na raiz
 /EntityStore
 *.asta.bak
@@ -8,6 +11,8 @@ ai/
 # Frontend
 frontend/node_modules/
 frontend/dist/
+frontend/.env
+frontend/.env.local
 
 # Editor
 .vscode/
@@ -36,6 +41,11 @@ mvp/dados/*.txt
 # OS
 .DS_Store
 Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
 
 # Manter PDF consolidado da entrega versionado
 docs/marco1/*.pdf

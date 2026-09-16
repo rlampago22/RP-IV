@@ -1,66 +1,141 @@
 # RP-IV — Sistema de Controle de Usina Nuclear
 
-Repositório **AL0343 — Resolução de Problemas IV** (UNIPAMPA Alegrete).
+[![Arquitetura](https://img.shields.io/badge/Architecture-EDA%20(Event%20Driven)-blue.svg)](docs/marco1/04-arquitetura-eda.md)
+[![UI](https://img.shields.io/badge/UI-Opção%20A%20SCADA%20escuro-0B0F19.svg)](docs/ui/direcao-opcao-a.md)
+[![Unipampa](https://img.shields.io/badge/Unipampa-Engenharia%20de%20Software-red.svg)](https://unipampa.edu.br/alegrete/)
 
-> Trabalho em [`desenvolvimento`](https://github.com/rlampago22/RP-IV/tree/desenvolvimento). A `main` fica limpa até o final.
+Repositório da disciplina **AL0343 — Resolução de Problemas IV** (UNIPAMPA Alegrete).  
+Continuidade do projeto de **Análise e Projeto de Software (APS)** — Central de Supervisão do Reator.
 
-## Arquitetura (única)
+> Trabalho ativo em [`desenvolvimento`](https://github.com/rlampago22/RP-IV/tree/desenvolvimento). A `main` fica limpa até a consolidação final.
 
-**Arquitetura Orientada a Eventos (EDA)** — ver [`docs/marco1/04-arquitetura-eda.md`](docs/marco1/04-arquitetura-eda.md).
+---
 
-## Stack
+## Sobre o projeto
 
-| Camada | Tecnologia |
-|--------|------------|
-| Backend | Java + EventBus (pasta `mvp/` hoje → migrar para `backend/`) |
-| Frontend | React + Vite (`frontend/`) |
-| UI idealizada | [`docs/ui/idealizacao-telas.md`](docs/ui/idealizacao-telas.md) |
+Sistema de **supervisão nuclear acadêmica** com:
 
-A UI **Swing** em `mvp/` é **legado de fluxo**, não o visual final.
+- telemetria contínua dos **4 parâmetros RF-1** (temperatura, pressão, radiação, fluxo);
+- detecção de limiar e ciclo de **alarmes** (emitir → reconhecer → resolver);
+- **auditoria append-only** com cadeia SHA-256;
+- UI web **Opção A (SCADA escuro)** — DNA do MVP Swing do Marcus, redesenhado em React.
 
-## Equipe e entrega vertical
+Arquitetura **única:** Orientada a Eventos (**EDA**) — EventBus Java in-process.
 
-Cada semana: **back + front** na trilha + relatório [`docs/semanas/_template-entrega-vertical.md`](docs/semanas/_template-entrega-vertical.md).  
-Ao mergear a sprint: [`docs/semanas/_template-resumo-merge.md`](docs/semanas/_template-resumo-merge.md).
+---
 
-| Integrante | Branch | Trilha |
-|------------|--------|--------|
-| Álvaro Domingues | `alvaro` | Requisitos, aceite, contratos |
-| Bruno Rocha | `bruno` | EventBus, pacotes/componentes, API eventos |
-| Bernardo Dorneles | `bernardo` | Medições / ControleReator + UI sensores |
-| José Guilherme Monteiro | `jose` | Alarmes / GoF + UI alarmes |
-| Marcus Querol | `marcus` | Auditoria / UCs + UI auditoria/demo |
+## Estrutura do repositório (monorepo)
 
-## Plano
+```text
+RP-IV/
+├── frontend/                 # React + Vite — UI oficial (Opção A)
+├── mvp/                      # Java EDA executável (demo + Swing legado de fluxo)
+├── backend/                  # Destino da API Java (migração gradual; ver README)
+├── src/                      # Esqueleto Java legado (não usar para demo — ver src/README)
+├── docs/                     # Engenharia, plano, UI, semanas
+│   ├── DOCUMENTACAO_DE_ENGENHARIA.md
+│   ├── PLANEJAMENTO_DESENVOLVIMENTO.md
+│   ├── marco1/               # Artefatos Marco 1 (rascunho → entrega 05/10)
+│   ├── mvp/                  # Spec + checklist aceite Must
+│   ├── ui/                   # Idealização / Opção A / protótipos
+│   ├── implementacao/        # Rastreabilidade do que já roda
+│   └── semanas/              # Entregas individuais + STATUS
+├── scripts/                  # Helpers (demo medições, conventional commit)
+├── AGENTS.md                 # Contexto obrigatório para IAs
+└── README.md
+```
 
-**Operacional:** [`docs/plano-entregas.md`](docs/plano-entregas.md) · Resumo: [`docs/plano-marco1.md`](docs/plano-marco1.md) · Status: [`docs/semanas/STATUS.md`](docs/semanas/STATUS.md) · Figma: [`docs/ui/FIGMA.md`](docs/ui/FIGMA.md)
+**Regra de ouro:** demo Must = `mvp/` (domínio) + `frontend/` (visual). Não inventar segunda arquitetura além de EDA.
 
-| Entrega | Data |
-|---------|------|
-| Idealização Figma/React | agora → 21/09/2026 |
-| Semana 3 (vertical) | 21/09/2026 |
-| Semana 4 (ensaio) | 28/09/2026 |
-| Marco 1 | 05/10/2026 |
+---
 
 ## Como rodar
 
-```bat
-REM Domínio Java (legado MVP)
-mvp\1-EXECUTAR-MVP.bat
+### Domínio Java (MVP)
 
-REM Front React (idealização)
+```bat
+cd mvp
+REM Interface gráfica (fluxo/roteiro)
+0-ABRIR-SISTEMA-GRAFICO.vbs
+
+REM Testes Must (11/11)
+2-TESTAR-MVP.bat
+```
+
+Detalhes: [`mvp/README.md`](mvp/README.md) · Roteiro: [`mvp/ROTEIRO-APRESENTACAO.md`](mvp/ROTEIRO-APRESENTACAO.md)
+
+### Frontend React (UI oficial)
+
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-## Estrutura
+Protótipo visual Opção A (HTML local): [`docs/ui/propostas/opcao-a.html`](docs/ui/propostas/opcao-a.html)
+
+---
+
+## Documentação
+
+| Documento | Onde | Descrição |
+|-----------|------|-----------|
+| Índice de docs | [`docs/README.md`](docs/README.md) | Mapa de toda a pasta `docs/` |
+| Engenharia (hub) | [`docs/DOCUMENTACAO_DE_ENGENHARIA.md`](docs/DOCUMENTACAO_DE_ENGENHARIA.md) | RF/RNF, MoSCoW, MVP, UML, arquitetura |
+| Planejamento | [`docs/PLANEJAMENTO_DESENVOLVIMENTO.md`](docs/PLANEJAMENTO_DESENVOLVIMENTO.md) | Calendário até Marco 1 + issues |
+| UI Opção A | [`docs/ui/direcao-opcao-a.md`](docs/ui/direcao-opcao-a.md) | Tokens, chrome, aceite visual |
+| Implementação | [`docs/implementacao/00-INDICE.md`](docs/implementacao/00-INDICE.md) | O que já está no código |
+| Status semanal | [`docs/semanas/STATUS.md`](docs/semanas/STATUS.md) | Issues abertas por sprint |
+| Contribuição | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Branches, PRs, entrega vertical |
+
+---
+
+## Stack
+
+| Camada | Tecnologia | Pasta |
+|--------|------------|-------|
+| Domínio / EventBus | Java (sem libs externas no MVP) | `mvp/` |
+| UI oficial | React + Vite | `frontend/` |
+| Idealização | HTML protótipo + Figma | `docs/ui/` |
+| API HTTP (evolução) | Java → `backend/` | em migração |
+
+---
+
+## MVP (Must) — fluxo da demo
 
 ```text
-frontend/          # React — supervisão web
-mvp/               # Java EDA executável (legado Swing)
-docs/ui/           # Idealização de telas + exports
-docs/marco1/       # Artefatos Marco 1 (diagramas essenciais)
-docs/semanas/      # Entregas individuais + RESUMO-MERGE
-docs/legado-aps/   # PDF APS histórico
+T05 Cenário Crítico → EventBus → T01 Overview (núcleo CRÍTICO + banner)
+                              → T03 Alarmes (ACK → Resolver)
+                              → T04 Auditoria (trilha SHA-256)
 ```
+
+Priorização MoSCoW: [`docs/marco1/02-priorizacao-moscow.md`](docs/marco1/02-priorizacao-moscow.md)
+
+---
+
+## Equipe
+
+| Integrante | Branch | Trilha |
+|------------|--------|--------|
+| Álvaro Domingues | `alvaro` | Requisitos, aceite, UX |
+| Bruno Rocha | `bruno` | EventBus, API estado, T01 |
+| Bernardo Dorneles | `bernardo` | Medições, T02 |
+| José Guilherme Monteiro | `jose` | Alarmes / GoF, T03 |
+| Marcus Querol | `marcus` | Auditoria / UCs, T04–T05 |
+
+### Docentes
+
+Prof. Dr. Fabio Paulo Basso · Prof. Dr. Gilleanes Thorwald Araujo Guedes
+
+---
+
+## Calendário (Marco 1)
+
+| Entrega | Data |
+|---------|------|
+| Idealização Opção A + shell React | agora → 21/09/2026 |
+| S3 — 1ª fatia vertical | 21/09/2026 |
+| S4 — ensaio integrado | 28/09/2026 |
+| Marco 1 | 05/10/2026 |
+
+Issues: https://github.com/rlampago22/RP-IV/issues

@@ -1,14 +1,21 @@
 export default function AlarmesPage() {
   return (
     <section>
-      <h1>Alarmes</h1>
-      <p className="muted">T03 — fila priorizada (AlarmeEmitido / Reconhecido / Resolvido).</p>
-      <table>
-        <thead><tr><th>Severidade</th><th>Mensagem</th><th>Estado</th></tr></thead>
-        <tbody>
-          <tr><td>ALTO</td><td>Temperatura acima do limiar</td><td>ATIVO</td></tr>
-        </tbody>
-      </table>
+      <p className="scada-kicker">T03 · UC01 / RF-2</p>
+      <h1 className="scada-heading">Alarmes</h1>
+      <p className="scada-lead">Emitido → Reconhecido → Resolvido</p>
+
+      <div className="scada-card" style={{ marginTop: 16 }}>
+        <h2>Gestão de alarmes & notificações</h2>
+        <div className="scada-alarm-box">
+{`[ALTO] Temperatura acima do limiar (T-CORE-01) · ATIVO
+[MANUT] Falha comunicação R-CONT-01 · RECONHECIDO`}
+        </div>
+        <div className="scada-actions">
+          <button type="button" className="scada-btn scada-btn-amber">Validar / Reconhecer</button>
+          <button type="button" className="scada-btn scada-btn-green">Normalizar / Encerrar</button>
+        </div>
+      </div>
     </section>
   )
 }
