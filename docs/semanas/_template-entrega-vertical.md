@@ -34,3 +34,4 @@ Copiar para `docs/semanas/AAAA-MM-DD/<nome>.md`.
 ## 6. Próxima semana
 - …
 ```
+

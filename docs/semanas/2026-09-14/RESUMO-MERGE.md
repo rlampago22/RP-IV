@@ -10,13 +10,15 @@ O grupo consolidou o núcleo Must em Java (EventBus, medições, limiar/alarme, 
 
 ## Por integrante
 
-| Aluno | Issue | Back | Front | Resultado |
-|-------|-------|------|-------|-----------|
-| Álvaro | #11 #16 | — | — | Spec RF/MoSCoW/MVP + checklist aceite |
-| Bruno | #12 #17 | EventBus (em `mvp/`, via integração grupo) | — | Pacotes/diagramas ainda pendentes de evidência individual |
-| Bernardo | #13 #18 | `receberLeitura` + demo | — | Entregue; próximo: API para T02 |
-| José | #14 #19 | Alarmes/Strategy em `mvp/` | — | Código no MVP; evidência S1 GoF ainda aberta |
-| Marcus | #15 #20 | AuditoriaSubscriber | Swing legado | UC/SEQ + auditoria; UI Swing marcada como legado |
+
+| Aluno    | Issue   | Back                                       | Front        | Resultado                                                 |
+| -------- | ------- | ------------------------------------------ | ------------ | --------------------------------------------------------- |
+| Álvaro   | #11 #16 | —                                          | —            | Spec RF/MoSCoW/MVP + checklist aceite                     |
+| Bruno    | #12 #17 | EventBus (em `mvp/`, via integração grupo) | —            | Pacotes/diagramas ainda pendentes de evidência individual |
+| Bernardo | #13 #18 | `receberLeitura` + demo                    | —            | Entregue; próximo: API para T02                           |
+| José     | #14 #19 | Alarmes/Strategy em `mvp/`                 | —            | Código no MVP; evidência S1 GoF ainda aberta              |
+| Marcus   | #15 #20 | AuditoriaSubscriber                        | Swing legado | UC/SEQ + auditoria; UI Swing marcada como legado          |
+
 
 ## Eventos EDA tocados
 
@@ -45,3 +47,4 @@ npm run dev
 - Bruno/José: fechar issues abertas com relatório vertical
 - Expor API HTTP a partir do domínio Java para o React
 - Migração gradual `mvp/` → `backend/`
+

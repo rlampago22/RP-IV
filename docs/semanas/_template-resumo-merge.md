@@ -34,5 +34,10 @@ Parágrafo curto: o que o grupo avançou no MVP (EDA + UI).
 ```
 
 ## Débitos / próxima sprint
+
 - …
+
 ```
+
+```
+

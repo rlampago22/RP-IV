@@ -33,13 +33,13 @@ Ao mergear a sprint: [`docs/semanas/_template-resumo-merge.md`](docs/semanas/_te
 
 ## Plano
 
-[`docs/plano-marco1.md`](docs/plano-marco1.md) · Status: [`docs/semanas/STATUS.md`](docs/semanas/STATUS.md)
+**Operacional:** [`docs/plano-entregas.md`](docs/plano-entregas.md) · Resumo: [`docs/plano-marco1.md`](docs/plano-marco1.md) · Status: [`docs/semanas/STATUS.md`](docs/semanas/STATUS.md) · Figma: [`docs/ui/FIGMA.md`](docs/ui/FIGMA.md)
 
 | Entrega | Data |
 |---------|------|
-| Semana 2 | 14/09/2026 |
-| Semana 3 | 21/09/2026 |
-| Semana 4 | 28/09/2026 |
+| Idealização Figma/React | agora → 21/09/2026 |
+| Semana 3 (vertical) | 21/09/2026 |
+| Semana 4 (ensaio) | 28/09/2026 |
 | Marco 1 | 05/10/2026 |
 
 ## Como rodar
