@@ -21,6 +21,7 @@
 - Contrato compartilhado T01/T02 em `src/data/sensores.js`.
 - **T02 Sensores:** cards RF-1 com valor, barra, status OK/Atenção/Crítico, sparkline e tabela de histórico curto.
 - T01 Overview consome o mesmo contrato (KPIs alinhados).
+- **Débito grupo:** T03 Alarmes mock + `PlantContext` (ACK/Resolver) — ver [`debito-40-41-42.md`](debito-40-41-42.md).
 
 ## 2. Como foi feito
 
@@ -39,11 +40,13 @@
 - [x] Código front T02 em `frontend/`
 - [x] SEQ-UC01 alinhado ao código / docs
 - [x] Evidência: suíte MVP + build frontend
-- [ ] PR → `desenvolvimento` (abrir após validação)
+- [x] PR → `desenvolvimento` (#60)
+- [x] Apoio débito #40/#41/#42 (front + evidência; Figma fica pendente)
 
 ## 5. Bloqueios
 
 - API HTTP de estado ainda a cargo do Bruno (#44); front usa mock compartilhado.
+- Figma T01–T05 (#40) ainda pendente do grupo.
 
 ## 6. Próxima semana (S4 #50)
 

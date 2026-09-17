@@ -1,4 +1,21 @@
+import { usePlant } from '../state/PlantContext.jsx'
+
+const AUDIT_BASE = [
+  { n: 18, ts: '2026-09-15T22:45:01Z', evento: 'MEDICAO_REGISTRADA', hash: 'a2f91c0e…' },
+  { n: 17, ts: '2026-09-15T22:44:58Z', evento: 'ALARME_EMITIDO', hash: 'b7e12a44…' },
+  { n: 16, ts: '2026-09-15T22:44:50Z', evento: 'OBSERVACAO_REGISTRADA', hash: 'c91d03ab…' },
+  { n: 15, ts: '2026-09-15T22:40:00Z', evento: 'FALHA_SENSOR_DETECTADA', hash: 'd4aa8812…' },
+]
+
 export default function AuditoriaPage() {
+  const { auditExtra } = usePlant()
+  const extras = auditExtra.map((e, i) => ({
+    n: 18 + auditExtra.length - i,
+    ts: e.hora,
+    evento: e.evento,
+    hash: 'mock…',
+  }))
+
   return (
     <section>
       <p className="scada-kicker">T04 · RNF-03/05</p>
@@ -17,35 +34,21 @@ export default function AuditoriaPage() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>18</td>
-                <td>2026-09-15T22:45:01Z</td>
-                <td className="ev">MEDICAO_REGISTRADA</td>
-                <td>a2f91c0e…</td>
-              </tr>
-              <tr>
-                <td>17</td>
-                <td>2026-09-15T22:44:58Z</td>
-                <td className="ev">ALARME_EMITIDO</td>
-                <td>b7e12a44…</td>
-              </tr>
-              <tr>
-                <td>16</td>
-                <td>2026-09-15T22:44:50Z</td>
-                <td className="ev">OBSERVACAO_REGISTRADA</td>
-                <td>c91d03ab…</td>
-              </tr>
-              <tr>
-                <td>15</td>
-                <td>2026-09-15T22:40:00Z</td>
-                <td className="ev">FALHA_SENSOR_DETECTADA</td>
-                <td>d4aa8812…</td>
-              </tr>
+              {[...extras, ...AUDIT_BASE].map((row) => (
+                <tr key={`${row.n}-${row.evento}-${row.ts}`}>
+                  <td>{row.n}</td>
+                  <td>{row.ts}</td>
+                  <td className="ev">{row.evento}</td>
+                  <td>{row.hash}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
         <div className="scada-actions">
-          <button type="button" className="scada-btn scada-btn-ghost">Abrir Log</button>
+          <button type="button" className="scada-btn scada-btn-ghost">
+            Abrir Log
+          </button>
         </div>
       </div>
     </section>
