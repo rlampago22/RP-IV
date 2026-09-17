@@ -18,8 +18,14 @@ RF -> RR: salvarMedicao(medicao)
 RF -> Bus: publicar(MedicaoRegistrada)
 Bus -> Aud: onEvento(MedicaoRegistrada)
 Aud -> Reg: registrar(evento)
-RF -> AL: avaliar(medicao, limiar)
-AL --> RF: ResultadoAvaliacao
-RF -> AF: processarAvaliacao(resultado)
+Bus -> AF: onEvento(MedicaoRegistrada)
+AF -> AL: foraDaFaixaSegura(medicao)
+AL --> AF: violado?
+AF -> AF: processarAvaliacao(resultado)
+
+note right of RR
+  Histórico curto em memória
+  consultarHistorico / por sensor / recente
+end note
 
 @enduml

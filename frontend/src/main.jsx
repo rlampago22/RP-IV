@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import './styles/app.css'
@@ -7,6 +7,7 @@ import SensoresPage from './pages/SensoresPage.jsx'
 import AlarmesPage from './pages/AlarmesPage.jsx'
 import AuditoriaPage from './pages/AuditoriaPage.jsx'
 import DemoPage from './pages/DemoPage.jsx'
+import { PlantProvider, usePlant } from './state/PlantContext.jsx'
 
 const TABS = [
   { to: '/', end: true, text: 'Visão Geral' },
@@ -17,7 +18,7 @@ const TABS = [
 ]
 
 function Shell() {
-  const [alarmAcked, setAlarmAcked] = useState(false)
+  const { status, banner, reconhecer } = usePlant()
 
   return (
     <div className="scada-shell">
@@ -30,8 +31,8 @@ function Shell() {
           </div>
         </div>
         <div className="scada-top-right">
-          <span className={`scada-badge${alarmAcked ? '' : ' crit'}`}>
-            {alarmAcked ? '● ESTÁVEL' : '● CRÍTICO'}
+          <span className={`scada-badge${status.cls ? ` ${status.cls}` : ''}`}>
+            ● {status.label}
           </span>
         </div>
       </header>
@@ -49,14 +50,10 @@ function Shell() {
         ))}
       </nav>
 
-      {!alarmAcked && (
+      {banner && (
         <div className="scada-banner">
-          <span>ALARME ATIVO — Temperatura acima do limiar (T-CORE-01).</span>
-          <button
-            type="button"
-            className="scada-btn scada-btn-amber"
-            onClick={() => setAlarmAcked(true)}
-          >
+          <span>{banner}</span>
+          <button type="button" className="scada-btn scada-btn-amber" onClick={() => reconhecer()}>
             Validar / Reconhecer
           </button>
         </div>
@@ -78,7 +75,9 @@ function Shell() {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <Shell />
+      <PlantProvider>
+        <Shell />
+      </PlantProvider>
     </BrowserRouter>
   </React.StrictMode>
 )
