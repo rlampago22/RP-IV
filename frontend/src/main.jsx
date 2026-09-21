@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useReducer } from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import './styles/app.css'
@@ -7,6 +7,7 @@ import SensoresPage from './pages/SensoresPage.jsx'
 import AlarmesPage from './pages/AlarmesPage.jsx'
 import AuditoriaPage from './pages/AuditoriaPage.jsx'
 import DemoPage from './pages/DemoPage.jsx'
+import { initialMvpState, mvpDemoReducer, scenarioActions } from './mvpDemoState.js'
 
 const TABS = [
   { to: '/', end: true, text: 'Visão Geral' },
@@ -17,7 +18,10 @@ const TABS = [
 ]
 
 function Shell() {
-  const [alarmAcked, setAlarmAcked] = useState(false)
+  const [mvp, dispatch] = useReducer(mvpDemoReducer, initialMvpState)
+  const activeAlarm = mvp.alarms.find((alarm) => alarm.status === 'ATIVO')
+  const statusClass = mvp.coreStatus === 'ESTÁVEL' ? '' : ' crit'
+  const runScenario = (scenario) => dispatch({ type: scenarioActions[scenario] })
 
   return (
     <div className="scada-shell">
@@ -30,8 +34,8 @@ function Shell() {
           </div>
         </div>
         <div className="scada-top-right">
-          <span className={`scada-badge${alarmAcked ? '' : ' crit'}`}>
-            {alarmAcked ? '● ESTÁVEL' : '● CRÍTICO'}
+          <span className={`scada-badge${statusClass}`}>
+            ● {mvp.coreStatus}
           </span>
         </div>
       </header>
@@ -49,13 +53,13 @@ function Shell() {
         ))}
       </nav>
 
-      {!alarmAcked && (
+      {activeAlarm && (
         <div className="scada-banner">
-          <span>ALARME ATIVO — Temperatura acima do limiar (T-CORE-01).</span>
+          <span>ALARME ATIVO — {activeAlarm.mensagem}.</span>
           <button
             type="button"
             className="scada-btn scada-btn-amber"
-            onClick={() => setAlarmAcked(true)}
+            onClick={() => dispatch({ type: 'ACK_ALARM' })}
           >
             Validar / Reconhecer
           </button>
@@ -64,11 +68,11 @@ function Shell() {
 
       <main className="scada-main">
         <Routes>
-          <Route path="/" element={<OverviewPage />} />
-          <Route path="/sensores" element={<SensoresPage />} />
-          <Route path="/alarmes" element={<AlarmesPage />} />
-          <Route path="/auditoria" element={<AuditoriaPage />} />
-          <Route path="/demo" element={<DemoPage />} />
+          <Route path="/" element={<OverviewPage state={mvp} onAck={() => dispatch({ type: 'ACK_ALARM' })} onResolve={() => dispatch({ type: 'RESOLVE_ALARM' })} />} />
+          <Route path="/sensores" element={<SensoresPage sensors={mvp.sensors} />} />
+          <Route path="/alarmes" element={<AlarmesPage alarms={mvp.alarms} onAck={() => dispatch({ type: 'ACK_ALARM' })} onResolve={() => dispatch({ type: 'RESOLVE_ALARM' })} />} />
+          <Route path="/auditoria" element={<AuditoriaPage events={mvp.events} />} />
+          <Route path="/demo" element={<DemoPage state={mvp} onScenario={runScenario} />} />
         </Routes>
       </main>
     </div>
@@ -77,7 +81,7 @@ function Shell() {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Shell />
     </BrowserRouter>
   </React.StrictMode>

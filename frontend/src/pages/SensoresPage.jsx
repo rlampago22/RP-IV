@@ -1,4 +1,4 @@
-export default function SensoresPage() {
+export default function SensoresPage({ sensors }) {
   return (
     <section>
       <p className="scada-kicker">T02 · Telemetria RF-1</p>
@@ -18,34 +18,15 @@ export default function SensoresPage() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>T-CORE-01</td>
-                <td>TEMPERATURA</td>
-                <td>312.00</td>
-                <td>°C</td>
-                <td><span className="scada-pill ok">OK</span></td>
-              </tr>
-              <tr>
-                <td>P-PRIM-01</td>
-                <td>PRESSAO</td>
-                <td>155.00</td>
-                <td>bar</td>
-                <td><span className="scada-pill ok">OK</span></td>
-              </tr>
-              <tr>
-                <td>R-CONT-01</td>
-                <td>RADIACAO</td>
-                <td>0.12</td>
-                <td>mSv/h</td>
-                <td><span className="scada-pill warn">Atenção</span></td>
-              </tr>
-              <tr>
-                <td>F-COOL-01</td>
-                <td>FLUXO</td>
-                <td>980</td>
-                <td>m³/h</td>
-                <td><span className="scada-pill ok">OK</span></td>
-              </tr>
+              {sensors.map((sensor) => (
+                <tr key={sensor.id}>
+                  <td>{sensor.id}</td>
+                  <td>{sensor.tipo}</td>
+                  <td>{sensor.valor === null ? 'SEM LEITURA' : sensor.valor.toFixed(sensor.valor < 10 ? 2 : 0)}</td>
+                  <td>{sensor.unidade}</td>
+                  <td><span className={`scada-pill ${sensor.status === 'OK' ? 'ok' : 'warn'}`}>{sensor.status}</span></td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

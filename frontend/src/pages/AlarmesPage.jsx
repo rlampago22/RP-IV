@@ -1,4 +1,4 @@
-export default function AlarmesPage() {
+export default function AlarmesPage({ alarms, onAck, onResolve }) {
   return (
     <section>
       <p className="scada-kicker">T03 · UC01 / RF-2</p>
@@ -8,12 +8,13 @@ export default function AlarmesPage() {
       <div className="scada-card" style={{ marginTop: 16 }}>
         <h2>Gestão de alarmes & notificações</h2>
         <div className="scada-alarm-box">
-{`[ALTO] Temperatura acima do limiar (T-CORE-01) · ATIVO
-[MANUT] Falha comunicação R-CONT-01 · RECONHECIDO`}
+          {alarms.length === 0
+            ? 'Nenhum alarme emitido no cenário atual.'
+            : alarms.map((alarm) => `[ALTO] ${alarm.id} · ${alarm.mensagem} · ${alarm.status}`).join('\n')}
         </div>
         <div className="scada-actions">
-          <button type="button" className="scada-btn scada-btn-amber">Validar / Reconhecer</button>
-          <button type="button" className="scada-btn scada-btn-green">Normalizar / Encerrar</button>
+          <button type="button" className="scada-btn scada-btn-amber" onClick={onAck}>Validar / Reconhecer</button>
+          <button type="button" className="scada-btn scada-btn-green" onClick={onResolve}>Normalizar / Encerrar</button>
         </div>
       </div>
     </section>

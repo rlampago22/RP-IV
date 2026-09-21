@@ -300,6 +300,23 @@ table.scada-table {
   margin-top: 10px;
 }
 
+.scada-log-path {
+  align-self: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.scada-core.critical {
+  border-color: var(--crit);
+  color: var(--crit);
+  box-shadow: 0 0 34px color-mix(in srgb, var(--crit) 40%, transparent);
+}
+
+.scada-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 button.scada-btn {
   border: 0;
   border-radius: 10px;

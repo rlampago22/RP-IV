@@ -1,9 +1,13 @@
-export default function AuditoriaPage() {
+export default function AuditoriaPage({ events }) {
+  const openLog = () => {
+    window.alert('O log persistente do domínio Java fica em: mvp/dados/auditoria.log')
+  }
+
   return (
     <section>
       <p className="scada-kicker">T04 · RNF-03/05</p>
       <h1 className="scada-heading">Auditoria</h1>
-      <p className="scada-lead">Trilha append-only · cadeia SHA-256 (mock visual)</p>
+      <p className="scada-lead">Trilha append-only · cadeia SHA-256 (estado compartilhado da demo)</p>
 
       <div className="scada-card" style={{ marginTop: 16 }}>
         <div className="scada-table-wrap" style={{ maxHeight: 'none' }}>
@@ -17,35 +21,20 @@ export default function AuditoriaPage() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>18</td>
-                <td>2026-09-15T22:45:01Z</td>
-                <td className="ev">MEDICAO_REGISTRADA</td>
-                <td>a2f91c0e…</td>
-              </tr>
-              <tr>
-                <td>17</td>
-                <td>2026-09-15T22:44:58Z</td>
-                <td className="ev">ALARME_EMITIDO</td>
-                <td>b7e12a44…</td>
-              </tr>
-              <tr>
-                <td>16</td>
-                <td>2026-09-15T22:44:50Z</td>
-                <td className="ev">OBSERVACAO_REGISTRADA</td>
-                <td>c91d03ab…</td>
-              </tr>
-              <tr>
-                <td>15</td>
-                <td>2026-09-15T22:40:00Z</td>
-                <td className="ev">FALHA_SENSOR_DETECTADA</td>
-                <td>d4aa8812…</td>
-              </tr>
+              {events.map((entry) => (
+                <tr key={entry.sequence}>
+                  <td>{entry.sequence}</td>
+                  <td>{entry.timestamp}</td>
+                  <td className="ev">{entry.tipo}</td>
+                  <td title="Hash demonstrativo no front; SHA-256 real no Java">{entry.hash}…</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
         <div className="scada-actions">
-          <button type="button" className="scada-btn scada-btn-ghost">Abrir Log</button>
+          <button type="button" className="scada-btn scada-btn-ghost" onClick={openLog}>Abrir Log</button>
+          <code className="scada-log-path">mvp/dados/auditoria.log</code>
         </div>
       </div>
     </section>
