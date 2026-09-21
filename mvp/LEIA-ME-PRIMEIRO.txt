@@ -1,0 +1,26 @@
+MVP — SISTEMA DE CONTROLE DE USINA NUCLEAR
+===========================================
+
+PARA ABRIR O SISTEMA GRAFICO:
+
+1. Dê dois cliques em: 0-ABRIR-SISTEMA-GRAFICO.vbs
+2. A tela "Central de Supervisao" será aberta sem terminal.
+3. Clique em "Cenario normal" para registrar leituras seguras.
+4. Clique em "Simular anomalia" para gerar alarmes automáticos.
+5. Clique em "Abrir log" para mostrar a auditoria append-only.
+
+ANTES DA AULA:
+
+- Dê dois cliques em 2-TESTAR-MVP.bat.
+- O resultado deve informar 7 verificações concluídas com sucesso.
+
+ARQUIVOS DE APOIO:
+
+- BASE-NO-DOCUMENTO.md: mostra quais requisitos originaram o MVP.
+- ROTEIRO-APRESENTACAO.md: fala sugerida de aproximadamente 4 minutos.
+- DIAGRAMA-ARQUITETURA.txt: fluxo técnico simplificado.
+
+IMPORTANTE:
+
+- Esta pasta é local e não foi enviada ao GitHub.
+- É uma simulação acadêmica; não controla equipamentos físicos.

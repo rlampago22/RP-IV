@@ -2,70 +2,69 @@
 
 ## Leia isto antes de alterar o repositório
 
-Este repositório é da disciplina **AL0343 — Resolução de Problemas IV** (UNIPAMPA Alegrete).
-O sistema é o **Controle de Usina Nuclear**, legado da APS, com arquitetura **EDA** (eventos).
+Disciplina **AL0343 — Resolução de Problemas IV** (UNIPAMPA Alegrete).  
+Sistema: **Controle de Usina Nuclear** (APS → RP IV).  
+Arquitetura **única:** **EDA** (EventBus).
 
-**Branch de trabalho:** `desenvolvimento`  
-**Branch limpa:** `main` (só consolidação final)  
-**Branches individuais:** `alvaro`, `bernardo`, `bruno`, `jose`, `marcus` (baseadas em `desenvolvimento`)  
-**Stack:** **Java** (`src/main/java/br/edu/unipampa/usina/...`) — decisão do grupo.
+| Branch | Uso |
+|--------|-----|
+| `desenvolvimento` | Integração |
+| `main` | Limpa — só consolidação final |
+| `alvaro` `bernardo` `bruno` `jose` `marcus` | Individuais |
+| `fix/*` | Ajustes estruturais/docs |
 
-Não faça commits diretos na `main`. Não altere o repositório de referência de outros grupos.
+**Stack real:**
+- Domínio Java executável: **`mvp/`**
+- UI oficial: **`frontend/`** (React) — visual **Opção A** SCADA escuro
+- API futura: **`backend/`** (vazio/migração)
+- `src/` = esqueleto legado — **não** é a demo
+
+Não faça commits na `main`. Não altere repositórios de terceiros.
 
 ## Equipe
 
 | Integrante | Branch | Trilha |
 |------------|--------|--------|
-| Álvaro Domingues | `alvaro` | Requisitos, MoSCoW, aceite, checklist feedback |
-| Bruno Rocha | `bruno` | Arquitetura EDA, EventBus, pacotes/componentes |
-| Bernardo Dorneles | `bernardo` | ControleReator, medições, persistência |
-| José Guilherme Monteiro | `jose` | Alarmes, limiares, padrões GoF |
-| Marcus Querol | `marcus` | UCs/sequências, auditoria, demo, acesso (Should) |
-
-## Objetivo do apoio por IA
-
-Aprendizado do grupo. Sugestões devem explicar o *porquê*, alinhar requisitos ↔ UML ↔ código ↔ padrões, e preservar autoria dos membros.
+| Álvaro Domingues | `alvaro` | Requisitos, aceite, UX Opção A |
+| Bruno Rocha | `bruno` | EventBus, API estado, T01 |
+| Bernardo Dorneles | `bernardo` | Medições, T02 |
+| José Guilherme Monteiro | `jose` | Alarmes/GoF, T03 |
+| Marcus Querol | `marcus` | Auditoria/UCs, T04–T05 |
 
 ## Diretrizes
 
-1. Antes de editar: ler `README.md`, este arquivo e `docs/plano-semanal-rp4.md`.
-2. Entrega da **Semana 1** (pedido do professor): RF/RNF, priorização, MVP, projeto refatorado (pacotes + componentes), artefatos extras necessários.
-3. `docs/marco1/` é **rascunho** até o Marco 1 oficial (**05/10/2026**).
-4. Preferir mudanças pequenas e rastreáveis; evidência individual em `docs/semanas/`.
-5. Não inventar requisitos fora do MoSCoW acordado.
-6. Em dúvida: registrar a dúvida; não inventar contexto.
-
-## Preservação das contribuições
-
-- Não reescrever ideias de outro membro sem pedido explícito.
-- Preferir organização/formatação; mudanças de conteúdo só quando solicitadas.
-- Inconsistências: apontar e sugerir, sem sobrescrever silenciosamente.
+1. Ler `README.md`, este arquivo, `docs/PLANEJAMENTO_DESENVOLVIMENTO.md` e `docs/ui/direcao-opcao-a.md`.
+2. UI: seguir protótipo `docs/ui/propostas/opcao-a.html` (Opção B descartada).
+3. `docs/marco1/` é rascunho até **05/10/2026**.
+4. Evidência individual em `docs/semanas/`.
+5. Não inventar requisitos fora do MoSCoW.
+6. Preferir mudanças pequenas; explicar o *porquê*.
 
 ## Estrutura relevante
 
 ```text
-docs/plano-semanal-rp4.md   # calendário e papéis
-docs/semanas/               # evidências individuais
-docs/marco1/                # rascunho Marco 1
-docs/requisitos/            # RF/RNF e priorização
-docs/mvp/                   # proposta de MVP
-docs/arquitetura/           # EDA e decisões
-docs/diagramas/             # UML (pacotes, componentes, etc.)
-src/main/java/.../usina/    # esqueleto modular EDA
+README.md
+CONTRIBUTING.md
+docs/DOCUMENTACAO_DE_ENGENHARIA.md
+docs/PLANEJAMENTO_DESENVOLVIMENTO.md
+docs/ui/direcao-opcao-a.md
+docs/implementacao/00-INDICE.md
+mvp/                    # Java Must
+frontend/               # React Opção A
+backend/                # destino API
 ```
 
 ## Restrições
 
-- Pasta `ai/` é local e **não** deve ir para o Git.
-- Não fazer force push na `main`.
-- Não modificar repositórios de outros grupos (apenas referência de estilo).
-- Conventional Commits nos commits (`feat:`, `fix:`, `docs:`, `chore:`, etc.).
+- Pasta `ai/` local — não versionar.
+- Sem force push na `main`.
+- Conventional Commits (`feat:`, `fix:`, `docs:`, …).
 
 ## Arquivos por ferramenta
 
 | Ferramenta | Arquivo |
 |------------|---------|
-| Qualquer agente / Cursor | `AGENTS.md` + `.cursor/rules/` |
+| Qualquer / Cursor | `AGENTS.md` + `.cursor/rules/` |
 | Claude | `CLAUDE.md` |
 | Gemini | `GEMINI.md` |
-| GitHub Copilot / GPT | `.github/copilot-instructions.md` |
+| Copilot | `.github/copilot-instructions.md` |

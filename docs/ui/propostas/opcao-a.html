@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Opção A — SCADA Escuro (Marcus)</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #131c2e;
+      --card2: #1a263e;
+      --border: #22314f;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --dim: #64748b;
+      --ok: #10b981;
+      --cyan: #06b6d4;
+      --warn: #f59e0b;
+      --crit: #ef4444;
+      --purple: #a855f7;
+      --sky: #38bdf8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px 8px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .dot {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: linear-gradient(145deg, #0f766e, #06b6d4);
+      display: grid; place-content: center; font-weight: 800; font-size: 12px;
+    }
+    .brand h1 { margin: 0; font-size: 20px; }
+    .brand small { color: var(--muted); font-size: 12px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+      background: #064e3b; color: #a7f3d0;
+    }
+    .badge.crit { background: #7f1d1d; color: #fecdd3; }
+    .badge.warn { background: #78350f; color: #fde68a; }
+    .tabs {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      padding: 0 20px 12px;
+    }
+    .tab {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .tab.active { color: var(--text); border-color: var(--sky); box-shadow: inset 0 -2px 0 var(--sky); }
+    .banner {
+      display: none;
+      margin: 0 20px 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: #2a1218;
+      border: 1px solid rgb(239 68 68 / 45%);
+      color: #fecdd3;
+      font-size: 13px;
+      font-weight: 650;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .banner.show { display: flex; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.05fr 1.2fr;
+      gap: 14px;
+      padding: 0 20px 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .reactor {
+      height: 210px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 50% 45%, #1e3a5f 0%, #0b1220 70%);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      place-content: center;
+      text-align: center;
+    }
+    .core {
+      width: 96px; height: 96px; border-radius: 50%;
+      border: 3px solid var(--ok);
+      box-shadow: 0 0 28px rgb(16 185 129 / 35%), inset 0 0 24px rgb(16 185 129 / 25%);
+      display: grid; place-content: center;
+      font-weight: 800; letter-spacing: 0.08em; font-size: 12px;
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    .core.crit {
+      border-color: var(--crit);
+      box-shadow: 0 0 28px rgb(239 68 68 / 45%), inset 0 0 24px rgb(239 68 68 / 30%);
+      animation-duration: 0.8s;
+    }
+    .core.warn {
+      border-color: var(--warn);
+      box-shadow: 0 0 28px rgb(245 158 11 / 40%), inset 0 0 24px rgb(245 158 11 / 25%);
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+    .sensors { display: grid; gap: 10px; margin-top: 12px; }
+    .sensor {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+    }
+    .sensor .name { font-size: 12px; color: var(--muted); font-weight: 650; }
+    .sensor .val { font-family: Consolas, monospace; font-size: 18px; font-weight: 700; }
+    .bar {
+      grid-column: 1 / -1;
+      height: 6px;
+      border-radius: 999px;
+      background: #0b1220;
+      overflow: hidden;
+    }
+    .bar > i {
+      display: block; height: 100%; width: 50%;
+      background: linear-gradient(90deg, var(--cyan), var(--ok));
+      border-radius: 999px;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .metric {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+    }
+    .metric span { display: block; color: var(--dim); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; }
+    .metric strong { display: block; margin-top: 4px; font-family: Consolas, monospace; font-size: 20px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px 6px;
+      border-bottom: 1px solid #19243a;
+    }
+    th { color: var(--dim); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+    td { color: var(--muted); }
+    td.ev { color: var(--text); font-weight: 650; }
+    .alarm-box {
+      margin-top: 12px;
+      background: #18101a;
+      border: 1px solid rgb(159 18 57 / 45%);
+      border-radius: 12px;
+      padding: 10px 12px;
+      min-height: 88px;
+      font-family: Consolas, monospace;
+      font-size: 12px;
+      color: #fecdd3;
+      white-space: pre-wrap;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      color: #fff;
+    }
+    .btn-teal { background: #0f766e; }
+    .btn-amber { background: #b45309; }
+    .btn-green { background: #059669; }
+    .btn-red { background: #dc2626; }
+    .btn-purple { background: #7e22ce; }
+    .btn-sky { background: #0284c7; }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .full { grid-column: 1 / -1; }
+    .back {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .back:hover { color: var(--sky); }
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .scenario {
+      text-align: left;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .scenario strong { display: block; margin-bottom: 4px; }
+    .scenario span { color: var(--muted); font-size: 12px; font-weight: 500; }
+    @media (max-width: 900px) {
+      .layout, .metrics, .scenario-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="brand">
+      <div class="dot">RN</div>
+      <div>
+        <h1>Central de Supervisão · Reator-01</h1>
+        <small>Opção A — SCADA escuro (fluxo do MVP Marcus)</small>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span id="statusBadge" class="badge">● ESTÁVEL</span>
+      <a class="back" href="index.html">← outras opções</a>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="overview">Visão Geral</button>
+    <button class="tab" data-tab="sensores">Sensores</button>
+    <button class="tab" data-tab="alarmes">Alarmes</button>
+    <button class="tab" data-tab="auditoria">Auditoria</button>
+    <button class="tab" data-tab="demo">Demo / Cenários</button>
+  </div>
+
+  <div id="banner" class="banner">
+    <span id="bannerMsg">ALARME ATIVO</span>
+    <button class="btn-amber" onclick="reconhecer()">Validar / Reconhecer</button>
+  </div>
+
+  <div class="layout">
+    <!-- OVERVIEW -->
+    <section class="panel active" id="panel-overview">
+      <div class="card">
+        <h2>Núcleo do reator</h2>
+        <div class="reactor">
+          <div id="core" class="core">ESTÁVEL</div>
+        </div>
+        <div class="sensors" id="sensorCards"></div>
+      </div>
+    </section>
+
+    <section class="panel active" id="panel-overview-side">
+      <div class="card">
+        <h2>Contadores EDA</h2>
+        <div class="metrics">
+          <div class="metric"><span>MEDIÇÕES</span><strong id="mMed">0</strong></div>
+          <div class="metric"><span>ALARMES</span><strong id="mAlm" style="color:var(--crit)">0</strong></div>
+          <div class="metric"><span>AUDIT</span><strong id="mAud" style="color:var(--cyan)">0</strong></div>
+          <div class="metric"><span>STATUS</span><strong id="mSt" style="color:var(--ok);font-size:14px">OK</strong></div>
+        </div>
+        <h2>Linha do tempo de eventos</h2>
+        <div style="max-height:220px;overflow:auto;">
+          <table>
+            <thead><tr><th>Hora</th><th>Evento</th><th>Detalhe</th></tr></thead>
+            <tbody id="eventBody"></tbody>
+          </table>
+        </div>
+        <div class="alarm-box" id="alarmBox">Nenhum alarme pendente nesta sessão.</div>
+        <div class="actions">
+          <button class="btn-teal" id="btnLive" onclick="toggleLive()">Iniciar Tempo Real</button>
+          <button class="btn-amber" onclick="reconhecer()">Validar / Reconhecer</button>
+          <button class="btn-green" onclick="resolver()">Normalizar / Encerrar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SENSORES -->
+    <section class="panel full" id="panel-sensores">
+      <div class="card">
+        <h2>Telemetria RF-1 · 4 parâmetros</h2>
+        <div class="sensors" id="sensorList"></div>
+      </div>
+    </section>
+
+    <!-- ALARMES -->
+    <section class="panel full" id="panel-alarmes">
+      <div class="card">
+        <h2>Gestão de alarmes & notificações (UC01 / RF-2)</h2>
+        <div class="alarm-box" id="alarmBox2">Nenhum alarme pendente nesta sessão.</div>
+        <div class="actions">
+          <button class="btn-amber" onclick="reconhecer()">Validar / Reconhecer</button>
+          <button class="btn-green" onclick="resolver()">Normalizar / Encerrar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- AUDITORIA -->
+    <section class="panel full" id="panel-auditoria">
+      <div class="card">
+        <h2>Auditoria append-only · cadeia SHA-256 (RNF-03/05)</h2>
+        <table>
+          <thead><tr><th>#</th><th>Timestamp</th><th>Evento</th><th>Hash</th></tr></thead>
+          <tbody id="auditBody"></tbody>
+        </table>
+        <div class="actions">
+          <button class="btn-ghost" onclick="alert('Mock: abriria dados/auditoria.log')">Abrir Log</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEMO -->
+    <section class="panel full" id="panel-demo">
+      <div class="card">
+        <h2>Cenários do roteiro Marcus</h2>
+        <div class="scenario-grid">
+          <button class="scenario" onclick="cenario('normal')">
+            <strong>Normal / Tempo Real</strong>
+            <span>Medições dentro da faixa · núcleo ESTÁVEL</span>
+          </button>
+          <button class="scenario" onclick="cenario('obs')">
+            <strong>Simular Observação (Alt. 1)</strong>
+            <span>OBSERVACAO_REGISTRADA · sem alarme crítico</span>
+          </button>
+          <button class="scenario" onclick="cenario('falha')">
+            <strong>Falha Sensor (Exceção)</strong>
+            <span>FALHA_SENSOR_DETECTADA · manutenção</span>
+          </button>
+          <button class="scenario" onclick="cenario('critico')">
+            <strong>Simular Anomalia (Crítico)</strong>
+            <span>Temp 372 °C · fluxo baixo · ALARME</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const state = {
+      live: false,
+      status: 'ESTAVEL',
+      sensors: {
+        temp: { name: 'Temperatura', unit: '°C', value: 312, max: 400, color: 'var(--crit)' },
+        press: { name: 'Pressão', unit: 'bar', value: 155, max: 180, color: 'var(--warn)' },
+        rad: { name: 'Radiação', unit: 'mSv/h', value: 0.12, max: 1, color: 'var(--purple)' },
+        fluxo: { name: 'Fluxo resfriamento', unit: 'm³/h', value: 980, max: 1200, color: 'var(--cyan)' },
+      },
+      alarms: [],
+      events: [],
+      audit: [],
+      seq: 0,
+    };
+    let timer = null;
+
+    function now() {
+      return new Date().toLocaleTimeString('pt-BR', { hour12: false });
+    }
+    function hashFake(n) {
+      return ('a' + (n * 7919).toString(16) + 'f').slice(0, 12) + '…';
+    }
+
+    function pushEvent(tipo, detalhe) {
+      state.events.unshift({ hora: now(), tipo, detalhe });
+      if (state.events.length > 12) state.events.pop();
+      state.seq += 1;
+      state.audit.unshift({ n: state.seq, ts: new Date().toISOString(), tipo, hash: hashFake(state.seq) });
+      render();
+    }
+
+    function setStatus(s) {
+      state.status = s;
+      const badge = document.getElementById('statusBadge');
+      const core = document.getElementById('core');
+      badge.className = 'badge';
+      core.className = 'core';
+      if (s === 'CRITICO') {
+        badge.classList.add('crit');
+        badge.textContent = '● CRÍTICO';
+        core.classList.add('crit');
+        core.textContent = 'CRÍTICO';
+        document.getElementById('mSt').style.color = 'var(--crit)';
+        document.getElementById('mSt').textContent = 'CRIT';
+      } else if (s === 'ATENCAO') {
+        badge.classList.add('warn');
+        badge.textContent = '● ATENÇÃO';
+        core.classList.add('warn');
+        core.textContent = 'ATENÇÃO';
+        document.getElementById('mSt').style.color = 'var(--warn)';
+        document.getElementById('mSt').textContent = 'OBS';
+      } else {
+        badge.textContent = '● ESTÁVEL';
+        core.textContent = 'ESTÁVEL';
+        document.getElementById('mSt').style.color = 'var(--ok)';
+        document.getElementById('mSt').textContent = 'OK';
+      }
+    }
+
+    function renderSensors() {
+      const html = Object.entries(state.sensors).map(([k, s]) => {
+        const pct = Math.min(100, (s.value / s.max) * 100);
+        return `<div class="sensor">
+          <div class="name">${s.name}</div>
+          <div class="val" style="color:${s.color}">${s.value.toFixed(2)} <small style="color:var(--dim)">${s.unit}</small></div>
+          <div class="bar"><i style="width:${pct}%;background:${s.color}"></i></div>
+        </div>`;
+      }).join('');
+      document.getElementById('sensorCards').innerHTML = html;
+      document.getElementById('sensorList').innerHTML = html;
+    }
+
+    function render() {
+      renderSensors();
+      document.getElementById('mMed').textContent = state.events.filter(e => e.tipo.includes('MEDICAO')).length;
+      document.getElementById('mAlm').textContent = state.alarms.filter(a => a.active).length;
+      document.getElementById('mAud').textContent = state.audit.length;
+      document.getElementById('eventBody').innerHTML = state.events.map(e =>
+        `<tr><td>${e.hora}</td><td class="ev">${e.tipo}</td><td>${e.detalhe}</td></tr>`
+      ).join('') || '<tr><td colspan="3">Sem eventos ainda.</td></tr>';
+      document.getElementById('auditBody').innerHTML = state.audit.map(a =>
+        `<tr><td>${a.n}</td><td>${a.ts}</td><td class="ev">${a.tipo}</td><td>${a.hash}</td></tr>`
+      ).join('') || '<tr><td colspan="4">Log vazio.</td></tr>';
+      const alarmText = state.alarms.length
+        ? state.alarms.map(a => `[${a.sev}] ${a.msg} · ${a.state}`).join('\n')
+        : 'Nenhum alarme pendente nesta sessão.';
+      document.getElementById('alarmBox').textContent = alarmText;
+      document.getElementById('alarmBox2').textContent = alarmText;
+      const active = state.alarms.some(a => a.active && a.state !== 'RECONHECIDO');
+      document.getElementById('banner').classList.toggle('show', active || state.status === 'CRITICO');
+      document.getElementById('bannerMsg').textContent = active
+        ? 'ALARME ATIVO — ' + state.alarms.find(a => a.active).msg
+        : 'Sistema em atenção';
+    }
+
+    function toggleLive() {
+      state.live = !state.live;
+      document.getElementById('btnLive').textContent = state.live ? 'Pausar Tempo Real' : 'Iniciar Tempo Real';
+      if (state.live) {
+        timer = setInterval(() => {
+          state.sensors.temp.value = 308 + Math.random() * 8;
+          state.sensors.press.value = 152 + Math.random() * 6;
+          state.sensors.rad.value = 0.08 + Math.random() * 0.08;
+          state.sensors.fluxo.value = 960 + Math.random() * 40;
+          pushEvent('MEDICAO_REGISTRADA', `T=${state.sensors.temp.value.toFixed(1)} P=${state.sensors.press.value.toFixed(1)}`);
+        }, 1200);
+      } else {
+        clearInterval(timer);
+      }
+    }
+
+    function cenario(tipo) {
+      if (state.live) toggleLive();
+      if (tipo === 'normal') {
+        state.sensors.temp.value = 312; state.sensors.press.value = 155;
+        state.sensors.rad.value = 0.12; state.sensors.fluxo.value = 980;
+        state.alarms = [];
+        setStatus('ESTAVEL');
+        pushEvent('MEDICAO_REGISTRADA', 'Faixa normal — operação estável');
+      }
+      if (tipo === 'obs') {
+        state.sensors.temp.value = 338;
+        setStatus('ATENCAO');
+        pushEvent('OBSERVACAO_REGISTRADA', 'Temp em faixa de observação (Alt. 1)');
+      }
+      if (tipo === 'falha') {
+        setStatus('ATENCAO');
+        pushEvent('FALHA_SENSOR_DETECTADA', 'Timeout sensor RAD · equipe técnica');
+        state.alarms.unshift({ sev: 'MANUT', msg: 'Falha comunicação R-CONT-01', state: 'ATIVO', active: true });
+      }
+      if (tipo === 'critico') {
+        state.sensors.temp.value = 372;
+        state.sensors.fluxo.value = 420;
+        setStatus('CRITICO');
+        state.alarms.unshift({ sev: 'ALTO', msg: 'Temperatura acima do limiar (T-CORE-01)', state: 'ATIVO', active: true });
+        pushEvent('ALARME_EMITIDO', 'Temp=372 · Fluxo=420 · notificar operador');
+      }
+      render();
+      document.querySelector('[data-tab="overview"]').click();
+    }
+
+    function reconhecer() {
+      if (!state.alarms.length) return;
+      state.alarms.forEach(a => { if (a.active) a.state = 'RECONHECIDO'; });
+      pushEvent('ALARME_RECONHECIDO', 'Operador validou alerta · EM TRATAMENTO');
+      render();
+    }
+    function resolver() {
+      state.alarms.forEach(a => { a.active = false; a.state = 'RESOLVIDO'; });
+      state.sensors.temp.value = 312; state.sensors.fluxo.value = 980;
+      setStatus('ESTAVEL');
+      pushEvent('ALARME_RESOLVIDO', 'Ocorrência encerrada · sensores normalizados');
+      render();
+    }
+
+    document.getElementById('tabs').addEventListener('click', (e) => {
+      const btn = e.target.closest('.tab');
+      if (!btn) return;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      if (tab === 'overview') {
+        document.getElementById('panel-overview').classList.add('active');
+        document.getElementById('panel-overview-side').classList.add('active');
+      } else {
+        document.getElementById('panel-' + tab).classList.add('active');
+      }
+    });
+
+    pushEvent('SISTEMA_PRONTO', 'EventBus online · auditoria carregada');
+    render();
+  </script>
+</body>
+</html>
