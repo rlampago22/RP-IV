@@ -1,4 +1,10 @@
-export default function AlarmesPage() {
+const STATUS_LABELS = {
+  ATIVO: 'ATIVO',
+  RECONHECIDO: 'EM TRATAMENTO',
+  RESOLVIDO: 'RESOLVIDO',
+}
+
+export default function AlarmesPage({ alarms, eventCount, onAcknowledge, onResolve }) {
   return (
     <section>
       <p className="scada-kicker">T03 · UC01 / RF-2</p>
@@ -7,14 +13,39 @@ export default function AlarmesPage() {
 
       <div className="scada-card" style={{ marginTop: 16 }}>
         <h2>Gestão de alarmes & notificações</h2>
-        <div className="scada-alarm-box">
-{`[ALTO] Temperatura acima do limiar (T-CORE-01) · ATIVO
-[MANUT] Falha comunicação R-CONT-01 · RECONHECIDO`}
+        <div className="scada-alarm-list">
+          {alarms.map((alarm) => (
+            <article className={`scada-alarm-row ${alarm.severity.toLowerCase()}`} key={alarm.id}>
+              <div className="scada-alarm-main">
+                <div className="scada-alarm-heading">
+                  <span className={`scada-pill ${alarm.severity === 'ALTO' ? 'crit' : 'purple'}`}>
+                    {alarm.severity}
+                  </span>
+                  <strong>{alarm.message}</strong>
+                </div>
+                <span className="scada-alarm-meta">{alarm.sensor} · {alarm.id}</span>
+              </div>
+              <span className={`scada-pill ${alarm.status === 'RESOLVIDO' ? 'ok' : alarm.status === 'ATIVO' ? 'crit' : 'warn'}`}>
+                {STATUS_LABELS[alarm.status]}
+              </span>
+              <div className="scada-actions">
+                {alarm.status === 'ATIVO' && (
+                  <button type="button" className="scada-btn scada-btn-amber" onClick={() => onAcknowledge(alarm.id)}>
+                    Validar / Reconhecer
+                  </button>
+                )}
+                {alarm.status === 'RECONHECIDO' && (
+                  <button type="button" className="scada-btn scada-btn-green" onClick={() => onResolve(alarm.id)}>
+                    Normalizar / Encerrar
+                  </button>
+                )}
+              </div>
+            </article>
+          ))}
         </div>
-        <div className="scada-actions">
-          <button type="button" className="scada-btn scada-btn-amber">Validar / Reconhecer</button>
-          <button type="button" className="scada-btn scada-btn-green">Normalizar / Encerrar</button>
-        </div>
+        <p className="scada-event-note">
+          Eventos emitidos nesta sessão: {eventCount} · ALARME_RECONHECIDO / ALARME_RESOLVIDO
+        </p>
       </div>
     </section>
   )

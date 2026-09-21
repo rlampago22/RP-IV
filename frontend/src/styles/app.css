@@ -112,6 +112,12 @@ a { color: inherit; text-decoration: none; }
   gap: 12px;
 }
 
+.scada-banner.warn-banner {
+  background: #241a0d;
+  border-color: rgb(245 158 11 / 45%);
+  color: #fde68a;
+}
+
 .scada-main {
   flex: 1;
   padding: 0 20px 28px;
@@ -292,6 +298,28 @@ table.scada-table {
   color: #fecdd3;
   white-space: pre-wrap;
 }
+
+.scada-alarm-list { display: grid; gap: 10px; }
+
+.scada-alarm-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 14px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--crit);
+  border-radius: 10px;
+  background: var(--card2);
+}
+.scada-alarm-row.manut { border-left-color: var(--purple); }
+.scada-alarm-main { min-width: 0; }
+.scada-alarm-heading { display: flex; align-items: center; gap: 8px; }
+.scada-alarm-heading strong { font-size: 13px; }
+.scada-alarm-meta { display: block; margin-top: 6px; color: var(--muted); font: 11px var(--mono); }
+.scada-alarm-row .scada-actions { grid-column: 1 / -1; }
+.scada-pill.purple { background: rgb(168 85 247 / 18%); color: var(--purple); }
+.scada-event-note { margin: 12px 0 0; color: var(--dim); font: 11px var(--mono); }
 
 .scada-actions {
   display: flex;

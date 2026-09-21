@@ -16,8 +16,49 @@ const TABS = [
   { to: '/demo', text: 'Demo / Cenários' },
 ]
 
+const INITIAL_ALARMS = [
+  {
+    id: 'AL-0001',
+    severity: 'ALTO',
+    status: 'ATIVO',
+    message: 'Temperatura acima do limiar',
+    sensor: 'T-CORE-01',
+  },
+  {
+    id: 'AL-0002',
+    severity: 'MANUT',
+    status: 'ATIVO',
+    message: 'Falha de comunicação',
+    sensor: 'R-CONT-01',
+  },
+]
+
 function Shell() {
-  const [alarmAcked, setAlarmAcked] = useState(false)
+  const [alarms, setAlarms] = useState(INITIAL_ALARMS)
+  const [events, setEvents] = useState([])
+
+  function publishAlarmEvent(type, alarmId) {
+    setEvents((current) => [...current, { type, alarmId }])
+  }
+
+  function acknowledgeAlarm(alarmId) {
+    setAlarms((current) => current.map((alarm) => (
+      alarm.id === alarmId ? { ...alarm, status: 'RECONHECIDO' } : alarm
+    )))
+    publishAlarmEvent('ALARME_RECONHECIDO', alarmId)
+  }
+
+  function resolveAlarm(alarmId) {
+    setAlarms((current) => current.map((alarm) => (
+      alarm.id === alarmId ? { ...alarm, status: 'RESOLVIDO' } : alarm
+    )))
+    publishAlarmEvent('ALARME_RESOLVIDO', alarmId)
+  }
+
+  const activeAlarm = alarms.find((alarm) => alarm.status === 'ATIVO')
+  const acknowledgedAlarm = alarms.find((alarm) => alarm.status === 'RECONHECIDO')
+  const badgeClass = activeAlarm ? 'crit' : acknowledgedAlarm ? 'warn' : ''
+  const badgeLabel = activeAlarm ? '● CRÍTICO' : acknowledgedAlarm ? '● EM TRATAMENTO' : '● ESTÁVEL'
 
   return (
     <div className="scada-shell">
@@ -30,8 +71,8 @@ function Shell() {
           </div>
         </div>
         <div className="scada-top-right">
-          <span className={`scada-badge${alarmAcked ? '' : ' crit'}`}>
-            {alarmAcked ? '● ESTÁVEL' : '● CRÍTICO'}
+          <span className={`scada-badge ${badgeClass}`}>
+            {badgeLabel}
           </span>
         </div>
       </header>
@@ -49,15 +90,28 @@ function Shell() {
         ))}
       </nav>
 
-      {!alarmAcked && (
+      {activeAlarm && (
         <div className="scada-banner">
-          <span>ALARME ATIVO — Temperatura acima do limiar (T-CORE-01).</span>
+          <span>ALARME ATIVO — {activeAlarm.message} ({activeAlarm.sensor}).</span>
           <button
             type="button"
             className="scada-btn scada-btn-amber"
-            onClick={() => setAlarmAcked(true)}
+            onClick={() => acknowledgeAlarm(activeAlarm.id)}
           >
             Validar / Reconhecer
+          </button>
+        </div>
+      )}
+
+      {!activeAlarm && acknowledgedAlarm && (
+        <div className="scada-banner warn-banner">
+          <span>ALARME RECONHECIDO — ocorrência em tratamento ({acknowledgedAlarm.id}).</span>
+          <button
+            type="button"
+            className="scada-btn scada-btn-green"
+            onClick={() => resolveAlarm(acknowledgedAlarm.id)}
+          >
+            Normalizar / Encerrar
           </button>
         </div>
       )}
@@ -66,7 +120,7 @@ function Shell() {
         <Routes>
           <Route path="/" element={<OverviewPage />} />
           <Route path="/sensores" element={<SensoresPage />} />
-          <Route path="/alarmes" element={<AlarmesPage />} />
+          <Route path="/alarmes" element={<AlarmesPage alarms={alarms} eventCount={events.length} onAcknowledge={acknowledgeAlarm} onResolve={resolveAlarm} />} />
           <Route path="/auditoria" element={<AuditoriaPage />} />
           <Route path="/demo" element={<DemoPage />} />
         </Routes>
