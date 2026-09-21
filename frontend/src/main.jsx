@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import './styles/app.css'
@@ -7,6 +7,7 @@ import SensoresPage from './pages/SensoresPage.jsx'
 import AlarmesPage from './pages/AlarmesPage.jsx'
 import AuditoriaPage from './pages/AuditoriaPage.jsx'
 import DemoPage from './pages/DemoPage.jsx'
+import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
 
 const TABS = [
   { to: '/', end: true, text: 'Visão Geral' },
@@ -16,8 +17,21 @@ const TABS = [
   { to: '/demo', text: 'Demo / Cenários' },
 ]
 
+const BADGE_TEXTO = {
+  ESTAVEL: '● ESTÁVEL',
+  ATENCAO: '● ATENÇÃO',
+  CRITICO: '● CRÍTICO',
+}
+
+const BADGE_CLASSE = {
+  ESTAVEL: '',
+  ATENCAO: ' warn',
+  CRITICO: ' crit',
+}
+
 function Shell() {
-  const [alarmAcked, setAlarmAcked] = useState(false)
+  const { estado, origemMock, reconhecerAlarme } = useEstado()
+  const alarmeAtivo = estado.alarmes.find((a) => a.status === 'ATIVO')
 
   return (
     <div className="scada-shell">
@@ -26,12 +40,15 @@ function Shell() {
           <div className="scada-dot">RN</div>
           <div>
             <h1>Central de Supervisão · Reator-01</h1>
-            <small>Opção A — SCADA escuro · EventBus ONLINE</small>
+            <small>
+              Opção A — SCADA escuro · EventBus {origemMock ? 'MOCK (API offline)' : 'ONLINE'}
+            </small>
           </div>
         </div>
         <div className="scada-top-right">
-          <span className={`scada-badge${alarmAcked ? '' : ' crit'}`}>
-            {alarmAcked ? '● ESTÁVEL' : '● CRÍTICO'}
+          {origemMock && <span className="scada-pill warn">MOCK · rode mvp/4-EXECUTAR-API-ESTADO.bat</span>}
+          <span className={`scada-badge${BADGE_CLASSE[estado.status] ?? ''}`}>
+            {BADGE_TEXTO[estado.status] ?? estado.status}
           </span>
         </div>
       </header>
@@ -49,13 +66,13 @@ function Shell() {
         ))}
       </nav>
 
-      {!alarmAcked && (
+      {alarmeAtivo && (
         <div className="scada-banner">
-          <span>ALARME ATIVO — Temperatura acima do limiar (T-CORE-01).</span>
+          <span>ALARME ATIVO — {alarmeAtivo.mensagem}</span>
           <button
             type="button"
             className="scada-btn scada-btn-amber"
-            onClick={() => setAlarmAcked(true)}
+            onClick={() => reconhecerAlarme(alarmeAtivo.id)}
           >
             Validar / Reconhecer
           </button>
@@ -77,8 +94,10 @@ function Shell() {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <Shell />
-    </BrowserRouter>
+    <EstadoProvider>
+      <BrowserRouter>
+        <Shell />
+      </BrowserRouter>
+    </EstadoProvider>
   </React.StrictMode>
 )

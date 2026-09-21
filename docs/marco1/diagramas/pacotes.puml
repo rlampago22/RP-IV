@@ -27,6 +27,11 @@ package "SistemaControleUsina" {
     [AuditoriaSubscriber]
   }
 
+  package "ApiEstado" {
+    [EstadoAgregador]
+    [ApiEstadoHttpServer]
+  }
+
   package "SegurancaAcesso" <<future>> {
     [AcessoFacade]
   }
@@ -51,6 +56,7 @@ package "SistemaControleUsina" {
 ControleReator ..> InfraestruturaEventos : publica/consome
 Alarmes ..> InfraestruturaEventos : publica/consome
 AuditoriaLogs ..> InfraestruturaEventos : consome
+ApiEstado ..> InfraestruturaEventos : consome (assinarTodos)
 ControleReator ..> PersistenciaReator : usa
 ControleReator ..> Alarmes : via eventos
 SegurancaAcesso ..> InfraestruturaEventos : «future»

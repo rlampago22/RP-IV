@@ -12,6 +12,10 @@ A pasta [`../backend/`](../backend/) é o **destino** no monorepo (`backend/` + 
 
 Migrar gradualmente o domínio de `mvp/src/...` → `backend/`, expondo API HTTP para o `frontend/` React (Opção A).
 
+## API de estado (stub, issues #41/#44)
+
+`mvp/src/br/edu/unipampa/usina/apiestado/` expõe `GET/POST http://localhost:8080/api/*` derivado do EventBus (JDK `com.sun.net.httpserver`, sem dependências externas). Contrato completo, endpoints e como rodar: [`api-estado-contrato.md`](api-estado-contrato.md).
+
 ## Trilhas (entrega vertical)
 
 | Trilha | Pacotes |

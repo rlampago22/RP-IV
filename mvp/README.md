@@ -22,6 +22,11 @@ Aplicação desktop local desenvolvida em Java (Zero External Dependencies) para
 ### 3. Demonstração em Linha de Comando
 - Dê dois cliques em **`1-EXECUTAR-MVP.bat`** (ou execute `powershell -File .\executar-mvp.ps1`).
 
+### 4. API de Estado (para o T01 Overview em React)
+- Dê dois cliques em **`4-EXECUTAR-API-ESTADO.bat`** para subir `http://localhost:8080/api/estado`.
+- Em outro terminal, rode `cd ..\frontend && npm install && npm run dev` para consumir o estado real no T01.
+- Contrato JSON e demais rotas: [`../docs/api-estado-contrato.md`](../docs/api-estado-contrato.md).
+
 ---
 
 ## 🎮 Funcionalidades e Controles na Interface

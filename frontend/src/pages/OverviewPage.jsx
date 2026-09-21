@@ -1,49 +1,99 @@
+import { useEstado } from '../state/EstadoContext.jsx'
+
+const NOME_SENSOR = {
+  TEMPERATURA: 'Temperatura',
+  PRESSAO: 'Pressão',
+  RADIACAO: 'Radiação',
+  FLUXO_RESFRIAMENTO: 'Fluxo resfriamento',
+}
+
+const UNIDADE_EXIBICAO = {
+  Celsius: '°C',
+  bar: 'bar',
+  'mSv/h': 'mSv/h',
+  'm3/h': 'm³/h',
+}
+
+const STATUS_TEXTO = { ESTAVEL: 'ESTÁVEL', ATENCAO: 'ATENÇÃO', CRITICO: 'CRÍTICO' }
+const STATUS_CLASSE = { ESTAVEL: '', ATENCAO: 'warn', CRITICO: 'crit' }
+
+function percentualNaFaixa(sensor) {
+  const faixa = sensor.limiteMaximo - sensor.limiteMinimo
+  if (faixa <= 0) return 0
+  const percentual = ((sensor.valor - sensor.limiteMinimo) / faixa) * 100
+  return Math.max(0, Math.min(100, percentual))
+}
+
+function corSensor(sensor, alarmes) {
+  const temAlarmeAtivo = alarmes.some((a) => a.sensorId === sensor.id && a.status === 'ATIVO')
+  if (temAlarmeAtivo) return 'var(--crit)'
+  const temAlarmeReconhecido = alarmes.some((a) => a.sensorId === sensor.id && a.status === 'RECONHECIDO')
+  if (temAlarmeReconhecido) return 'var(--warn)'
+  return 'var(--cyan)'
+}
+
+function formatarHora(iso) {
+  return new Date(iso).toLocaleTimeString('pt-BR', { hour12: false })
+}
+
 export default function OverviewPage() {
+  const { estado, iniciarTempoReal, pausarTempoReal, reconhecerAlarme, resolverAlarme } = useEstado()
+  const { status, tempoReal, sensores, contadores, alarmes, eventos } = estado
+
+  const alarmePendenteReconhecer = alarmes.find((a) => a.status === 'ATIVO')
+  const alarmePendenteResolver = alarmes.find((a) => a.status === 'RECONHECIDO')
+  const alarmesNaoResolvidos = alarmes.filter((a) => a.status !== 'RESOLVIDO')
+
   return (
     <section>
       <p className="scada-kicker">T01 · Overview</p>
       <h1 className="scada-heading">Visão Geral</h1>
       <p className="scada-lead">
-        Núcleo + telemetria RF-1 + timeline EDA. Mock — ligar à API Java.
+        Núcleo + telemetria RF-1 + timeline EDA, consumidos de <code>/api/estado</code> (
+        docs/api-estado-contrato.md).
       </p>
 
       <div className="scada-split">
         <div className="scada-card">
           <h2>Núcleo do reator</h2>
           <div className="scada-reactor">
-            <div className="scada-core">ESTÁVEL</div>
+            <div className={`scada-core ${STATUS_CLASSE[status] ?? ''}`.trim()}>
+              {STATUS_TEXTO[status] ?? status}
+            </div>
           </div>
           <div className="scada-sensors">
-            <div className="scada-sensor">
-              <div className="name">Temperatura</div>
-              <div className="val" style={{ color: 'var(--crit)' }}>312.00 °C</div>
-              <div className="scada-bar"><i style={{ width: '78%', background: 'var(--crit)' }} /></div>
-            </div>
-            <div className="scada-sensor">
-              <div className="name">Pressão</div>
-              <div className="val" style={{ color: 'var(--warn)' }}>155.00 bar</div>
-              <div className="scada-bar"><i style={{ width: '86%', background: 'var(--warn)' }} /></div>
-            </div>
-            <div className="scada-sensor">
-              <div className="name">Radiação</div>
-              <div className="val" style={{ color: 'var(--purple)' }}>0.12 mSv/h</div>
-              <div className="scada-bar"><i style={{ width: '12%', background: 'var(--purple)' }} /></div>
-            </div>
-            <div className="scada-sensor">
-              <div className="name">Fluxo resfriamento</div>
-              <div className="val" style={{ color: 'var(--cyan)' }}>980.00 m³/h</div>
-              <div className="scada-bar"><i style={{ width: '82%', background: 'var(--cyan)' }} /></div>
-            </div>
+            {sensores.length === 0 && (
+              <p className="scada-lead">Aguardando a primeira leitura dos sensores…</p>
+            )}
+            {sensores.map((sensor) => (
+              <div className="scada-sensor" key={sensor.id}>
+                <div className="name">{NOME_SENSOR[sensor.tipo] ?? sensor.tipo}</div>
+                <div className="val" style={{ color: corSensor(sensor, alarmes) }}>
+                  {sensor.valor.toFixed(2)} {UNIDADE_EXIBICAO[sensor.unidade] ?? sensor.unidade}
+                </div>
+                <div className="scada-bar">
+                  <i style={{ width: `${percentualNaFaixa(sensor)}%`, background: corSensor(sensor, alarmes) }} />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
         <div className="scada-card">
           <h2>Contadores EDA</h2>
           <div className="scada-metrics">
-            <div className="scada-metric"><span>MEDIÇÕES</span><strong>12</strong></div>
-            <div className="scada-metric"><span>ALARMES</span><strong style={{ color: 'var(--crit)' }}>1</strong></div>
-            <div className="scada-metric"><span>AUDIT</span><strong style={{ color: 'var(--cyan)' }}>18</strong></div>
-            <div className="scada-metric"><span>STATUS</span><strong style={{ color: 'var(--ok)', fontSize: 14 }}>OK</strong></div>
+            <div className="scada-metric"><span>MEDIÇÕES</span><strong>{contadores.medicoes}</strong></div>
+            <div className="scada-metric">
+              <span>ALARMES</span>
+              <strong style={{ color: contadores.alarmes > 0 ? 'var(--crit)' : undefined }}>{contadores.alarmes}</strong>
+            </div>
+            <div className="scada-metric"><span>AUDIT</span><strong style={{ color: 'var(--cyan)' }}>{contadores.auditoria}</strong></div>
+            <div className="scada-metric">
+              <span>STATUS</span>
+              <strong style={{ color: `var(--${status === 'CRITICO' ? 'crit' : status === 'ATENCAO' ? 'warn' : 'ok'})`, fontSize: 14 }}>
+                {STATUS_TEXTO[status] ?? status}
+              </strong>
+            </div>
           </div>
           <h2>Linha do tempo de eventos</h2>
           <div className="scada-table-wrap">
@@ -52,17 +102,50 @@ export default function OverviewPage() {
                 <tr><th>Hora</th><th>Evento</th><th>Detalhe</th></tr>
               </thead>
               <tbody>
-                <tr><td>22:45:01</td><td className="ev">MEDICAO_REGISTRADA</td><td>T=312.0 P=155.0</td></tr>
-                <tr><td>22:44:58</td><td className="ev">ALARME_EMITIDO</td><td>Temp acima do limiar</td></tr>
-                <tr><td>22:44:50</td><td className="ev">MEDICAO_REGISTRADA</td><td>ciclo tempo real</td></tr>
+                {eventos.length === 0 && (
+                  <tr><td colSpan={3}>Sem eventos ainda.</td></tr>
+                )}
+                {eventos.map((evento, indice) => (
+                  <tr key={`${evento.ocorridoEm}-${indice}`}>
+                    <td>{formatarHora(evento.ocorridoEm)}</td>
+                    <td className="ev">{evento.tipo}</td>
+                    <td>{evento.resumo}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-          <div className="scada-alarm-box">[ALTO] Temperatura acima do limiar (T-CORE-01) · ATIVO</div>
+          <div className="scada-alarm-box">
+            {alarmesNaoResolvidos.length === 0
+              ? 'Nenhum alarme ativo.'
+              : alarmesNaoResolvidos
+                  .map((a) => `[${a.severidade}] ${a.mensagem} · ${a.status}`)
+                  .join('\n')}
+          </div>
           <div className="scada-actions">
-            <button type="button" className="scada-btn">Iniciar Tempo Real</button>
-            <button type="button" className="scada-btn scada-btn-amber">Validar / Reconhecer</button>
-            <button type="button" className="scada-btn scada-btn-green">Normalizar / Encerrar</button>
+            <button
+              type="button"
+              className="scada-btn"
+              onClick={() => (tempoReal ? pausarTempoReal() : iniciarTempoReal())}
+            >
+              {tempoReal ? 'Pausar Tempo Real' : 'Iniciar Tempo Real'}
+            </button>
+            <button
+              type="button"
+              className="scada-btn scada-btn-amber"
+              disabled={!alarmePendenteReconhecer}
+              onClick={() => alarmePendenteReconhecer && reconhecerAlarme(alarmePendenteReconhecer.id)}
+            >
+              Validar / Reconhecer
+            </button>
+            <button
+              type="button"
+              className="scada-btn scada-btn-green"
+              disabled={!alarmePendenteResolver}
+              onClick={() => alarmePendenteResolver && resolverAlarme(alarmePendenteResolver.id)}
+            >
+              Normalizar / Encerrar
+            </button>
           </div>
         </div>
       </div>
