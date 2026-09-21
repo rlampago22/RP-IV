@@ -14,9 +14,10 @@ public class DemoMedicoes {
         facade.registrarSensor(1L, "TEMPERATURA");
         facade.registrarSensor(2L, "PRESSAO");
 
-        facade.receberLeitura(1L, 310.5);
+        Limiar temperaturaSegura = new Limiar("TEMPERATURA", 280.0, 311.0);
+        facade.receberLeitura(1L, 310.5, temperaturaSegura);
         facade.receberLeitura(2L, 155.0);
-        facade.receberLeitura(1L, 312.0);
+        facade.receberLeitura(1L, 312.0, temperaturaSegura);
 
         System.out.println("=== Demo ControleReator (memoria) ===");
         System.out.println("Total de medicoes: " + facade.quantidadeMedicoes());
@@ -28,5 +29,8 @@ public class DemoMedicoes {
                     + " em=" + m.getTimestamp()
             );
         }
+        System.out.println("Total de alarmes: " + facade.getRepository().consultarAlarmes().size());
+        System.out.println("Total de eventos auditados: "
+            + facade.getAuditoriaSubscriber().getRegistro().consultarRegistros().size());
     }
 }

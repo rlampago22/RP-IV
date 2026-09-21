@@ -5,6 +5,6 @@ import br.edu.unipampa.usina.controlereator.MedicaoReator;
 /** Factory de alarmes — implementação no Marco 2. */
 public class AlarmeFactory {
     public Alarme criar(MedicaoReator medicao, String tipo) {
-        throw new UnsupportedOperationException("Marco 2");
+        return new Alarme(tipo, medicao);
     }
 }

@@ -2,17 +2,36 @@ package br.edu.unipampa.usina.persistenciareator;
 
 import br.edu.unipampa.usina.alarmes.Alarme;
 import br.edu.unipampa.usina.controlereator.MedicaoReator;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReatorRepository {
+    private final List<MedicaoReator> medicoes = new ArrayList<>();
+    private final List<Alarme> alarmes = new ArrayList<>();
+
     public void salvarMedicao(MedicaoReator medicao) {
-        throw new UnsupportedOperationException("Marco 2");
+        if (medicao == null) {
+            throw new IllegalArgumentException("Medicao nao pode ser nula");
+        }
+        medicoes.add(medicao);
     }
 
     public void salvarAlarme(Alarme alarme) {
-        throw new UnsupportedOperationException("Marco 2");
+        if (alarme == null) {
+            throw new IllegalArgumentException("Alarme nao pode ser nulo");
+        }
+        alarmes.add(alarme);
     }
 
     public Object buscarHistorico(long reatorId) {
-        throw new UnsupportedOperationException("Marco 2");
+        return List.copyOf(medicoes);
+    }
+
+    public List<MedicaoReator> consultarMedicoes() {
+        return List.copyOf(medicoes);
+    }
+
+    public List<Alarme> consultarAlarmes() {
+        return List.copyOf(alarmes);
     }
 }
