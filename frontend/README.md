@@ -32,3 +32,10 @@ npm run dev
 ## Nota
 
 A UI Swing em `mvp/` é **legado de fluxo** (roteiro/cenários). O visual final é este frontend alinhado à Opção A.
+
+## Estado da integração
+
+- T05 dispara quatro cenários demonstráveis: normal, observação, falha de sensor e anomalia crítica.
+- T01, T02, T03 e T04 consomem o mesmo estado React; por isso, telemetria, alarmes e auditoria mudam em conjunto durante a apresentação.
+- Os hashes exibidos no frontend são demonstrativos. A cadeia SHA-256 real permanece no domínio Java em `mvp/dados/auditoria.log`.
+- A integração HTTP React → Java ainda é evolução arquitetural; o frontend não afirma estar conectado ao `EventBus` enquanto essa API não existir.

@@ -2,23 +2,27 @@
 title SEQ-UC02 — Emitir Alarme por Limiar (violação)
 skinparam shadowing false
 
+participant "EventBus" as Bus
 participant "AlarmeFacade" as AF
+participant "AvaliadorFaixaSegura" as Aval
 participant "AlarmeFactory" as Fact
 participant "Alarme" as A
-participant "ReatorRepository" as RR
-participant "EventBus" as Bus
 actor "Operador" as Op
 actor "Supervisão Central" as Sup
 participant "AuditoriaSubscriber" as Aud
+participant "RegistroAuditoria" as Reg
 
-AF -> Fact: criar(medicao, tipo)
+Bus -> AF: onEvento(MedicaoRegistrada)
+AF -> Aval: foraDaFaixaSegura(medicao)
+Aval --> AF: true
+AF -> Fact: criar(medicao)
 Fact --> AF: alarme
-AF -> A: emitirAlerta([Operador, Supervisão])
-A --> Op: notificação de alerta
-A --> Sup: notificação de alerta
+AF -> A: emitirAlerta(destinatarios)
+AF -> Op: notificar(mensagem)
+AF -> Sup: notificar(mensagem)
 AF -> A: registrarEvento()
-AF -> RR: salvarAlarme(alarme)
 AF -> Bus: publicar(AlarmeEmitido)
 Bus -> Aud: onEvento(AlarmeEmitido)
+Aud -> Reg: registrar(evento)
 
 @enduml

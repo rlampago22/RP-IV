@@ -12,9 +12,11 @@ O arquivo `.asta` de 1 byte no Downloads era placeholder (OneDrive/nuvem) e **n�
 
 ## Uso no RP IV
 
-Este Astah reflete o modelo **amplo da APS**. Para Marco 1, preferir o recorte MVP em PlantUML:
+Este Astah reflete o modelo **amplo da APS** e permanece como referência histórica.
 
-- `docs/marco1/diagramas/casos-de-uso-mvp.puml`
-- demais `.puml` em `docs/marco1/diagramas/`
+O recorte ativo e editável do Marcus está em:
 
-Atualizar o Astah só quando for necessário evidência visual; manter consistência com o MVP.
+- `docs/marcus/diagramas/Marcus-UML-MVP.asta`
+- PNGs exportados em `docs/marcus/diagramas/Marcus-UML-MVP/`
+
+Esse recorte contém casos de uso Must, SEQ-UC01 e SEQ-UC02 alinhados ao código executável do MVP.

@@ -3,9 +3,9 @@
 **Sistema:** Controle de Usina Nuclear — RP4  
 **Equipe:** Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol
 
-Todas as mensagens referenciam métodos existentes em [06-classes-projeto-mvp.md](06-classes-projeto-mvp.md).
+Todas as mensagens referenciam métodos existentes no código do MVP e em [06-classes-projeto-mvp.md](06-classes-projeto-mvp.md).
 
-Fontes PlantUML: [diagramas/seq-uc01-medicao.puml](diagramas/seq-uc01-medicao.puml), [diagramas/seq-uc02-alarme.puml](diagramas/seq-uc02-alarme.puml)
+Fonte UML editável: [Marcus-UML-MVP.asta](../marcus/diagramas/Marcus-UML-MVP.asta). As imagens foram exportadas pelo Astah.
 
 ---
 
@@ -13,71 +13,30 @@ Fontes PlantUML: [diagramas/seq-uc01-medicao.puml](diagramas/seq-uc01-medicao.pu
 
 **Código (S3):** `ReatorFacade.receberLeitura` → `MedicaoReator.registrarMedicao` →
 `ReatorRepository.salvarMedicao` (histórico curto em memória) → `EventBus.publicar(MedicaoRegistrada)`.
-`AlarmeFacade` e `AuditoriaSubscriber` consomem o evento no barramento (EDA), em vez de chamada síncrona na Facade.
+`AlarmeFacade` e `AuditoriaSubscriber` consomem o evento no barramento (EDA).
 
 Consulta T02: `consultarHistorico()`, `consultarHistorico(sensorId)`, `consultarHistoricoRecente(n)`.
 
-```mermaid
-sequenceDiagram
-  participant Sensor
-  participant ReatorFacade
-  participant MedicaoReator
-  participant ReatorRepository
-  participant EventBus
-  participant AvaliadorLimiar
-  participant AlarmeFacade
-  participant AuditoriaSubscriber
-  participant RegistroAuditoria
+![Diagrama UML de sequência UC01](<../marcus/diagramas/Marcus-UML-MVP/02 - SEQ UC01 Registrar Medição.png>)
 
-  Sensor->>ReatorFacade: receberLeitura(sensorId, valor)
-  ReatorFacade->>MedicaoReator: registrarMedicao(valor, sensor, timestamp)
-  ReatorFacade->>ReatorRepository: salvarMedicao(medicao)
-  ReatorFacade->>EventBus: publicar(MedicaoRegistrada)
-  EventBus->>AuditoriaSubscriber: onEvento(MedicaoRegistrada)
-  AuditoriaSubscriber->>RegistroAuditoria: registrar(evento)
-  EventBus->>AlarmeFacade: onEvento(MedicaoRegistrada)
-  AlarmeFacade->>AvaliadorLimiar: foraDaFaixaSegura(medicao)
-  AvaliadorLimiar-->>AlarmeFacade: violado?
-  AlarmeFacade->>AlarmeFacade: processarAvaliacao(resultado)
-```
+PlantUML espelho: [seq-uc01-medicao.puml](diagramas/seq-uc01-medicao.puml).
 
 ---
 
 ## SEQ-UC02 — Emitir Alarme (limiar violado)
 
-```mermaid
-sequenceDiagram
-  participant AlarmeFacade
-  participant AlarmeFactory
-  participant Alarme
-  participant ReatorRepository
-  participant EventBus
-  participant Operador
-  participant Supervisao
-  participant AuditoriaSubscriber
+![Diagrama UML de sequência UC02](<../marcus/diagramas/Marcus-UML-MVP/03 - SEQ UC02 Emitir Alarme.png>)
 
-  AlarmeFacade->>AlarmeFactory: criar(medicao, tipo)
-  AlarmeFactory-->>AlarmeFacade: alarme
-  AlarmeFacade->>Alarme: emitirAlerta([Operador, Supervisao])
-  Alarme-->>Operador: notificação
-  Alarme-->>Supervisao: notificação
-  AlarmeFacade->>Alarme: registrarEvento()
-  AlarmeFacade->>ReatorRepository: salvarAlarme(alarme)
-  AlarmeFacade->>EventBus: publicar(AlarmeEmitido)
-  EventBus->>AuditoriaSubscriber: onEvento(AlarmeEmitido)
-```
+As notificações a Operador e Supervisão Central representam a saída de console realizada por `AlarmeFacade`; ainda não existe serviço externo de notificação nem persistência de alarme em banco.
 
 ---
 
 ## SEQ-UC02-A1 — Limiar não violado (alternativa)
 
-1. `AlarmeFacade.processarAvaliacao` recebe `isViolado() == false`
-2. Facade encerra sem `emitirAlerta`
-3. Opcional: publica `AvaliacaoLimiarOk` para auditoria
+Fluxo: medição registrada e auditada; `AvaliadorLimiar` retorna não violado; nenhum `AlarmeEmitido`.
 
 ---
 
-## SEQ-UC04 (Should — rascunho)
+## SEQ-UC02-A2 / exceção — Falha de sensor
 
-`Guarda -> AcessoFacade.solicitarAcesso -> RegistroAcesso.registrar -> EventBus`  
-Implementação e desenho detalhado no Marco 3.
+`FalhaSensorDetectada` publicada no EventBus e registrada na auditoria (sem necessariamente emitir alarme ALTO).

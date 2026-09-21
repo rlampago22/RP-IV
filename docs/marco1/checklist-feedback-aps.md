@@ -26,8 +26,8 @@ Legenda: **Feito** = endereçado nos docs do Marco 1 | **Backlog** = documentado
 |----------|------|--------|
 | `Alarme.emitirAlerta` / `registrarEvento` | Incluídos em classes + SEQ-UC02 | Feito |
 | `MedicaoReator.registrarMedicao` | Incluído + SEQ-UC01 | Feito |
-| `ProtocoloEmergencia` ausente | Classe `«future»` / Could documentada | Feito (doc) / Backlog código |
-| `RegistroAcesso` ausente | Classe Should documentada | Feito (doc) |
+| `ProtocoloEmergencia` ausente | Requisito Could documentado, fora do diagrama de classes implementadas | Backlog código |
+| `RegistroAcesso` ausente | Requisito Should documentado, fora do diagrama de classes implementadas | Backlog código |
 | `Emergencia.criarEmergencia` | Documentado em Could | Feito (doc) |
 | `HistoricoSubstituicao` | Listado em backlog classes | Backlog |
 | Registro só no controller (materiais) | Regra: registro na entidade; materiais fora do Must | Backlog RF15 |
@@ -59,9 +59,10 @@ Legenda: **Feito** = endereçado nos docs do Marco 1 | **Backlog** = documentado
 | RF e RNF | 01-requisitos-rf-rnf.md | Feito |
 | Priorização | 02-priorizacao-moscow.md | Feito |
 | Proposta MVP | 03-proposta-mvp.md | Feito |
-| Pacotes | diagramas/pacotes.puml + 04 | Feito |
-| Componentes lógicos | diagramas/componentes-logicos.puml | Feito |
-| Componentes físicos | diagramas/componentes-fisicos.puml | Feito |
-| UCs / classes / sequências / ER | 05–08 | Feito |
-| Esqueleto Java | src/main/java/... | Feito |
-| PDF consolidado | ENTREGA-MARCO1.md (exportar PDF) | Feito |
+| Pacotes | `diagramas/pacotes.puml` + PNG + doc 04 | Feito |
+| Componentes lógicos | `diagramas/componentes-logicos.puml` + PNG | Feito |
+| Componentes físicos | `diagramas/componentes-fisicos.puml` + PNG | Feito |
+| UCs / sequências | `docs/marcus/diagramas/Marcus-UML-MVP.asta` + PNGs | Feito |
+| Classes / ER | docs 06–08 + PNGs UML | Feito |
+| Núcleo Java funcional | `mvp/src/br/edu/unipampa/usina/...` | Feito |
+| PDF consolidado | `ENTREGA-MARCO1.pdf` regenerado com os diagramas | Feito |

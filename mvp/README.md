@@ -1,6 +1,6 @@
 # Central de Supervisão — MVP Usina Nuclear
 
-> **Nota (set/2026):** esta UI **Swing** permanece como legado de fluxo/demo. O visual oficial do grupo passa a ser **React** (`frontend/`) + idealização em [`docs/ui/idealizacao-telas.md`](../docs/ui/idealizacao-telas.md). Arquitetura: **EDA only**.
+> **Nota (set/2026):** esta UI **Swing** permanece como legado de fluxo/demo. O visual oficial do grupo passa a ser **React** (`frontend/`) + idealização em [`docs/ui/idealizacao-telas.md`](../docs/ui/idealizacao-telas.md). Arquitetura: **EDA in-process**.
 
 Aplicação desktop local desenvolvida em Java (Zero External Dependencies) para demonstrar o caminho crítico completo do sistema conforme documentado no projeto oficial da disciplina de Resolução de Problemas IV / Análise e Projeto de Software.
 
@@ -16,7 +16,7 @@ Aplicação desktop local desenvolvida em Java (Zero External Dependencies) para
 - Dê dois cliques em **`2-TESTAR-MVP.bat`** (ou execute `powershell -File .\executar-mvp.ps1 -Testar`).
 - O resultado esperado é:
 ```text
-[SUCESSO] 11 verificacoes de requisitos Must (RF01-RF06 / RNF01-RNF10) passaram com 100% de exito!
+[SUCESSO] 11 cenarios do recorte MVP passaram (RF01-RF06 e RNFs verificaveis localmente).
 ```
 
 ### 3. Demonstração em Linha de Comando
@@ -73,5 +73,7 @@ Aplicação desktop local desenvolvida em Java (Zero External Dependencies) para
 ```
 
 - **Padrões de Projeto Aplicados:** Facade, Observer/Pub-Sub, Strategy, Factory.
+- **Limite atual:** o `EventBus` é síncrono e in-process; mensageria assíncrona, API HTTP e banco de medições/alarmes ainda não estão implementados.
+- **Persistência atual:** a auditoria é gravada em arquivo e detecta adulteração; o histórico de medições/alarmes permanece em memória durante a execução.
 - **Rastreabilidade Completa:** Consulte `BASE-NO-DOCUMENTO.md`.
 - **Roteiro para a Banca:** Consulte `ROTEIRO-APRESENTACAO.md`.

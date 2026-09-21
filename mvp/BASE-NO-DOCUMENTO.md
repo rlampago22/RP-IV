@@ -2,7 +2,9 @@
 
 Fonte analisada: `ATUALIZADO -Análise e Projeto de Software Oitava Entrega_ Diagrama de Implantação.pdf` (69 páginas).
 
-O documento descreve um sistema complexo de controle para uma usina nuclear. O MVP implementa de ponta a ponta o **caminho crítico de supervisão e telemetria (RF-1, RF-2, UC01 com todos os seus fluxos, RNF-01 a RNF-05, RNF-09 e RNF-10)**.
+O documento descreve um sistema amplo de controle para uma usina nuclear. O MVP implementa o **recorte acadêmico de supervisão e telemetria** definido pelo grupo: RF01–RF06 refatorados e evidências locais de integridade, tolerância a falhas, auditabilidade e testabilidade. Alta disponibilidade, backup, API HTTP e persistência completa ainda não são declarados como concluídos.
+
+> A numeração do PDF legado e a numeração do RP IV não são equivalentes. A rastreabilidade abaixo usa o significado funcional do requisito e aponta a implementação real, sem afirmar que todo o sistema de 69 páginas foi entregue.
 
 ---
 
@@ -16,12 +18,12 @@ O documento descreve um sistema complexo de controle para uma usina nuclear. O M
 | **UC01 (Alt. 1)** | **Registro de Observação Preventiva:** Detecta valores fora da faixa ideal de alerta, mas dentro dos limites normais, registrando observação sem alarme crítico. | Cada sensor possui limiares de atenção preventiva. Quando atingidos, emite `ObservacaoRegistrada` para auditoria sem soar alarme crítico. | `ObservacaoRegistrada.java`, `ReatorFacade.java` |
 | **UC01 (Exceção)** | **Falha na Comunicação com Sensor:** Detecta falha de sensor e emite alerta de manutenção para a equipe técnica. | Método `simularFalhaSensor` dispara `FalhaSensorDetectada` alertando explicitamente a `Equipe Técnica` e o `Engenheiro de Segurança`. | `FalhaSensorDetectada.java`, `ReatorFacade.java` |
 | **UC01 (Validação)** | **Validação e Resolução pelo Operador:** Operadores e engenheiros monitoram, validam alertas e encerram ocorrências. | Ciclo de vida do alarme com botões `Validar / Reconhecer Alerta` (operador confirma a ocorrência) e `Normalizar / Encerrar Ocorrência` (solução registrada e reator normalizado para estável). | `Alarme.java`, `AlarmeFacade.java`, `AlarmeReconhecido.java`, `AlarmeResolvido.java` |
-| **RNF-01 / RNF-02** | **Desempenho e Confiabilidade:** Arquitetura Orientada a Eventos (EDA) com baixo acoplamento entre produtores e consumidores. | `EventBus` in-process desacopla `ControleReator`, `Alarmes` e `AuditoriaLogs`. Produtores nunca chamam consumidores diretamente. | `EventBus.java` |
+| **RNF-01 / RNF-02** | **Desempenho e Confiabilidade:** Arquitetura Orientada a Eventos (EDA) com baixo acoplamento entre produtores e consumidores. | `EventBus` síncrono in-process desacopla `ControleReator`, `Alarmes` e `AuditoriaLogs` e isola falhas dos assinantes. Entrega assíncrona, retenção e alta disponibilidade permanecem pendentes. | `EventBus.java` |
 | **RNF-03** | **Integridade dos Dados:** Medições e eventos com integridade verificável; detecção de alterações externas no histórico. | Cadeia de hash criptográfica SHA-256 encadeada ($H_i = \text{SHA256}(i \mid \text{data} \mid \text{tipo} \mid \text{resumo} \mid H_{i-1})$). Se 1 caractere no arquivo for adulterado, o sistema detecta `FALHA`. | `RegistroAuditoria.java`, `EntradaAuditoria.java` |
 | **RNF-04** | **Tolerância a Falhas:** Falha em um consumidor isolado não derruba o barramento nem impede novas leituras do reator. | `EventBus.publicar` isola exceções de subscribers via try-catch, garantindo que erros em consumidores não afetem os produtores. | `EventBus.java` |
-| **RNF-05** | **Auditabilidade e Rastreabilidade:** Registro seguro append-only sem permissão de alteração ou exclusão. | `RegistroAuditoria` opera exclusivamente em modo append-only em `dados/auditoria.log`, com histórico imutável por cópia defensiva. | `RegistroAuditoria.java` |
-| **RNF-09** | **Persistência Segura e Continuidade Multi-Sessão:** Manter a cadeia e integridade através de reinicializações. | O sistema lê o log existente no construtor e continua a contagem sequencial ($N+1$) e a cadeia de hash sem interrupções nem duplicatas. | `RegistroAuditoria.java` |
-| **RNF-10** | **Testabilidade Automatizada:** Suíte de testes unitários e de integração sem frameworks externos. | `TestesMvp.java` executa 11 verificações automáticas com 100% de sucesso cobrindo todos os cenários do checklist de aceite. | `TestesMvp.java` |
+| **RNF-05** | **Auditabilidade e Rastreabilidade:** Registro append-only com alteração detectável. | `RegistroAuditoria` acrescenta entradas em `dados/auditoria.log`; a cadeia SHA-256 evidencia adulterações, mas não impede edição física do arquivo. | `RegistroAuditoria.java` |
+| **RNF-09 (parcial)** | **Persistência Segura e Continuidade Multi-Sessão:** Manter a cadeia de auditoria através de reinicializações. | O log de auditoria é recuperado e continuado. Medições e alarmes ainda são mantidos apenas em memória e precisam de repositório persistente. | `RegistroAuditoria.java`, `ReatorFacade.java`, `AlarmeFacade.java` |
+| **RNF-10** | **Testabilidade Automatizada:** Suíte de testes sem frameworks externos. | `TestesMvp.java` executa 11 cenários repetíveis sobre RF01–RF06 e os RNFs verificáveis localmente. | `TestesMvp.java` |
 
 ---
 
@@ -35,4 +37,4 @@ O documento de 69 páginas abrange também os módulos de:
 - `GestaoRH` e treinamentos obrigatórios (Won't no MVP);
 - `AnaliseRelatorios` com IA preditiva (Won't no MVP).
 
-Esses módulos estão documentados no projeto arquitetural, nos diagramas de pacotes, componentes lógicos e diagrama relacional, mas não foram fingidos no MVP para manter o núcleo executável focado, seguro e 100% funcional.
+Esses módulos permanecem documentados e explicitamente fora do recorte executável. O MVP atual serve para demonstrar o fluxo do núcleo; não representa uma usina real nem satisfaz requisitos industriais de segurança, disponibilidade ou certificação.

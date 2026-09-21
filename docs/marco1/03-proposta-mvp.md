@@ -14,12 +14,12 @@ Operadores precisam acompanhar parâmetros de reatores em tempo quase real, rece
 
 Um software Java modular com **arquitetura orientada a eventos (EDA)**:
 
-1. Um **simulador de sensores** publica eventos de medição no barramento.
-2. O módulo **ControleReator** persiste a medição e avalia limiares.
-3. O módulo **Alarmes** emite e registra alarmes, notificando Operador e Supervisão Central.
-4. O módulo **AuditoriaLogs** consome eventos relevantes e grava trilha append-only.
+1. A aplicação de demonstração envia leituras simuladas ao **ControleReator**.
+2. O **ControleReator** mantém medições em memória e publica eventos no barramento.
+3. O módulo **Alarmes** consome as medições, avalia limiares, mantém os alarmes em memória e notifica Operador e Supervisão Central pelo console.
+4. O módulo **AuditoriaLogs** consome todos os eventos e grava uma trilha append-only encadeada por SHA-256.
 
-A persistência do núcleo fica no pacote **PersistenciaReator** (dedicada). Demais módulos do legado APS permanecem no diagrama como `«future»`.
+Nesta versão, apenas a auditoria possui persistência em arquivo. Banco para medições e alarmes, API HTTP e mensageria durável são evoluções planejadas, não funcionalidades prontas.
 
 ## 3. Escopo incluso (Must)
 
@@ -36,8 +36,8 @@ Evacuação, RH/treinamentos, conformidade ampla, IA preditiva, rastreio complet
 
 | # | Critério |
 |---|----------|
-| 1 | É possível simular N medições e vê-las persistidas |
-| 2 | Medição acima do limiar gera alarme persistido e notificação explícita aos atores |
+| 1 | É possível simular N medições e consultá-las no histórico em memória durante a execução |
+| 2 | Medição acima do limiar gera alarme em memória, notificação explícita aos atores e evento persistido na auditoria |
 | 3 | Eventos passam pelo barramento (produtor não chama consumidor diretamente) |
 | 4 | Pelo menos 3 padrões GoF documentados e visíveis no código (ex.: Observer/Pub-Sub, Strategy, Factory, Facade) |
 | 5 | README permite executar o fluxo ponta a ponta |
@@ -46,9 +46,9 @@ Evacuação, RH/treinamentos, conformidade ampla, IA preditiva, rastreio complet
 
 | Marco | Entrega |
 |-------|---------|
-| **1 (atual)** | Documentação: RF/RNF, MoSCoW, MVP, arquitetura, pacotes, componentes, UCs/classes/sequências/ER do núcleo + esqueleto de pacotes Java |
-| **2** | Implementação do fluxo Must + padrões de projeto |
-| **3** | Should (acesso) **ou** Could (contingência) + polish/testes |
+| **1** | Documentação inicial, arquitetura e esqueleto de pacotes Java |
+| **2** | Fluxo Must funcional + padrões de projeto + auditoria persistente |
+| **3 (em preparação)** | Interface React T01–T05, integração HTTP e preparação da demonstração |
 
 ## 7. Riscos e mitigação
 

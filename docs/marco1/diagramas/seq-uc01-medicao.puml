@@ -7,8 +7,8 @@ participant "ReatorFacade" as RF
 participant "MedicaoReator" as MR
 participant "ReatorRepository" as RR
 participant "EventBus" as Bus
-participant "AvaliadorLimiar" as AL
 participant "AlarmeFacade" as AF
+participant "AvaliadorLimiar" as AL
 participant "AuditoriaSubscriber" as Aud
 participant "RegistroAuditoria" as Reg
 

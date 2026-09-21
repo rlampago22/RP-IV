@@ -13,6 +13,11 @@ frontend/node_modules/
 frontend/dist/
 frontend/.env
 frontend/.env.local
+frontend/.playwright-cli/
+
+# Artefatos locais de geração/QA (não versionar)
+/output/
+/tools/
 
 # Editor
 .vscode/
