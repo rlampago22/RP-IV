@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Suíte de testes automatizados sem dependências externas (Zero External Deps),
- * cobrindo os cenários de aceite CT-RF01 a CT-RF06 e CT-RNF01 a CT-RNF10 do checklist da disciplina.
+ * cobrindo RF01–RF06 e os RNFs diretamente verificáveis nesta versão local.
  */
 public final class TestesMvp {
     private TestesMvp() {}
@@ -138,7 +138,7 @@ public final class TestesMvp {
         Files.deleteIfExists(logAdulterado);
         Files.deleteIfExists(logTeste);
 
-        System.out.println("\n[SUCESSO] 11 verificacoes de requisitos Must (RF01-RF06 / RNF01-RNF10) passaram com 100% de exito!");
+        System.out.println("\n[SUCESSO] 11 cenarios do recorte MVP passaram (RF01-RF06 e RNFs verificaveis localmente).");
     }
 
     private static void exigir(boolean condicao, String mensagem) {
