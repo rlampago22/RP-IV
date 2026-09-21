@@ -46,7 +46,9 @@ function Shell() {
           </div>
         </div>
         <div className="scada-top-right">
-          {origemMock && <span className="scada-pill warn">MOCK · rode mvp/4-EXECUTAR-API-ESTADO.bat</span>}
+          {origemMock && (
+            <span className="scada-pill warn">MOCK · rode mvp/4-EXECUTAR-API-ESTADO.bat</span>
+          )}
           <span className={`scada-badge${BADGE_CLASSE[estado.status] ?? ''}`}>
             {BADGE_TEXTO[estado.status] ?? estado.status}
           </span>

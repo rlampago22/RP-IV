@@ -1,4 +1,4 @@
-# UI unificada — aceite visual (Opção A · SCADA escuro)
+# Aceite visual — Opção A · SCADA escuro
 
 **Protótipo:** [`propostas/opcao-a.html`](propostas/opcao-a.html) · Spec: [`direcao-opcao-a.md`](direcao-opcao-a.md)  
 Refs de fluxo: NUREG-0700 (partitioning) + MVP Marcus (`SistemaMvpUI` / roteiro).
@@ -21,13 +21,13 @@ Refs de fluxo: NUREG-0700 (partitioning) + MVP Marcus (`SistemaMvpUI` / roteiro)
 
 ## Aceite
 
-- [ ] Mesmo chrome/tokens nas 5 telas (Opção A)
-- [ ] Cor só para status/alarme
-- [ ] Núcleo muda ESTÁVEL → ATENÇÃO → CRÍTICO nos cenários
-- [ ] 4 sensores RF-1 com valor + barra
-- [ ] Timeline de eventos EDA visível
-- [ ] ACK + Resolver atualizam estado e auditoria
-- [ ] Fluxo demo T05 → T01 → T03 → T04 compreensível em &lt; 5 s
+- [x] Mesmo chrome/tokens nas 5 telas (Opção A) — shell React `frontend/src/main.jsx`
+- [ ] Cor só para status/alarme (polish #48 — telemetria ainda colorida por tipo)
+- [x] Núcleo muda ESTÁVEL → ATENÇÃO → CRÍTICO (via `/api/estado` / EstadoContext)
+- [x] 4 sensores RF-1 com valor + barra (T01/T02)
+- [x] Timeline de eventos EDA visível (T01)
+- [x] ACK + Resolver atualizam estado (API + T03)
+- [ ] Fluxo demo T05 → T01 → T03 → T04 compreensível em &lt; 5 s (cenários T05 — S4 #52 / Marcus)
 
 ## Registro de validação S3 — 2026-09-21
 
@@ -41,12 +41,15 @@ mais inspeção dos componentes em `frontend/src/`.
 | Cor restrita a status/alarme | PENDENTE | O shell usa as cores previstas, mas T01 colore valores de telemetria normais. Revisar no polish visual (#48). |
 | Quatro sensores RF-1 com valor e barra | PASS | T01 apresenta temperatura, pressão, radiação e fluxo, com unidade e barra. |
 | Timeline EDA visível | PASS | T01 apresenta `MEDICAO_REGISTRADA` e `ALARME_EMITIDO`. |
-| Reconhecer atualiza estado visível | PASS parcial | O botão do banner oculta o alarme e altera o badge para `ESTÁVEL`; ainda não atualiza T03/T04. |
-| Cenário altera núcleo, banner e trilha | FAIL (S3) | Ao clicar `Simular Anomalia (Crítico)` em T05, não surgem banner/estado crítico. A própria tela declara a integração para #52. |
-| Resolver atualiza estado/auditoria | FAIL (S3) | T03 e T04 não possuem handlers nem dados compartilhados neste scaffold. |
-| Fluxo T05 → T01 → T03 → T04 em menos de 5 s | N/E | Depende da integração T05/API/EventBus planejada para #52; não marcar PASS antes de teste integrado. |
+| Reconhecer atualiza estado visível | PASS parcial | Integração API (#44) + T03 na `desenvolvimento` após merges S3. |
+| Cenário altera núcleo, banner e trilha | PENDENTE S4 | Depende de T05/#52 (Marcus). |
+| Resolver atualiza estado/auditoria | PASS parcial | API + T03/T04 via EstadoContext após merges. |
+| Fluxo T05 → T01 → T03 → T04 em menos de 5 s | N/E | Depende da integração T05 (#52). |
 
-**Saúde do ambiente:** `npm run build` passou. A página carregou com conteúdo significativo, sem overlay
-de framework e sem erros de console; os dois avisos encontrados são *future flags* do React Router.
-O roteiro e os critérios de reexecução estão em [`walkthrough-s3.md`](walkthrough-s3.md). Este registro
-é uma linha de base de UX, não substitui o aceite final integrado do MVP Must.
+**Saúde do ambiente:** `npm run build` passou. Roteiro em [`walkthrough-s3.md`](walkthrough-s3.md).
+
+## Pendências #40 (grupo)
+
+- [ ] Atualizar frames Figma T01–T05 no chrome escuro (arquivo existente — ver [`FIGMA.md`](FIGMA.md))
+- [x] Export PNG em [`exports/`](exports/) (parcial: overview + mimic)
+- [x] Shell React portado do protótipo

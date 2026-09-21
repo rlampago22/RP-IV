@@ -24,11 +24,13 @@ Issues antigas abertas (#12–#38) foram **fechadas em 15/09** e substituídas p
 
 ## Agora → 21/09 — Idealização + débito
 
-| Issue | Dono | Foco |
-|-------|------|------|
-| [#40](https://github.com/rlampago22/RP-IV/issues/40) | Grupo | **Opção A** Figma + shell React |
-| [#41](https://github.com/rlampago22/RP-IV/issues/41) | Bruno | Pacotes/EventBus + T01 mock Opção A |
-| [#42](https://github.com/rlampago22/RP-IV/issues/42) | José | GoF/Strategy + T03 mock Opção A |
+| Issue | Dono | Foco | Status 16/09 |
+|-------|------|------|--------------|
+| [#40](https://github.com/rlampago22/RP-IV/issues/40) | Grupo | **Opção A** Figma + shell React | Shell/aceite parcial OK · **Figma pendente** |
+| [#41](https://github.com/rlampago22/RP-IV/issues/41) | Bruno | Pacotes/EventBus + T01 mock Opção A | EventBus+T01 evidenciados (apoio `bernardo`) · API = #44 |
+| [#42](https://github.com/rlampago22/RP-IV/issues/42) | José | GoF/Strategy + T03 mock Opção A | Strategy/Factory ok · **T03 mock entregue** (`bernardo`) |
+
+Detalhe: [`2026-09-21/debito-40-41-42.md`](2026-09-21/debito-40-41-42.md) · PR [#60](https://github.com/rlampago22/RP-IV/pull/60) (#45 + débito)
 
 ---
 

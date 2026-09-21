@@ -11,6 +11,12 @@ Fontes PlantUML: [diagramas/seq-uc01-medicao.puml](diagramas/seq-uc01-medicao.pu
 
 ## SEQ-UC01 — Registrar Medição (fluxo principal até include de alarme)
 
+**Código (S3):** `ReatorFacade.receberLeitura` → `MedicaoReator.registrarMedicao` →
+`ReatorRepository.salvarMedicao` (histórico curto em memória) → `EventBus.publicar(MedicaoRegistrada)`.
+`AlarmeFacade` e `AuditoriaSubscriber` consomem o evento no barramento (EDA), em vez de chamada síncrona na Facade.
+
+Consulta T02: `consultarHistorico()`, `consultarHistorico(sensorId)`, `consultarHistoricoRecente(n)`.
+
 ```mermaid
 sequenceDiagram
   participant Sensor
@@ -29,9 +35,10 @@ sequenceDiagram
   ReatorFacade->>EventBus: publicar(MedicaoRegistrada)
   EventBus->>AuditoriaSubscriber: onEvento(MedicaoRegistrada)
   AuditoriaSubscriber->>RegistroAuditoria: registrar(evento)
-  ReatorFacade->>AvaliadorLimiar: avaliar(medicao, limiar)
-  AvaliadorLimiar-->>ReatorFacade: ResultadoAvaliacao
-  ReatorFacade->>AlarmeFacade: processarAvaliacao(resultado)
+  EventBus->>AlarmeFacade: onEvento(MedicaoRegistrada)
+  AlarmeFacade->>AvaliadorLimiar: foraDaFaixaSegura(medicao)
+  AvaliadorLimiar-->>AlarmeFacade: violado?
+  AlarmeFacade->>AlarmeFacade: processarAvaliacao(resultado)
 ```
 
 ---
