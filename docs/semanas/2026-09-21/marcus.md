@@ -31,7 +31,7 @@
 - [x] Astah e PNGs versionáveis em `docs/marcus/diagramas/`
 - [x] Build React executada com sucesso
 - [x] Testes Java do MVP executados com sucesso
-- [ ] PR `marcus` → `desenvolvimento`
+- [x] PR [`#61`](https://github.com/rlampago22/RP-IV/pull/61) `marcus` → `desenvolvimento`
 
 ## 5. Bloqueios
 
@@ -41,4 +41,3 @@
 ## 6. Próxima semana
 
 - Concluir a issue #52: README passo a passo, integração com API disponível e polish de T04/T05.
-
