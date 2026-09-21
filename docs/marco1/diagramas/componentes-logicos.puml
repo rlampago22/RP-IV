@@ -47,6 +47,13 @@ package "AuditoriaLogs" {
   AS ..> Sub : consome eventos
 }
 
+package "ApiEstado" {
+  component [EstadoAgregador] as EA
+  component [ApiEstadoHttpServer] as AEHS <<Adapter>>
+  AEHS --> EA
+  EA ..> Sub : consome (assinarTodos)
+}
+
 package "SegurancaAcesso" <<future>> {
   component [AcessoFacade] as AcF
   component [RegistroAcesso] as RegA
