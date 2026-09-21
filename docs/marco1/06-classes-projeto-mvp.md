@@ -3,99 +3,72 @@
 **Sistema:** Controle de Usina Nuclear — RP4  
 **Equipe:** Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol
 
-Corrige inconsistências do feedback APS (classes/métodos faltantes nas sequências). Classes `«future»` listadas para rastreio, sem obrigatoriedade de sequência no Marco 1.
+Este documento descreve somente as classes que existem no núcleo Java atual. Classes futuras não aparecem no diagrama ativo para não repetir a inconsistência apontada pelo professor entre UML e código.
 
-Fonte PlantUML: [diagramas/classes-projeto-mvp.puml](diagramas/classes-projeto-mvp.puml)
+Fonte UML: [diagramas/classes-projeto-mvp.puml](diagramas/classes-projeto-mvp.puml)
 
----
-
-## 0. Recorte Bernardo — ControleReator (Must)
-
-Classes da trilha de implementação até o Marco 1 (sem inventar tipo novo):
-
-| Classe | Situação no esqueleto | Próximo passo |
-|--------|----------------------|---------------|
-| `Reator` | presente | manter entidade |
-| `Sensor` | presente | manter entidade |
-| `MedicaoReator` | presente com `registrarMedicao(...)` | usar no fluxo de leitura |
-| `ReatorFacade` | presente (stub) | implementar `receberLeitura` |
-| `Limiar` | presente | usado na avaliação (junto com Strategy do José) |
-| `ReatorRepository` | presente (stub) | persistência mínima depois |
-
-`AvaliadorLimiar` / `ResultadoAvaliacao` ficam no pacote, com ownership de implementação do limiar/alarme no José. Should/Could (`RegistroAcesso`, `Emergencia`, etc.) ficam fora deste recorte.
+![Diagrama UML de classes do núcleo implementado](diagramas/classes-projeto-mvp.png)
 
 ---
 
-## 1. Classes do núcleo (Must)
-
-### InfraestruturaEventos
+## 1. Infraestrutura de eventos
 
 | Classe | Responsabilidade | Métodos principais |
 |--------|------------------|--------------------|
-| `EventBus` | Pub/Sub in-process | `publicar(EventoDominio)`, `assinar(tipo, IEventSubscriber)` |
-| `EventoDominio` | Fato imutável | `getTipo()`, `getTimestamp()`, `getPayload()` |
-| `IEventPublisher` | Porta de publicação | `publicar(...)` |
-| `IEventSubscriber` | Porta de consumo | `onEvento(EventoDominio)` |
+| `EventoDominio` | Contrato comum dos fatos publicados | `tipo()`, `ocorridoEm()`, `resumo()` |
+| `IEventSubscriber` | Contrato de consumo | `onEvento(EventoDominio)` |
+| `EventBus` | Observer/Pub-Sub síncrono e in-process | `assinarTodos(...)`, `assinar(...)`, `publicar(...)` |
+| Eventos concretos | Dados imutáveis representados por records | `MedicaoRegistrada`, `ObservacaoRegistrada`, `FalhaSensorDetectada`, `AlarmeEmitido`, `AlarmeReconhecido`, `AlarmeResolvido` |
 
-### ControleReator
+O `EventBus` isola exceções por assinante, mas não oferece fila, retenção ou entrega assíncrona nesta versão.
 
-| Classe | Responsabilidade | Métodos principais |
-|--------|------------------|--------------------|
-| `ReatorFacade` | Fachada do módulo | `receberLeitura(...)`, `consultarHistorico(...)` |
-| `Reator` | Entidade agregadora | `getId()`, `getStatusOperacional()`, `associarSensor(Sensor)` |
-| `Sensor` | Entidade | `getId()`, `getTipo()`, `getStatus()`, `obterLocalizacao()` |
-| `MedicaoReator` | Entidade | **`registrarMedicao(...)`**, `getValor()`, `getTimestamp()`, `getSensor()` |
-| `AvaliadorLimiar` | Strategy | `avaliar(MedicaoReator, Limiar): ResultadoAvaliacao` |
-| `Limiar` | Configuração | `getParametro()`, `getValorMax()`, `getValorMin()` |
-
-### Alarmes
+## 2. Controle de reator
 
 | Classe | Responsabilidade | Métodos principais |
 |--------|------------------|--------------------|
-| `AlarmeFacade` | Fachada | `processarAvaliacao(ResultadoAvaliacao)` |
-| `Alarme` | Entidade | **`emitirAlerta(destinatarios)`**, **`registrarEvento()`**, `getStatus()`, `getTipo()` |
-| `AlarmeFactory` | Factory | `criar(MedicaoReator, TipoAlarme): Alarme` |
+| `ReatorFacade` | Fachada para sensores, leituras e falhas simuladas | `registrarSensor`, `receberLeitura`, `simularFalhaSensor`, `consultarHistorico` |
+| `Sensor` | Record com tipo, unidade e faixas operacional/de observação | `isNaFaixaObservacao` |
+| `MedicaoReator` | Entidade de medição associada a um sensor | `registrarMedicao`, `getValor`, `getTimestamp`, `getSensor` |
 
-### PersistenciaReator / Auditoria
+Sensores e histórico de medições são mantidos em memória pela `ReatorFacade`. Não existe `ReatorRepository` no código atual.
 
-| Classe | Métodos |
-|--------|---------|
-| `ReatorRepository` | `salvarMedicao`, `salvarAlarme`, `buscarHistorico` |
-| `AuditoriaSubscriber` | `onEvento` |
-| `RegistroAuditoria` | `registrar(EventoDominio)` |
+## 3. Alarmes
 
----
+| Classe | Padrão/responsabilidade | Métodos principais |
+|--------|-------------------------|--------------------|
+| `AlarmeFacade` | Facade e subscriber de `MedicaoRegistrada` | `onEvento`, `processarAvaliacao`, `reconhecerAlarme`, `resolverAlarme`, `consultarAlarmes` |
+| `AvaliadorLimiar` | Strategy | `foraDaFaixaSegura` |
+| `AvaliadorFaixaSegura` | Implementação da Strategy | `foraDaFaixaSegura` |
+| `AlarmeFactory` | Factory | `criar(MedicaoRegistrada)` |
+| `Alarme` | Entidade e ciclo de vida do alarme | `emitirAlerta`, `registrarEvento`, `reconhecer`, `resolver` |
 
-## 2. Classes Should / Could (corrigem feedback; sequências só se implementadas)
+Os alarmes ficam em memória durante a execução. O registro durável correspondente ocorre por meio dos eventos consumidos pela auditoria.
 
-| Classe | Marco | Métodos |
-|--------|-------|---------|
-| `RegistroAcesso` | Should | `registrar(credencial, area, resultado)`, `getResultado()` |
-| `AcessoFacade` | Should | `solicitarAcesso(...)` |
-| `Emergencia` | Could | **`criarEmergencia(...)`**, `getStatus()`, `getTipo()` |
-| `ProtocoloEmergencia` | Could | `ativar()`, `getPassos()`, `associarEmergencia(Emergencia)` |
-| `HistoricoSubstituicao` | Could/backlog | `registrarSubstituicao(...)` |
-| `Localizacao` | backlog material | `atualizarPosicao(...)`, `getNivelSeguranca()` |
-| `MaterialRadioativo` | backlog | `getTipo()`, `getLocalizacao()` |
-| `Movimentacao` | backlog | **`registrarMovimentacao(...)`** na entidade (não só no controller) |
+## 4. Auditoria
 
----
+| Classe | Responsabilidade | Métodos principais |
+|--------|------------------|--------------------|
+| `AuditoriaSubscriber` | Subscriber global do EventBus | `onEvento` |
+| `RegistroAuditoria` | Persistência append-only e verificação da cadeia SHA-256 | `registrar`, `consultar`, `verificarIntegridade`, `verificarIntegridadeArquivo` |
+| `EntradaAuditoria` | Record persistido no log | `linhaPersistida`, `hashCurto` |
 
-## 3. Regras de consistência (checklist do professor)
+A cadeia SHA-256 torna adulterações detectáveis; ela não impede que o arquivo físico seja alterado.
 
-1. Toda mensagem em diagrama de sequência do MVP referencia método existente nesta lista.
-2. Lógica de registro de domínio fica na **entidade** (`registrarMedicao`, `registrarEvento`, `registrar` em `RegistroAcesso`), não apenas no controller/facade.
-3. Destinatários de `emitirAlerta` incluem Operador e Supervisão Central (modelo de análise / UC).
+## 5. Regras de consistência
 
----
+1. Toda mensagem nos diagramas SEQ-UC01 e SEQ-UC02 corresponde a um método existente.
+2. O diagrama não apresenta banco, repository, broker externo ou API HTTP como implementados.
+3. Operador de Reator e Supervisão Central são destinatários explícitos do alarme.
+4. Funcionalidades Should/Could permanecem nos requisitos e backlog, fora do diagrama de classes implementadas.
 
-## 4. Relacionamentos principais (núcleo)
+## 6. Relacionamentos principais
 
 ```text
-Reator 1──* Sensor
-Sensor 1──* MedicaoReator
-MedicaoReator *──1 Limiar (por parâmetro avaliado)
-Alarme *──1 MedicaoReator (origem)
-Alarme *──1 TipoAlarme (tabela de domínio no ER)
-EventBus ◄── ReatorFacade, AlarmeFacade, AuditoriaSubscriber
+ReatorFacade 1 o-- * Sensor
+ReatorFacade 1 o-- * MedicaoReator
+MedicaoReator * --> 1 Sensor
+AlarmeFacade 1 o-- * Alarme
+Alarme * --> 1 MedicaoRegistrada
+EventBus --> IEventSubscriber
+AuditoriaSubscriber --> RegistroAuditoria --> EntradaAuditoria
 ```

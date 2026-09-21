@@ -1,135 +1,136 @@
 @startuml classes-projeto-mvp
-title Classes de Projeto — Núcleo MVP (+ Should/Could marcados)
+title Classes de Projeto — núcleo Java implementado no MVP
 skinparam classAttributeIconSize 0
 skinparam shadowing false
 
-package "infraestrutura.eventos" {
-  interface IEventPublisher {
-    +publicar(e: EventoDominio)
+package "infraestruturaeventos" {
+  interface EventoDominio {
+    +tipo(): String
+    +ocorridoEm(): Instant
+    +resumo(): String
   }
+
   interface IEventSubscriber {
-    +onEvento(e: EventoDominio)
+    +onEvento(evento: EventoDominio): void
   }
+
   class EventBus {
-    +publicar(e: EventoDominio)
-    +assinar(tipo: String, s: IEventSubscriber)
+    +assinarTodos(subscriber: IEventSubscriber): void
+    +assinar(tipo: Class, subscriber: IEventSubscriber): void
+    +publicar(evento: EventoDominio): void
   }
-  class EventoDominio {
-    -tipo: String
-    -timestamp: DateTime
-    -payload: Object
-    +getTipo()
-    +getTimestamp()
-    +getPayload()
-  }
-  EventBus ..|> IEventPublisher
-  EventBus ..|> IEventSubscriber
+
+  class MedicaoRegistrada <<record>>
+  class ObservacaoRegistrada <<record>>
+  class FalhaSensorDetectada <<record>>
+  class AlarmeEmitido <<record>>
+  class AlarmeReconhecido <<record>>
+  class AlarmeResolvido <<record>>
+
+  MedicaoRegistrada ..|> EventoDominio
+  ObservacaoRegistrada ..|> EventoDominio
+  FalhaSensorDetectada ..|> EventoDominio
+  AlarmeEmitido ..|> EventoDominio
+  AlarmeReconhecido ..|> EventoDominio
+  AlarmeResolvido ..|> EventoDominio
+  EventBus --> IEventSubscriber : notifica
 }
 
-package "controle.reator" {
+package "controlereator" {
   class ReatorFacade {
-    +receberLeitura(sensorId, valores)
-    +consultarHistorico(reatorId)
+    +registrarSensor(sensor: Sensor): void
+    +obterSensor(sensorId: long): Sensor
+    +receberLeitura(sensorId: long, valor: double): MedicaoReator
+    +simularFalhaSensor(sensorId: long, motivo: String): void
+    +consultarHistorico(): List<MedicaoReator>
   }
-  class Reator {
-    -id: Long
-    +getStatusOperacional()
-    +associarSensor(s: Sensor)
+
+  class Sensor <<record>> {
+    +isNaFaixaObservacao(valor: double): boolean
   }
-  class Sensor {
-    -id: Long
-    +getTipo()
-    +getStatus()
-    +obterLocalizacao()
-  }
+
   class MedicaoReator {
-    -valor: Double
-    -timestamp: DateTime
-    +registrarMedicao(valor, sensor, timestamp)
-    +getValor()
-    +getSensor()
+    -valor: double
+    -timestamp: Instant
+    -sensor: Sensor
+    +registrarMedicao(valor: double, sensor: Sensor, timestamp: Instant): void
+    +getValor(): double
+    +getTimestamp(): Instant
+    +getSensor(): Sensor
   }
-  class Limiar {
-    +getParametro()
-    +getValorMax()
-    +getValorMin()
-  }
-  interface AvaliadorLimiar {
-    +avaliar(m: MedicaoReator, l: Limiar): ResultadoAvaliacao
-  }
-  class ResultadoAvaliacao {
-    +isViolado()
-    +getMedicao()
-  }
-  ReatorFacade --> Reator
-  ReatorFacade --> AvaliadorLimiar
-  ReatorFacade --> MedicaoReator
-  Reator "1" o-- "*" Sensor
-  Sensor "1" o-- "*" MedicaoReator
-  ReatorFacade ..> IEventPublisher
+
+  ReatorFacade "1" o-- "*" Sensor : sensores em memória
+  ReatorFacade "1" o-- "*" MedicaoReator : histórico em memória
+  MedicaoReator --> Sensor
+  ReatorFacade ..> EventBus : publica
+  ReatorFacade ..> MedicaoRegistrada
+  ReatorFacade ..> ObservacaoRegistrada
+  ReatorFacade ..> FalhaSensorDetectada
 }
 
 package "alarmes" {
-  class AlarmeFacade {
-    +processarAvaliacao(r: ResultadoAvaliacao)
+  interface AvaliadorLimiar {
+    +foraDaFaixaSegura(medicao: MedicaoRegistrada): boolean
   }
-  class Alarme {
-    +emitirAlerta(destinatarios)
-    +registrarEvento()
-    +getStatus()
-    +getTipo()
+
+  class AvaliadorFaixaSegura {
+    +foraDaFaixaSegura(medicao: MedicaoRegistrada): boolean
   }
+
   class AlarmeFactory {
-    +criar(m: MedicaoReator, tipo): Alarme
+    +criar(medicao: MedicaoRegistrada): Alarme
   }
+
+  class AlarmeFacade {
+    +onEvento(evento: EventoDominio): void
+    +processarAvaliacao(medicao: MedicaoRegistrada, violado: boolean): Alarme
+    +reconhecerAlarme(id: String, operador: String, justificativa: String): boolean
+    +resolverAlarme(id: String, responsavel: String, solucao: String): boolean
+    +consultarAlarmes(): List<Alarme>
+  }
+
+  class Alarme {
+    +emitirAlerta(destinatarios: List<String>): void
+    +registrarEvento(): void
+    +reconhecer(operador: String, justificativa: String): void
+    +resolver(responsavel: String, solucao: String): void
+  }
+
+  AvaliadorFaixaSegura ..|> AvaliadorLimiar
+  AlarmeFacade ..|> IEventSubscriber
+  AlarmeFacade --> AvaliadorLimiar
   AlarmeFacade --> AlarmeFactory
-  AlarmeFacade --> Alarme
-  Alarme --> MedicaoReator
-  AlarmeFacade ..> IEventPublisher
-  AlarmeFacade ..> IEventSubscriber
+  AlarmeFacade "1" o-- "*" Alarme : em memória
+  AlarmeFactory ..> Alarme : cria
+  Alarme --> MedicaoRegistrada : origem
+  AlarmeFacade ..> EventBus : consome/publica
 }
 
-package "persistencia.reator" {
-  class ReatorRepository {
-    +salvarMedicao(m: MedicaoReator)
-    +salvarAlarme(a: Alarme)
-    +buscarHistorico(reatorId)
-  }
-  ReatorFacade --> ReatorRepository
-}
-
-package "auditoria.logs" {
+package "auditorialogs" {
   class AuditoriaSubscriber {
-    +onEvento(e: EventoDominio)
+    +onEvento(evento: EventoDominio): void
   }
+
   class RegistroAuditoria {
-    +registrar(e: EventoDominio)
+    +registrar(evento: EventoDominio): EntradaAuditoria
+    +consultar(): List<EntradaAuditoria>
+    +verificarIntegridade(): boolean
+    +verificarIntegridadeArquivo(): boolean
   }
-  AuditoriaSubscriber --> RegistroAuditoria
+
+  class EntradaAuditoria <<record>> {
+    +linhaPersistida(): String
+    +hashCurto(): String
+  }
+
   AuditoriaSubscriber ..|> IEventSubscriber
+  AuditoriaSubscriber --> RegistroAuditoria
+  RegistroAuditoria "1" o-- "*" EntradaAuditoria
 }
 
-package "seguranca.acesso" <<future>> {
-  class AcessoFacade {
-    +solicitarAcesso(credencial, area)
-  }
-  class RegistroAcesso {
-    +registrar(credencial, area, resultado)
-    +getResultado()
-  }
-  AcessoFacade --> RegistroAcesso
-}
-
-package "gestao.emergencias" <<future>> {
-  class Emergencia {
-    +criarEmergencia(tipo, descricao)
-    +getStatus()
-  }
-  class ProtocoloEmergencia {
-    +ativar()
-    +associarEmergencia(e: Emergencia)
-  }
-  ProtocoloEmergencia --> Emergencia
-}
+note right of RegistroAuditoria
+  Persiste em dados/auditoria.log.
+  Cada entrada encadeia o hash anterior.
+end note
 
 @enduml

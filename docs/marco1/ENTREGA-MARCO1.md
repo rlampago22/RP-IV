@@ -14,7 +14,7 @@
 | José Guilherme Monteiro |
 | Marcus Querol |
 
-**Arquitetura:** Orientada a Eventos (EDA) + módulos independentes + persistência dedicada (**mantida** do legado APS).
+**Arquitetura:** Orientada a Eventos (EDA) in-process + módulos independentes + auditoria persistente em arquivo.
 
 ---
 
@@ -29,7 +29,7 @@ Este documento consolida o que o professor pediu para a segunda-feira (recupera�
 5. Artefatos adicionais necessários: UCs, classes, sequências, ER do núcleo  
 6. Checklist de correções dos feedbacks APS  
 
-Fontes detalhadas em Markdown/PlantUML na pasta `docs/marco1/`.
+Fontes detalhadas em Markdown, Astah e PlantUML na pasta `docs/marco1/` e em `docs/marcus/diagramas/`.
 
 ---
 
@@ -73,18 +73,13 @@ Ver: [03-proposta-mvp.md](03-proposta-mvp.md)
 
 Fluxo demonstrável:
 
-```mermaid
-flowchart LR
-  SensorSim[SensorSimulator] -->|MedicaoRegistrada| Bus[EventBus]
-  Bus --> ControleReator[ControleReator]
-  Bus --> Alarmas[ModuloAlarmes]
-  Alarmas -->|AlarmeEmitido| Bus
-  Bus --> Auditoria[AuditoriaLogs]
-```
+![Componentes lógicos do MVP](diagramas/componentes-logicos-mvp.png)
 
-- **Marco 1:** documentação + esqueleto Java  
-- **Marco 2:** implementação Must + GoF  
-- **Marco 3:** Should (acesso) ou Could (contingência)
+Fonte UML: [diagramas/componentes-logicos-mvp.puml](diagramas/componentes-logicos-mvp.puml). O `EventBus` implementado é síncrono e executado no mesmo processo Java.
+
+- **Marco 1:** documentação e esqueleto Java
+- **Marco 2:** fluxo Must funcional, GoF e auditoria persistente
+- **Marco 3:** interface React T01–T05, integração HTTP e preparação da demonstração
 
 ---
 
@@ -98,42 +93,23 @@ Ver: [04-arquitetura-eda.md](04-arquitetura-eda.md)
 
 Fonte: [diagramas/pacotes.puml](diagramas/pacotes.puml)
 
-```mermaid
-flowchart TB
-  subgraph ativo [MVP ativo]
-    IE[InfraestruturaEventos]
-    CR[ControleReator]
-    AL[Alarmes]
-    PR[PersistenciaReator]
-    AU[AuditoriaLogs]
-  end
-  subgraph future [future legado APS]
-    SA[SegurancaAcesso]
-    GE[GestaoEmergencias]
-    RH[GestaoRH]
-    EV[Evacuacao]
-    AR[AnaliseRelatorios]
-  end
-  CR --> IE
-  AL --> IE
-  AU --> IE
-  CR --> PR
-  CR -.-> AL
-  SA -.-> IE
-  GE -.-> IE
-```
+![Diagrama de pacotes do MVP](diagramas/pacotes-mvp-usina.png)
 
 ### 4.3 Componentes lógicos
 
 Fonte: [diagramas/componentes-logicos.puml](diagramas/componentes-logicos.puml)
 
-Pacotes com Facade + entidades corrigidas (`MedicaoReator.registrarMedicao`, `Alarme.emitirAlerta` / `registrarEvento`) + portas `IEventPublisher` / `IEventSubscriber`.
+![Diagrama de componentes lógicos](diagramas/componentes-logicos-mvp.png)
+
+Componentes com Facade, Observer/Pub-Sub, Strategy e Factory, além do estado compartilhado das telas T01–T05. A integração HTTP entre React e Java está marcada como futura.
 
 ### 4.4 Componentes físicos (executável)
 
 Fonte: [diagramas/componentes-fisicos.puml](diagramas/componentes-fisicos.puml)
 
-Artefatos: `usina-controle-mvp.jar`, `application.properties`, driver DB, `event-bus`, base `reator.db`.
+![Diagrama de componentes físicos](diagramas/componentes-fisicos-mvp.png)
+
+Artefatos reais: fontes e classes Java, scripts de execução, log de auditoria, fontes React e build Vite. Não há JAR oficial, banco relacional, driver de banco ou broker externo nesta versão.
 
 ---
 
@@ -142,11 +118,11 @@ Artefatos: `usina-controle-mvp.jar`, `application.properties`, driver DB, `event
 | Artefato | Arquivo |
 |----------|---------|
 | UCs MVP | [05-casos-uso-mvp.md](05-casos-uso-mvp.md) |
-| Diagrama UC | [diagramas/casos-de-uso-mvp.puml](diagramas/casos-de-uso-mvp.puml) |
+| Diagrama UC | [Astah editável](../marcus/diagramas/Marcus-UML-MVP.asta) e [PNG](../marcus/diagramas/Marcus-UML-MVP/01%20-%20Casos%20de%20Uso%20MVP.png) |
 | Classes projeto | [06-classes-projeto-mvp.md](06-classes-projeto-mvp.md) |
 | PlantUML classes | [diagramas/classes-projeto-mvp.puml](diagramas/classes-projeto-mvp.puml) |
 | Sequências | [07-sequencias-mvp.md](07-sequencias-mvp.md) |
-| SEQ PlantUML | [diagramas/seq-uc01-medicao.puml](diagramas/seq-uc01-medicao.puml), [diagramas/seq-uc02-alarme.puml](diagramas/seq-uc02-alarme.puml) |
+| Sequências UML | [Astah editável](../marcus/diagramas/Marcus-UML-MVP.asta), [SEQ-UC01](../marcus/diagramas/Marcus-UML-MVP/02%20-%20SEQ%20UC01%20Registrar%20Medição.png) e [SEQ-UC02](../marcus/diagramas/Marcus-UML-MVP/03%20-%20SEQ%20UC02%20Emitir%20Alarme.png) |
 
 Pontos de correção APS aplicados: system boundary, include de alarme/auditoria, destinatários explícitos, sem `if` no fluxo principal, métodos/classes das sequências presentes no diagrama de classes.
 
@@ -168,7 +144,7 @@ Ver: [checklist-feedback-aps.md](checklist-feedback-aps.md)
 
 ## 8. Esqueleto de código
 
-Pacotes Java em `src/main/java/br/edu/unipampa/usina/` espelhando a arquitetura. Classes com métodos exigidos pelo feedback já declarados; corpo funcional no Marco 2.
+O núcleo funcional está em `mvp/src/br/edu/unipampa/usina/`, com EventBus, controle de reator, alarmes e auditoria. A pasta `src/` permanece como legado do esqueleto inicial.
 
 ---
 
@@ -188,8 +164,8 @@ Opção C — entregar o link do GitHub + este Markdown (conforme orientação d
 
 ## 10. Próximos passos (Marco 2)
 
-1. Implementar `EventBus` real in-process  
-2. Simulador de sensores → `ReatorFacade.receberLeitura`  
-3. Strategy de limiar + Factory/Facade de alarme  
-4. Persistência H2/SQLite  
-5. Demonstração ponta a ponta no README  
+1. Criar API HTTP Java para ligar o React ao núcleo EDA
+2. Substituir o estado demonstrativo do React por dados reais da API
+3. Decidir persistência de medições/alarmes e documentar a escolha
+4. Polir testes, roteiro e evidências da demonstração
+5. Manter Astah, documentação e código sincronizados

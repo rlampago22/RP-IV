@@ -1,67 +1,55 @@
 @startuml componentes-logicos-mvp
-title Diagrama de Componentes Lógicos — estruturado nos pacotes (MVP)
+title Componentes Lógicos — implementação atual e integração planejada
 skinparam componentStyle uml2
 skinparam shadowing false
 
-package "InfraestruturaEventos" {
-  component [EventBus] as Bus
-  interface "IEventPublisher" as Pub
-  interface "IEventSubscriber" as Sub
-  Bus -up- Pub
-  Bus -up- Sub
+package "Frontend React" {
+  component "T01 Visão Geral" as T01
+  component "T02 Sensores" as T02
+  component "T03 Alarmes" as T03
+  component "T04 Auditoria" as T04
+  component "T05 Cenários" as T05
+  component "Estado compartilhado\nmvpDemoReducer" as Estado
+
+  T01 --> Estado
+  T02 --> Estado
+  T03 --> Estado
+  T04 --> Estado
+  T05 --> Estado : executa cenário
 }
 
-package "ControleReator" {
-  component [ReatorFacade] as RF <<Facade>>
-  component [AvaliadorLimiar] as AL <<Strategy>>
-  component [Reator] as R
-  component [Sensor] as S
-  component [MedicaoReator] as MR
-  RF --> AL
-  RF --> R
-  RF --> MR
-  MR --> S
-  RF ..> Pub : publica MedicaoRegistrada
-  RF ..> Sub : consome (opcional)
+package "Aplicação Java" {
+  component "ReatorFacade" as RF <<Facade>>
+  component "AlarmeFacade" as AF <<Facade>>
+  component "AvaliadorFaixaSegura" as Aval <<Strategy>>
+  component "AlarmeFactory" as Factory <<Factory>>
+  component "EventBus" as Bus
+  component "AuditoriaSubscriber" as Aud
+  component "RegistroAuditoria" as Reg
+
+  RF --> Bus : publica medição/observação/falha
+  Bus --> AF : MedicaoRegistrada
+  AF --> Aval
+  AF --> Factory
+  AF --> Bus : publica ciclo do alarme
+  Bus --> Aud : todos os eventos
+  Aud --> Reg : anexa entrada + SHA-256
 }
 
-package "Alarmes" {
-  component [AlarmeFacade] as AF <<Facade>>
-  component [Alarme] as A
-  component [AlarmeFactory] as AFact <<Factory>>
-  AF --> A
-  AF --> AFact
-  AF ..> Pub : publica AlarmeEmitido
-  AF ..> Sub : consome MedicaoRegistrada / LimiarViolado
-}
+component "API HTTP Java" as Api <<future>>
+Estado ..> Api : substituir dados locais
+Api ..> RF : registrar/consultar
+Api ..> AF : listar/reconhecer/resolver
+Api ..> Reg : consultar/verificar
 
-package "PersistenciaReator" {
-  component [ReatorRepository] as RR <<Repository>>
-  RF --> RR
-}
-
-package "AuditoriaLogs" {
-  component [AuditoriaSubscriber] as AS
-  component [RegistroAuditoria] as RA
-  AS --> RA
-  AS ..> Sub : consome eventos
-}
-
-package "SegurancaAcesso" <<future>> {
-  component [AcessoFacade] as AcF
-  component [RegistroAcesso] as RegA
-  AcF --> RegA
-}
-
-note right of A
-  Métodos exigidos (feedback APS):
-  +emitirAlerta()
-  +registrarEvento()
+note right of Bus
+  Barramento síncrono,
+  em memória e no processo Java.
 end note
 
-note right of MR
-  Método exigido (feedback APS):
-  +registrarMedicao()
+note bottom of Estado
+  Integra T01–T05 na demonstração web atual.
+  Ainda não chama o núcleo Java.
 end note
 
 @enduml

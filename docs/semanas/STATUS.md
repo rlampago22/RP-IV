@@ -40,7 +40,7 @@ Issues antigas abertas (#12–#38) foram **fechadas em 15/09** e substituídas p
 | Bruno | [#44](https://github.com/rlampago22/RP-IV/issues/44) | API/estado EventBus | T01 Overview SCADA |
 | Bernardo | [#45](https://github.com/rlampago22/RP-IV/issues/45) | Histórico + SEQ-UC01 | T02 Sensores |
 | José | [#46](https://github.com/rlampago22/RP-IV/issues/46) | Alarme completo | T03 Alarmes ACK/Resolver |
-| Marcus | [#47](https://github.com/rlampago22/RP-IV/issues/47) | SEQ-UC02 + auditoria | T04 Auditoria |
+| Marcus | [#47](https://github.com/rlampago22/RP-IV/issues/47) | SEQ-UC02 + auditoria — [evidência](2026-09-21/marcus.md) | T04 dinâmica + T05 compartilhado |
 
 ## S4 — 28/09
 
