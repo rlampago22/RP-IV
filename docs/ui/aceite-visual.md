@@ -50,6 +50,6 @@ mais inspeção dos componentes em `frontend/src/`.
 
 ## Pendências #40 (grupo)
 
-- [ ] Atualizar frames Figma T01–T05 no chrome escuro (arquivo existente — ver [`FIGMA.md`](FIGMA.md))
-- [x] Export PNG em [`exports/`](exports/) (parcial: overview + mimic)
+- [x] ~~Atualizar frames Figma T01–T05~~ — **fora de escopo** (issue #40 CLOSED); telas no React
 - [x] Shell React portado do protótipo
+- Export PNG em [`exports/`](exports/) — legado opcional; não bloqueia M1

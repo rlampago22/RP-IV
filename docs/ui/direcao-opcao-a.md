@@ -54,7 +54,7 @@ T05 cenário Crítico → T01 núcleo CRÍTICO + banner → T03 ACK → Resolver
 
 | Tela | Dono | Issue S3 | Issue S4 |
 |------|------|----------|----------|
-| Shell + tokens Opção A | Grupo / Bruno | #40 | — |
+| Shell + tokens Opção A | Grupo / Bruno | #40 CLOSED (Figma fora; UI = React) | — |
 | T01 Overview | Bruno | #44 | #49 |
 | T02 Sensores | Bernardo | #45 | #50 |
 | T03 Alarmes | José | #46 | #51 |

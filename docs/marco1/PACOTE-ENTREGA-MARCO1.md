@@ -53,4 +53,6 @@ Evidência automatizada: `mvp\2-TESTAR-MVP.bat`.
 
 ## O que NÃO entra no pacote
 
-Itens Won't do MoSCoW RP4 (evacuação, RH, materiais, IA, cluster). Ver [`matriz-pdf-aps-vs-rp4.md`](../marco1/matriz-pdf-aps-vs-rp4.md).
+Itens Won't do MoSCoW RP4 (evacuação, RH, materiais, IA, cluster).  
+**Figma** e **redesenho UML** fora de escopo — telas no React; diagramas no PDF APS.  
+Ver [`matriz-pdf-aps-vs-rp4.md`](matriz-pdf-aps-vs-rp4.md).

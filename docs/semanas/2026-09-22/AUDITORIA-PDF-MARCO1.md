@@ -37,7 +37,7 @@ Detalhes: [`../marco1/matriz-pdf-aps-vs-rp4.md`](../marco1/matriz-pdf-aps-vs-rp4
 3. **Docs mentindo DoD** — “Marco 1 = esqueleto / API futura” → corrigido nesta auditoria  
 4. **Board sujo** — S3 fechadas nesta auditoria  
 5. **Seeds/T02 polish** — histórico front alinhado API → #50  
-6. **Figma #40** — desejável; **não bloqueia** MVP  
+6. **Figma #40** — **CLOSED / fora de escopo**; telas só no React  
 7. **UML no repo** — **não é mais trilha**: fonte = PDF APS; issues não pedem PlantUML/Astah novos |
 
 ---
@@ -58,7 +58,7 @@ Detalhes: [`../marco1/matriz-pdf-aps-vs-rp4.md`](../marco1/matriz-pdf-aps-vs-rp4
 
 | Issue | Ação |
 |-------|------|
-| #40 Figma | OPEN só item Figma (shell já feito) — não bloqueia M1 |
+| #40 Figma | **CLOSED** — fora de escopo; UI = `frontend/` |
 
 ### S4 = fechar gaps A–L (reescritas)
 

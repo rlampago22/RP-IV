@@ -28,8 +28,8 @@ Resumo S2: [`2026-09-14/RESUMO-MERGE.md`](2026-09-14/RESUMO-MERGE.md) · S3: [`2
 
 | Issue | Dono | Status |
 |-------|------|--------|
-| [#40](https://github.com/rlampago22/RP-IV/issues/40) | Grupo | Shell React **OK** · Figma opcional (não bloqueia M1) |
-| [#41](https://github.com/rlampago22/RP-IV/issues/41) | Bruno | **Fechar** — EventBus + API + T01 evidenciados |
+| [#40](https://github.com/rlampago22/RP-IV/issues/40) | Grupo | **CLOSED** — Figma fora de escopo; telas = React `frontend/` |
+| [#41](https://github.com/rlampago22/RP-IV/issues/41) | Bruno | **CLOSED** |
 | [#42](https://github.com/rlampago22/RP-IV/issues/42) | José | **CLOSED** |
 
 ---

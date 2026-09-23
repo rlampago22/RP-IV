@@ -24,7 +24,7 @@ Template: [`semanas/_template-entrega-vertical.md`](semanas/_template-entrega-ve
 
 | Sprint | Segunda | Foco | Issues |
 |--------|---------|------|--------|
-| Idealização | → 21/09 | Shell React + Figma Opção A | [#40](https://github.com/rlampago22/RP-IV/issues/40) |
+| Idealização | → 21/09 | Shell React Opção A (Figma cancelado) | [#40](https://github.com/rlampago22/RP-IV/issues/40) **CLOSED** |
 | S3 | 21/09 | 1ª fatia vertical back+front | [#43](https://github.com/rlampago22/RP-IV/issues/43)–[#47](https://github.com/rlampago22/RP-IV/issues/47) **mergeado** |
 | S4 | 28/09 | Fechar gaps do **MVP Must completo** | [#48](https://github.com/rlampago22/RP-IV/issues/48)–[#52](https://github.com/rlampago22/RP-IV/issues/52) |
 | Marco 1 | 05/10 | Apresentação do MVP Must **completo** | [#53](https://github.com/rlampago22/RP-IV/issues/53)–[#57](https://github.com/rlampago22/RP-IV/issues/57) |

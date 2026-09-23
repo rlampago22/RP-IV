@@ -29,7 +29,7 @@ Telas: ver [`ui/idealizacao-telas.md`](ui/idealizacao-telas.md).
 Toda **segunda** cada aluno entrega **1 issue** com:
 
 1. **Backend** (Java / evento / doc de arquitetura da trilha)  
-2. **Frontend** (pedaço da tela React T0X ou Figma → código)  
+2. **Frontend** (pedaço da tela React T0X Opção A)  
 3. Relatório no template [`semanas/_template-entrega-vertical.md`](semanas/_template-entrega-vertical.md)  
 4. PR da branch pessoal → `desenvolvimento`
 
@@ -49,7 +49,7 @@ Ao fechar a sprint: preencher [`semanas/_template-resumo-merge.md`](semanas/_tem
 
 | Sprint | Segunda | Foco do grupo | Issues |
 |--------|---------|---------------|--------|
-| Idealização | **agora → 21/09** | Opção A no Figma + shell React (#40) | Epic [#40](https://github.com/rlampago22/RP-IV/issues/40) |
+| Idealização | → 21/09 | Shell React Opção A (#40; Figma cancelado) | [#40](https://github.com/rlampago22/RP-IV/issues/40) **CLOSED** |
 | S3 | **21/09** | 1ª fatia vertical back+front por pessoa | 5 issues S3 |
 | S4 | **28/09** | Integração, polish, ensaio 8–10 min | 5 issues S4 |
 | Marco 1 | **05/10** | Apresentação + demo Must | 5 issues M1 |
@@ -76,11 +76,11 @@ Pacote: [`marco1/PACOTE-ENTREGA-MARCO1.md`](marco1/PACOTE-ENTREGA-MARCO1.md) · 
 | API HTTP Java → React | Bruno | Stub `/api/estado` entregue — polish #49 |
 | T05 → API/EventBus | Marcus | Gap H — #52 |
 | Aceite Must PASS | Álvaro | Gap K — #48 |
-| Figma frames oficiais | Grupo | Opcional (#40); não bloqueia M1 |
+| Figma frames oficiais | Grupo | **Fora de escopo** (#40 CLOSED) — telas no React |
 | Migrar `mvp/` → `backend/` | Contínuo | Pós–Marco 1 OK |
 
 ---
 
 ## 5. O que NÃO fazer até Marco 1
 
-Evacuação, RH, IA preditiva, conformidade ampla, microserviços, visual Swing como entrega final, **redesenhar UML/diagramas no repositório** (fonte = PDF APS).
+Evacuação, RH, IA preditiva, conformidade ampla, microserviços, visual Swing como entrega final, **redesenhar UML/diagramas no repositório** (fonte = PDF APS), **Figma** (telas = React).
