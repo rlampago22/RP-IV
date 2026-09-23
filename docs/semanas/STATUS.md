@@ -52,7 +52,7 @@ Resumo S2: [`2026-09-14/RESUMO-MERGE.md`](2026-09-14/RESUMO-MERGE.md) · S3: [`2
 |-------|-------|---------|
 | Álvaro | [#48](https://github.com/rlampago22/RP-IV/issues/48) | K — aceite Must PASS + slides |
 | Bruno | [#49](https://github.com/rlampago22/RP-IV/issues/49) | I — T01 + API (sem UML; PDF APS) |
-| Bernardo | [#50](https://github.com/rlampago22/RP-IV/issues/50) | A/B — seeds + T02 ↔ API · **em PR (branch `bernardo`)** |
+| Bernardo | [#50](https://github.com/rlampago22/RP-IV/issues/50) | A/B — seeds + T02 ↔ API · [PR #65](https://github.com/rlampago22/RP-IV/pull/65) |
 | José | [#51](https://github.com/rlampago22/RP-IV/issues/51) | D — T03 + roteiro alarme live |
 | Marcus | [#52](https://github.com/rlampago22/RP-IV/issues/52) | H — **T05 → EventBus/API** + README demo |
 
