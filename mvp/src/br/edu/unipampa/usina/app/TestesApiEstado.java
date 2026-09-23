@@ -4,9 +4,11 @@ import br.edu.unipampa.usina.alarmes.AlarmeFacade;
 import br.edu.unipampa.usina.alarmes.AlarmeFactory;
 import br.edu.unipampa.usina.alarmes.AvaliadorFaixaSegura;
 import br.edu.unipampa.usina.apiestado.AlarmeEstado;
+import br.edu.unipampa.usina.apiestado.CenariosMedicao;
 import br.edu.unipampa.usina.apiestado.EstadoAgregador;
 import br.edu.unipampa.usina.apiestado.EstadoJson;
 import br.edu.unipampa.usina.apiestado.EstadoSnapshot;
+import br.edu.unipampa.usina.apiestado.SensorEstado;
 import br.edu.unipampa.usina.apiestado.StatusReator;
 import br.edu.unipampa.usina.controlereator.ReatorFacade;
 import br.edu.unipampa.usina.controlereator.Sensor;
@@ -16,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Testes do EstadoAgregador/EstadoJson (débito issue #41 + issue #44):
+ * Testes do EstadoAgregador/EstadoJson (débito issue #41 + issue #44 + S4 #50):
  * confirma que o estado exposto em /api/estado é derivado apenas dos eventos do EventBus,
  * sem depender diretamente de ReatorFacade/AlarmeFacade (regra EDA).
  */
@@ -33,8 +35,10 @@ public final class TestesApiEstado {
         AlarmeFacade alarmes = new AlarmeFacade(eventBus, new AvaliadorFaixaSegura(), new AlarmeFactory());
         ReatorFacade reator = new ReatorFacade(eventBus);
 
-        reator.registrarSensor(new Sensor(1L, "TEMPERATURA", "Celsius", 0.0, 350.0, 20.0, 320.0));
-        reator.registrarSensor(new Sensor(2L, "PRESSAO", "bar", 0.0, 160.0, 10.0, 150.0));
+        reator.registrarSensor(new Sensor(1L, "TEMPERATURA", "Celsius", 0.0, 350.0, 20.0, 325.0));
+        reator.registrarSensor(new Sensor(2L, "PRESSAO", "bar", 0.0, 160.0, 10.0, 155.0));
+        reator.registrarSensor(new Sensor(3L, "RADIACAO", "mSv/h", 0.0, 5.0, 0.1, 4.2));
+        reator.registrarSensor(new Sensor(4L, "FLUXO_RESFRIAMENTO", "m3/h", 500.0, 1500.0, 600.0, 1400.0));
 
         // 1. Estado inicial: sem sensores/alarmes, ESTAVEL.
         exigir(estado.snapshot().status() == StatusReator.ESTAVEL, "Estado inicial deve ser ESTAVEL.");
@@ -45,9 +49,11 @@ public final class TestesApiEstado {
         exigir(estado.snapshot().sensores().size() == 1, "Deve existir 1 sensor apos a primeira leitura.");
         exigir(estado.snapshot().contadores().medicoes() == 1, "Contador de medicoes deve ser 1.");
         exigir(estado.snapshot().status() == StatusReator.ESTAVEL, "Leitura segura nao deve mudar o status.");
+        exigir(estado.snapshot().sensores().get(0).historico().equals(List.of(300.0)),
+            "Historico do sensor deve conter a leitura.");
 
         // 3. ObservacaoRegistrada (Fluxo Alternativo 1) muda o badge para ATENCAO.
-        reator.receberLeitura(1L, 325.0); // dentro do limite, fora da faixa ideal de atencao
+        reator.receberLeitura(1L, 328.0); // dentro do limite seguro, fora da faixa ideal de atencao
         exigir(estado.snapshot().status() == StatusReator.ATENCAO, "Observacao preventiva deve mudar o status para ATENCAO.");
 
         // 4. Leitura violando o limiar critico gera AlarmeEmitido -> status CRITICO.
@@ -78,14 +84,37 @@ public final class TestesApiEstado {
         List<?> eventos = estado.snapshot().eventos();
         exigir(!eventos.isEmpty(), "Timeline de eventos nao deve estar vazia.");
 
-        // 8. Contrato JSON deve ser gerado sem lançar excecao e conter os campos obrigatorios.
+        // 8. Seed Normal (#50): 6 leituras previsiveis + historico no JSON.
+        CenariosMedicao.aplicarNormal(reator);
+        EstadoSnapshot aposNormal = estado.snapshot();
+        exigir(aposNormal.status() == StatusReator.ESTAVEL, "Seed Normal deve deixar status ESTAVEL.");
+        SensorEstado tempNormal = aposNormal.sensores().stream()
+            .filter(s -> s.id() == 1L)
+            .findFirst()
+            .orElseThrow();
+        exigir(tempNormal.valor() == 310.5, "Seed Normal: temperatura final deve ser 310.5.");
+        exigir(tempNormal.historico().size() == 6, "Seed Normal: historico deve ter 6 amostras.");
+        exigir(tempNormal.historico().get(5) == 310.5, "Seed Normal: ultima amostra = valor atual.");
+
+        // 9. Seed Observacao (#50): temperatura 328 -> ATENCAO.
+        CenariosMedicao.aplicarObservacao(reator);
+        EstadoSnapshot aposObs = estado.snapshot();
+        exigir(aposObs.status() == StatusReator.ATENCAO, "Seed Observacao deve deixar status ATENCAO.");
+        SensorEstado tempObs = aposObs.sensores().stream()
+            .filter(s -> s.id() == 1L)
+            .findFirst()
+            .orElseThrow();
+        exigir(tempObs.valor() == 328.0, "Seed Observacao: temperatura final deve ser 328.0.");
+
+        // 10. Contrato JSON deve ser gerado sem lançar excecao e conter os campos obrigatorios.
         String json = EstadoJson.escrever(estado.snapshot());
         exigir(json.contains("\"status\":"), "JSON deve conter o campo status.");
         exigir(json.contains("\"sensores\":"), "JSON deve conter o campo sensores.");
+        exigir(json.contains("\"historico\":"), "JSON deve conter o campo historico por sensor.");
         exigir(json.contains("\"alarmes\":"), "JSON deve conter o campo alarmes.");
         exigir(json.contains("\"eventos\":"), "JSON deve conter o campo eventos.");
 
-        System.out.println("\n[SUCESSO] Testes da API de estado (EstadoAgregador/EstadoJson) passaram com 100% de exito!");
+        System.out.println("\n[SUCESSO] Testes da API de estado (EstadoAgregador/EstadoJson + seeds #50) passaram com 100% de exito!");
     }
 
     private static void exigir(boolean condicao, String mensagem) {

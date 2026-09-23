@@ -55,7 +55,7 @@ public final class ApiEstadoMain {
         reator.receberLeitura(3L, 2.4);
         reator.receberLeitura(4L, 1100.0);
 
-        ApiEstadoHttpServer servidor = new ApiEstadoHttpServer(estado, alarmeFacade, PORTA);
+        ApiEstadoHttpServer servidor = new ApiEstadoHttpServer(estado, alarmeFacade, reator, PORTA);
         servidor.iniciar();
 
         iniciarTempoRealSimulado(reator, estado);
