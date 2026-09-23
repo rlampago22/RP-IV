@@ -46,9 +46,9 @@ Evacuação, RH/treinamentos, conformidade ampla, IA preditiva, rastreio complet
 
 | Marco | Entrega |
 |-------|---------|
-| **1** | Documentação inicial, arquitetura e esqueleto de pacotes Java |
-| **2** | Fluxo Must funcional + padrões de projeto + auditoria persistente |
-| **3 (em preparação)** | Interface React T01–T05, integração HTTP e preparação da demonstração |
+| **1 (05/10/2026)** | **MVP Must completo:** RF01–RF06 + RNFs do núcleo, GoF, auditoria SHA-256, API estado stub, UI Opção A T01–T05, artefatos UML/MoSCoW e demo 8–10 min |
+| **2** | Evolução Should (acesso), polish de integração e persistência além do núcleo |
+| **3** | Ampliações Could (emergência) e preparação de demonstração final da disciplina |
 
 ## 7. Riscos e mitigação
 

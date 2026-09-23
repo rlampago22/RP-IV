@@ -24,17 +24,19 @@ Template: [`semanas/_template-entrega-vertical.md`](semanas/_template-entrega-ve
 
 | Sprint | Segunda | Foco | Issues |
 |--------|---------|------|--------|
-| Idealização | agora → 21/09 | Shell React + Figma Opção A | [#40](https://github.com/rlampago22/RP-IV/issues/40) |
-| S3 | 21/09 | 1ª fatia vertical back+front | [#43](https://github.com/rlampago22/RP-IV/issues/43)–[#47](https://github.com/rlampago22/RP-IV/issues/47) |
-| S4 | 28/09 | Integração + ensaio 8–10 min | [#48](https://github.com/rlampago22/RP-IV/issues/48)–[#52](https://github.com/rlampago22/RP-IV/issues/52) |
-| Marco 1 | 05/10 | Apresentação + demo Must | [#53](https://github.com/rlampago22/RP-IV/issues/53)–[#57](https://github.com/rlampago22/RP-IV/issues/57) |
+| Idealização | → 21/09 | Shell React + Figma Opção A | [#40](https://github.com/rlampago22/RP-IV/issues/40) |
+| S3 | 21/09 | 1ª fatia vertical back+front | [#43](https://github.com/rlampago22/RP-IV/issues/43)–[#47](https://github.com/rlampago22/RP-IV/issues/47) **mergeado** |
+| S4 | 28/09 | Fechar gaps do **MVP Must completo** | [#48](https://github.com/rlampago22/RP-IV/issues/48)–[#52](https://github.com/rlampago22/RP-IV/issues/52) |
+| Marco 1 | 05/10 | Apresentação do MVP Must **completo** | [#53](https://github.com/rlampago22/RP-IV/issues/53)–[#57](https://github.com/rlampago22/RP-IV/issues/57) |
+
+**DoD Marco 1:** ver [`plano-entregas.md`](plano-entregas.md) e [`marco1/PACOTE-ENTREGA-MARCO1.md`](marco1/PACOTE-ENTREGA-MARCO1.md).
 
 ### Débito
 
-| Issue | Dono |
-|-------|------|
-| [#41](https://github.com/rlampago22/RP-IV/issues/41) | Bruno — pacotes/EventBus |
-| [#42](https://github.com/rlampago22/RP-IV/issues/42) | José — GoF/Strategy |
+| Issue | Dono | Status |
+|-------|------|--------|
+| [#41](https://github.com/rlampago22/RP-IV/issues/41) | Bruno | Fechar (evidenciado) |
+| [#42](https://github.com/rlampago22/RP-IV/issues/42) | José | CLOSED |
 
 ---
 

@@ -10,13 +10,13 @@
 
 ![Componentes lógicos do MVP](marco1/diagramas/componentes-logicos-mvp.png)
 
-Fonte UML: [`marco1/diagramas/componentes-logicos-mvp.puml`](marco1/diagramas/componentes-logicos-mvp.puml). A API entre o React e o Java está marcada no diagrama como evolução futura; hoje a interface web usa estado demonstrativo compartilhado.
+Fonte UML: [`marco1/diagramas/componentes-logicos-mvp.puml`](marco1/diagramas/componentes-logicos-mvp.puml). Stub HTTP entregue (S3 Bruno): `mvp/4-EXECUTAR-API-ESTADO.bat` → `GET /api/estado`. T05 cenários integrados = gap S4 (#52).
 
 | Camada | O que faz |
 |--------|-----------|
 | Domínio Java | Publica/consome eventos; mantém medições e alarmes em memória |
-| API (a evoluir) | Expõe estado derivado dos eventos ao front |
-| React | Telas T01–T05 de supervisão |
+| API estado | Expõe snapshot derivado do EventBus ao front (`apiestado`) |
+| React | Telas T01–T05 Opção A (`EstadoContext`) |
 
 A auditoria é a persistência existente nesta versão: arquivo `mvp/dados/auditoria.log` com encadeamento SHA-256.
 
@@ -61,19 +61,22 @@ Cada um com PR: domínio da trilha **e** tela React mínima (mesmo mock). Evento
 Fluxo integrado: demo dispara cenário → overview/alarmes/auditoria atualizam. README de execução. Diagramas essenciais = código real.
 
 ### DoD Marco 1 (05/10)
-Apresentação: EDA + MVP Must + demo web (ou híbrido web+Java se API ainda parcial) + artefatos UML essenciais.
+**MVP Must completo:** RF01–RF06 + RNFs + GoF + auditoria + API estado + UI T01–T05 integrada + artefatos UML + aceite Must PASS + apresentação 8–10 min.  
+Pacote: [`marco1/PACOTE-ENTREGA-MARCO1.md`](marco1/PACOTE-ENTREGA-MARCO1.md) · Auditoria: [`semanas/2026-09-22/AUDITORIA-PDF-MARCO1.md`](semanas/2026-09-22/AUDITORIA-PDF-MARCO1.md).
 
 ---
 
 ## 4. Débito técnico a não esquecer
 
-| Item | Dono |
-|------|------|
-| Evidência S1 pacotes/componentes | Bruno |
-| Evidência S1 GoF | José |
-| API HTTP Java → React | Bruno (+ apoio) |
-| Figma frames oficiais | Grupo (plugin Figma no Cursor) |
-| Migrar `mvp/` → `backend/` | Contínuo |
+| Item | Dono | Status 22/09 |
+|------|------|--------------|
+| Evidência S1 pacotes/componentes | Bruno | Feito (#41 + #44) — fechar issue |
+| Evidência S1 GoF | José | Feito (#42 CLOSED) |
+| API HTTP Java → React | Bruno | Stub `/api/estado` entregue — polish #49 |
+| T05 → API/EventBus | Marcus | Gap H — #52 |
+| Aceite Must PASS | Álvaro | Gap K — #48 |
+| Figma frames oficiais | Grupo | Opcional (#40); não bloqueia M1 |
+| Migrar `mvp/` → `backend/` | Contínuo | Pós–Marco 1 OK |
 
 ---
 

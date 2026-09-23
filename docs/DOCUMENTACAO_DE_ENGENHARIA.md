@@ -7,7 +7,7 @@ Não duplica o conteúdo — só organiza links.
 **Sistema:** Central de Supervisão — Usina Nuclear  
 **Arquitetura:** EDA (EventBus in-process)  
 **UI oficial:** Opção A — SCADA escuro ([`ui/direcao-opcao-a.md`](ui/direcao-opcao-a.md))  
-**Marco 1:** 05/10/2026
+**Marco 1:** 05/10/2026 — **MVP Must completo** ([`marco1/PACOTE-ENTREGA-MARCO1.md`](marco1/PACOTE-ENTREGA-MARCO1.md) · auditoria [`semanas/2026-09-22/AUDITORIA-PDF-MARCO1.md`](semanas/2026-09-22/AUDITORIA-PDF-MARCO1.md))
 
 ---
 
