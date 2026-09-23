@@ -22,7 +22,7 @@ Detalhes: [`../marco1/matriz-pdf-aps-vs-rp4.md`](../marco1/matriz-pdf-aps-vs-rp4
 | G | ≥3 GoF | **PASS** | Facade, Observer/Pub-Sub, Strategy, Factory |
 | H | UI Opção A T01–T05 | **PARCIAL** | Shell + T01–T04 OK · **T05 não dispara API** (#52) |
 | I | Ponte Java↔React | **PASS** | `ApiEstadoHttpServer` · `/api/estado` · `EstadoContext` |
-| J | Artefatos professor | **PARCIAL** | Docs OK · ER puml restaurado · regenerar PDF após S4 · diagramas vs ApiEstado |
+| J | Artefatos professor | **PASS*** | **UML/diagramas canônicos = PDF APS 8ª** (não redesenhar no repo). Docs MoSCoW/MVP + código bastam; pasta `marco1/diagramas` = legado/apoio |
 | K | Pacote entrega + aceite Must | **GAP** | Checklist ainda N/E / texto 14/09 (#48) |
 | L | Apresentação 8–10 min | **PARCIAL** | Issues #53–#57 abertas · depende fechar H/K |
 
@@ -35,9 +35,10 @@ Detalhes: [`../marco1/matriz-pdf-aps-vs-rp4.md`](../marco1/matriz-pdf-aps-vs-rp4
 1. **T05 integrado** — botões só alteram estado local; não publicam no EventBus/API → #52  
 2. **Aceite Must preenchido com PASS** — checklist desatualizado → #48  
 3. **Docs mentindo DoD** — “Marco 1 = esqueleto / API futura” → corrigido nesta auditoria  
-4. **Board sujo** — S3 #43–#45/#47/#41 ainda OPEN com PRs já mergeados  
+4. **Board sujo** — S3 fechadas nesta auditoria  
 5. **Seeds/T02 polish** — histórico front alinhado API → #50  
-6. **Figma #40** — desejável; **não bloqueia** MVP (protótipo HTML + React existem)
+6. **Figma #40** — desejável; **não bloqueia** MVP  
+7. **UML no repo** — **não é mais trilha**: fonte = PDF APS; issues não pedem PlantUML/Astah novos |
 
 ---
 
@@ -64,7 +65,7 @@ Detalhes: [`../marco1/matriz-pdf-aps-vs-rp4.md`](../marco1/matriz-pdf-aps-vs-rp4
 | Issue | Gap | DoD resumido |
 |-------|-----|--------------|
 | #48 Álvaro | K (+ slides) | Checklist Must PASS + slides MoSCoW/MVP |
-| #49 Bruno | J (+ T01) | Diagramas = ApiEstado; T01 estável |
+| #49 Bruno | I (+ T01) | T01/API polish — **sem** redesenhar UML |
 | #50 Bernardo | A/B demo | Seeds + T02 histórico alinhado `/api/estado` |
 | #51 José | D (+ G fala) | T03 + roteiro alarme no fluxo live |
 | #52 Marcus | H | T05 → cenário crítico atualiza T01/T03/T04 + README demo |
@@ -97,5 +98,6 @@ Evacuação, RH, materiais radioativos, IA preditiva, biometria real, cluster/99
 - Scorecard sem GAP crítico (H e K em PASS)  
 - Demo: Normal → Anomalia → ACK → Resolver → auditoria (T05→T01→T03→T04)  
 - `2-TESTAR-MVP.bat` + `npm run build` OK  
-- `ENTREGA-MARCO1.pdf` regenerado  
 - Board: S3 fechada · S4 fechada · M1 = apresentação  
+- UML na fala = **PDF APS** (sem PRs de diagrama)  
+- Professor recebe MVP Must **completo** + PDF APS para diagramas, sem prometer o sistema APS inteiro

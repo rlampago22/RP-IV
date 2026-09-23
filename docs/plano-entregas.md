@@ -61,7 +61,8 @@ Cada um com PR: domínio da trilha **e** tela React mínima (mesmo mock). Evento
 Fluxo integrado: demo dispara cenário → overview/alarmes/auditoria atualizam. README de execução. Diagramas essenciais = código real.
 
 ### DoD Marco 1 (05/10)
-**MVP Must completo:** RF01–RF06 + RNFs + GoF + auditoria + API estado + UI T01–T05 integrada + artefatos UML + aceite Must PASS + apresentação 8–10 min.  
+**MVP Must completo:** RF01–RF06 + RNFs + GoF + auditoria + API estado + UI T01–T05 + aceite Must PASS + apresentação 8–10 min.  
+**Diagramas/UML:** usar o **PDF APS 8ª entrega** (não redesenhar no repo).  
 Pacote: [`marco1/PACOTE-ENTREGA-MARCO1.md`](marco1/PACOTE-ENTREGA-MARCO1.md) · Auditoria: [`semanas/2026-09-22/AUDITORIA-PDF-MARCO1.md`](semanas/2026-09-22/AUDITORIA-PDF-MARCO1.md).
 
 ---
@@ -82,4 +83,4 @@ Pacote: [`marco1/PACOTE-ENTREGA-MARCO1.md`](marco1/PACOTE-ENTREGA-MARCO1.md) · 
 
 ## 5. O que NÃO fazer até Marco 1
 
-Evacuação, RH, IA preditiva, conformidade ampla, microserviços, visual Swing como entrega final.
+Evacuação, RH, IA preditiva, conformidade ampla, microserviços, visual Swing como entrega final, **redesenhar UML/diagramas no repositório** (fonte = PDF APS).

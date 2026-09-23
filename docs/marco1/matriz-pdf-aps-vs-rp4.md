@@ -3,7 +3,8 @@
 **Data:** 2026-09-22  
 **Fontes:** PDF *APS — Sistema de Controle de Usina Nuclear — 8ª entrega* (99 págs.) · [`02-priorizacao-moscow.md`](02-priorizacao-moscow.md) · [`especificacao-rf-rnf-moscow-mvp.md`](../mvp/especificacao-rf-rnf-moscow-mvp.md)
 
-**Regra:** Marco 1 entrega o **MVP Must do RP4** (RF01–RF06), não o PDF inteiro.
+**Regra:** Marco 1 entrega o **MVP Must do RP4** (RF01–RF06 + código/demo), não o PDF inteiro.  
+**UML/diagramas:** o próprio PDF APS é a fonte — **não** há trilha de redesenho UML no repositório.
 
 ---
 
@@ -16,12 +17,12 @@
 | 3 | MoSCoW PDF (RF-1…18 / RNF) | `02-priorizacao-moscow.md` | OK com **recorte** (ver §2) |
 | 4–5 | Casos de uso amplos | `05-casos-uso-mvp.md` (núcleo) | OK núcleo / fora resto |
 | 6 | Classes conceituais/domínio | `06-classes-projeto-mvp.md` | OK núcleo |
-| 7 | Atividades | — | Fora Marco 1 (não exigido no DoD atual) |
-| 8–9 | Pacotes / camadas | `04` + `pacotes.puml` | OK (+ ApiEstado pós-S3) |
-| 10 | Sequências UC01–UC10 | `07` + Astah Marcus (UC01/UC02 núcleo) | OK núcleo / fora UC03+ |
-| 11 | Componentes L/F | `componentes-*.puml` + PNG | OK |
-| 12 | ER | `08` + `diagramas/er-nucleo-mvp.puml` | OK (arquivo restaurado 22/09) |
-| 13 | Implantação | — | Referência / Won't cluster |
+| 7 | Atividades | — (PDF APS) | Fora — usar PDF |
+| 8–9 | Pacotes / camadas | PDF APS | Canônico no PDF; repo legado |
+| 10 | Sequências UC01–UC10 | PDF APS | Canônico no PDF |
+| 11 | Componentes L/F | PDF APS | Canônico no PDF |
+| 12 | ER | PDF APS (+ texto `08` se útil) | Canônico no PDF |
+| 13 | Implantação | PDF APS | Referência |
 
 ---
 

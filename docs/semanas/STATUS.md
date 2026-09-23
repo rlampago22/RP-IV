@@ -51,7 +51,7 @@ Resumo S2: [`2026-09-14/RESUMO-MERGE.md`](2026-09-14/RESUMO-MERGE.md) · S3: [`2
 | Aluno | Issue | Gap A–L |
 |-------|-------|---------|
 | Álvaro | [#48](https://github.com/rlampago22/RP-IV/issues/48) | K — aceite Must PASS + slides |
-| Bruno | [#49](https://github.com/rlampago22/RP-IV/issues/49) | J — diagramas = ApiEstado + T01 |
+| Bruno | [#49](https://github.com/rlampago22/RP-IV/issues/49) | I — T01 + API (sem UML; PDF APS) |
 | Bernardo | [#50](https://github.com/rlampago22/RP-IV/issues/50) | A/B — seeds + T02 ↔ API |
 | José | [#51](https://github.com/rlampago22/RP-IV/issues/51) | D — T03 + roteiro alarme live |
 | Marcus | [#52](https://github.com/rlampago22/RP-IV/issues/52) | H — **T05 → EventBus/API** + README demo |
@@ -61,7 +61,7 @@ Resumo S2: [`2026-09-14/RESUMO-MERGE.md`](2026-09-14/RESUMO-MERGE.md) · S3: [`2
 | Aluno | Issue |
 |-------|-------|
 | Álvaro | [#53](https://github.com/rlampago22/RP-IV/issues/53) escopo MoSCoW |
-| Bruno | [#54](https://github.com/rlampago22/RP-IV/issues/54) EDA + diagramas |
+| Bruno | [#54](https://github.com/rlampago22/RP-IV/issues/54) EDA no código + PDF APS |
 | Bernardo | [#55](https://github.com/rlampago22/RP-IV/issues/55) demo medições T02 |
 | José | [#56](https://github.com/rlampago22/RP-IV/issues/56) demo alarme + GoF |
 | Marcus | [#57](https://github.com/rlampago22/RP-IV/issues/57) UCs/auditoria + T05 |

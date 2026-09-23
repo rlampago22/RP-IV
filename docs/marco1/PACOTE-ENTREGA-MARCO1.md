@@ -5,6 +5,13 @@
 
 ---
 
+## Regra UML / diagramas (22/09)
+
+**Fonte canônica:** PDF *APS — Sistema de Controle de Usina Nuclear — 8ª entrega*.  
+Não abrir issues nem PRs só para redesenhar PlantUML/Astah/pacotes/componentes/sequências no repositório. Na apresentação, apontar o PDF; no repo, priorizar **código + MoSCoW/MVP + demo**.
+
+---
+
 ## Checklist do que entregar ao professor
 
 | # | Item | Onde | Status 22/09 |
@@ -12,17 +19,17 @@
 | 1 | Código MVP Java EDA | `mvp/` | Pronto (suíte Must + HIST OK) |
 | 2 | API estado HTTP | `mvp/4-EXECUTAR-API-ESTADO.bat` | Pronto (stub) |
 | 3 | Frontend Opção A T01–T05 | `frontend/` | T01–T04 OK · **T05 integrar = #52** |
-| 4 | RF/RNF + MoSCoW + MVP | `docs/marco1/01`–`03` | Corrigir marcos (M1=MVP completo) |
-| 5 | Pacotes / comp. L+F | `docs/marco1/diagramas/` | OK (revisar PNG vs ApiEstado) |
-| 6 | UC / SEQ / classes | Astah + `05`–`07` | OK núcleo |
-| 7 | ER núcleo | `08` + `er-nucleo-mvp.puml` | OK (puml restaurado) |
-| 8 | PDF consolidado | `ENTREGA-MARCO1.pdf` | Regenerar **após** S4 |
+| 4 | RF/RNF + MoSCoW + MVP | `docs/marco1/01`–`03` | M1 = MVP Must completo |
+| 5 | Pacotes / comp. L+F / UC / SEQ | **PDF APS 8ª entrega** (canônico) | Não redesenhar no repo |
+| 6 | Apoio legado (opcional) | `docs/marco1/diagramas/`, Astah Marcus | Legado — não é trilha S4/M1 |
+| 7 | ER núcleo (texto) | `08-mapeamento-relacional-mvp.md` | OK (espelha PDF/núcleo) |
+| 8 | Resumo entrega grupo | `ENTREGA-MARCO1.md` | MoSCoW/MVP/código — **sem** recriar UML do APS |
 | 9 | Matriz PDF × RP4 | `matriz-pdf-aps-vs-rp4.md` | OK |
 | 10 | Aceite Must preenchido | `docs/mvp/checklist-aceite-must.md` | **GAP** — ainda N/E (#48) |
 | 11 | README &lt; 5 min | `mvp/README.md` + `frontend/README.md` | Parcial · fechar no #52 |
 | 12 | Roteiro 8–10 min | `mvp/ROTEIRO-APRESENTACAO.md` + #53–#57 | Apresentação só |
-| 13 | Issues S3 fechadas | GitHub | Fechar na auditoria |
-| 14 | Issues S4 = gaps A–L | #48–#52 | Reescritas na auditoria |
+| 13 | Issues S3 fechadas | GitHub | Feito |
+| 14 | Issues S4 = gaps código/demo | #48–#52 | Sem issues de UML |
 
 ---
 
