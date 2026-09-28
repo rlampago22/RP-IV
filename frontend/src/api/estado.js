@@ -168,3 +168,8 @@ export function reconhecerAlarme(alarmeId) {
 export function resolverAlarme(alarmeId) {
   return chamar(`/api/alarmes/${encodeURIComponent(alarmeId)}/resolver`, { method: 'POST' })
 }
+
+export function dispararCenario(cenario) {
+  return chamar(`/api/cenarios/${encodeURIComponent(cenario.toLowerCase())}`, { method: 'POST' })
+}
+
