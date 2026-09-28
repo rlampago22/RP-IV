@@ -6,6 +6,7 @@ import {
   pausarTempoReal,
   reconhecerAlarme,
   resolverAlarme,
+  dispararCenario,
 } from '../api/estado.js'
 
 const POLL_MS = 3000
@@ -55,6 +56,7 @@ export function EstadoProvider({ children }) {
     pausarTempoReal: () => executarAcao(pausarTempoReal),
     reconhecerAlarme: (alarmeId) => executarAcao(() => reconhecerAlarme(alarmeId)),
     resolverAlarme: (alarmeId) => executarAcao(() => resolverAlarme(alarmeId)),
+    dispararCenario: (cenario) => executarAcao(() => dispararCenario(cenario)),
   }
 
   return <EstadoContext.Provider value={valor}>{children}</EstadoContext.Provider>
