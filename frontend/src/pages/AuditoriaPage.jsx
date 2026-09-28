@@ -6,10 +6,10 @@ export default function AuditoriaPage() {
 
   return (
     <section>
-      <p className="scada-kicker">T04 · RNF-03/05</p>
-      <h1 className="scada-heading">Auditoria</h1>
+      <p className="scada-kicker">CONFORMIDADE E RASTREABILIDADE OPERACIONAL</p>
+      <h1 className="scada-heading">Trilha de Auditoria</h1>
       <p className="scada-lead">
-        Trilha de eventos EDA via <code>/api/estado</code> (hash SHA-256 no MVP Java).
+        Registro cronológico e imutável de eventos operacionais com verificação de integridade por cadeia de hash criptográfica SHA-256.
       </p>
 
       <div className="scada-card" style={{ marginTop: 16 }}>

@@ -49,16 +49,15 @@ export default function OverviewPage() {
 
   return (
     <section>
-      <p className="scada-kicker">T01 · Overview</p>
-      <h1 className="scada-heading">Visão Geral</h1>
+      <p className="scada-kicker">PAINEL DE SUPERVISÃO CENTRAL • PACOTE R-01</p>
+      <h1 className="scada-heading">Visão Geral Operacional</h1>
       <p className="scada-lead">
-        Núcleo + telemetria RF-1 + timeline EDA, consumidos de <code>/api/estado</code> (
-        docs/api-estado-contrato.md). T02/T03 compartilham o mesmo EstadoContext.
+        Supervisão contínua do reator, telemetria de resfriamento e linha do tempo de eventos em tempo real.
       </p>
 
       <div className="scada-split">
         <div className="scada-card">
-          <h2>Núcleo do reator</h2>
+          <h2>Status do Núcleo do Reator</h2>
           <div className="scada-reactor">
             <div className={`scada-core ${STATUS_CLASSE[status] ?? ''}`.trim()}>
               {STATUS_TEXTO[status] ?? status}
@@ -88,7 +87,7 @@ export default function OverviewPage() {
         </div>
 
         <div className="scada-card">
-          <h2>Contadores EDA</h2>
+          <h2>Métricas do Sistema</h2>
           <div className="scada-metrics">
             <div className="scada-metric">
               <span>MEDIÇÕES</span>
@@ -101,11 +100,11 @@ export default function OverviewPage() {
               </strong>
             </div>
             <div className="scada-metric">
-              <span>AUDIT</span>
+              <span>AUDITORIA</span>
               <strong style={{ color: 'var(--cyan)' }}>{contadores.auditoria}</strong>
             </div>
             <div className="scada-metric">
-              <span>STATUS</span>
+              <span>ESTADO</span>
               <strong
                 style={{
                   color: `var(--${status === 'CRITICO' ? 'crit' : status === 'ATENCAO' ? 'warn' : 'ok'})`,
@@ -116,7 +115,7 @@ export default function OverviewPage() {
               </strong>
             </div>
           </div>
-          <h2>Linha do tempo de eventos</h2>
+          <h2>Histórico Operacional em Tempo Real</h2>
           <div className="scada-table-wrap">
             <table className="scada-table">
               <thead>
