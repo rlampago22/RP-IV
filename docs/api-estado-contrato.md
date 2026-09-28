@@ -40,10 +40,13 @@ A migração `mvp/` → `backend/` (Maven/Gradle) é indicada em [`backend-java.
 | `GET` | `/api/estado` | Retorna o snapshot atual (ver contrato JSON abaixo) |
 | `POST` | `/api/tempo-real/iniciar` | Liga a simulação periódica de leituras (varia os 4 sensores a cada 3s) |
 | `POST` | `/api/tempo-real/pausar` | Desliga a simulação periódica |
+| `POST` | `/api/demo/anomalia` | Cenário de demonstração: registra temperatura de 372 °C e emite `AlarmeEmitido` |
 | `POST` | `/api/alarmes/{id}/reconhecer` | Publica `AlarmeReconhecido` para o alarme `{id}` (operador fixo "Operador de Reator (UI Web)") |
 | `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` para o alarme `{id}` (responsável fixo "Engenheiro de Turno (UI Web)") |
 
 Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, para o front sempre re-sincronizar após uma ação. CORS liberado (`Access-Control-Allow-Origin: *`) para consumo local do Vite.
+
+`/api/demo/anomalia` é somente um gatilho do roteiro acadêmico. Não representa uma operação disponível ao operador em produção.
 
 > Simplificação assumida: as rotas de ação não recebem corpo (operador/justificativa fixos). Documentado aqui para não ser lido como "hardcode não documentado".
 
