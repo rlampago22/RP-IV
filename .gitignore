@@ -26,6 +26,7 @@ frontend/.env.local
 target/
 build/
 out/
+backend/data/
 mvp/**/*.class
 
 # Logs / temp

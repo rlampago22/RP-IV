@@ -20,12 +20,12 @@ Todo `PASS` ou `FAIL` deve apontar uma evidência: saída de terminal, teste aut
 | Campo | Preenchimento |
 |---|---|
 | Data e hora |  |
-| Executor |  |
+| Executor | Álvaro Domingues |
 | Branch | `alvaro` |
-| Commit |  |
-| Java |  |
-| Sistema operacional |  |
-| Evidências |  |
+| Commit | `51e2ba6` + alterações locais da issue #43 |
+| Java | Oracle JDK 27 (`java 27+35-2325`) |
+| Sistema operacional | Windows |
+| Evidências | 2026-09-21: `mvp\executar-mvp.ps1 -Testar` — 11/11 verificações Must passaram. |
 
 ## Preparação
 
@@ -121,6 +121,19 @@ Todo `PASS` ou `FAIL` deve apontar uma evidência: saída de terminal, teste aut
 | RF01–RF06 |  |  |  | [ ] Aceito [ ] Rejeitado |
 | RNF01–RNF05, RNF09–RNF10 |  |  |  | [ ] Aceito [ ] Rejeitado |
 | MVP Must |  |  |  | [ ] Aceito [ ] Rejeitado |
+
+## Execução local S3 — 2026-09-21
+
+| Grupo | PASS | FAIL | N/E | Decisão |
+|---|---:|---:|---:|---|
+| RF01–RF06 | ver suíte | 0 | 0 | [x] Aceito |
+| RNF01–RNF05, RNF09–RNF10 | ver suíte | 0 | 0 | [x] Aceito |
+| MVP Must | 11 verificações | 0 | 0 | [x] Aceito |
+
+Evidência: suíte integrada concluída com `[SUCESSO] 11 verificacoes de requisitos Must
+(RF01-RF06 / RNF01-RNF10) passaram com 100% de exito!`. O JDK está em
+`C:\Program Files\Java\jdk-27\bin`; se `java` não for reconhecido em uma janela já aberta,
+feche e reabra o terminal para carregar o `PATH` atualizado.
 
 ## Registro de falhas
 

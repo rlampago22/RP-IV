@@ -12,6 +12,8 @@ A pasta [`../backend/`](../backend/) é o **destino** no monorepo (`backend/` + 
 
 Migrar gradualmente o domínio de `mvp/src/...` → `backend/`, expondo API HTTP para o `frontend/` React (Opção A).
 
+A primeira fatia de autenticação web está documentada em [`backend-autenticacao.md`](backend-autenticacao.md) e implementada em `backend/` com migrations Flyway, H2 local e sessão HTTP.
+
 ## Trilhas (entrega vertical)
 
 | Trilha | Pacotes |

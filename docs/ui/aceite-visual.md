@@ -41,12 +41,13 @@ mais inspeção dos componentes em `frontend/src/`.
 | Cor restrita a status/alarme | PENDENTE | O shell usa as cores previstas, mas T01 colore valores de telemetria normais. Revisar no polish visual (#48). |
 | Quatro sensores RF-1 com valor e barra | PASS | T01 apresenta temperatura, pressão, radiação e fluxo, com unidade e barra. |
 | Timeline EDA visível | PASS | T01 apresenta `MEDICAO_REGISTRADA` e `ALARME_EMITIDO`. |
-| Reconhecer atualiza estado visível | PASS parcial | O botão do banner oculta o alarme e altera o badge para `ESTÁVEL`; ainda não atualiza T03/T04. |
-| Cenário altera núcleo, banner e trilha | FAIL (S3) | Ao clicar `Simular Anomalia (Crítico)` em T05, não surgem banner/estado crítico. A própria tela declara a integração para #52. |
-| Resolver atualiza estado/auditoria | FAIL (S3) | T03 e T04 não possuem handlers nem dados compartilhados neste scaffold. |
-| Fluxo T05 → T01 → T03 → T04 em menos de 5 s | N/E | Depende da integração T05/API/EventBus planejada para #52; não marcar PASS antes de teste integrado. |
+| Reconhecer atualiza estado visível | PASS | O banner e T03 levam a ocorrência para `RECONHECIDO` / `EM TRATAMENTO`. |
+| Cenário altera núcleo, banner e trilha | PASS (mock UI) | `Simular Anomalia (Crítico)` muda badge/núcleo, exibe o banner e registra `ALARME_EMITIDO`. |
+| Resolver atualiza estado/auditoria | PASS (mock UI) | Encerrar retorna a `ESTÁVEL` e registra `ALARME_RESOLVIDO`. |
+| Fluxo T05 → T01 → T03 → T04 em menos de 5 s | PASS (mock UI) | Testado no navegador: emitido → reconhecido → resolvido aparece na auditoria, sem erros de console. |
 
 **Saúde do ambiente:** `npm run build` passou. A página carregou com conteúdo significativo, sem overlay
 de framework e sem erros de console; os dois avisos encontrados são *future flags* do React Router.
 O roteiro e os critérios de reexecução estão em [`walkthrough-s3.md`](walkthrough-s3.md). Este registro
-é uma linha de base de UX, não substitui o aceite final integrado do MVP Must.
+é uma linha de base de UX. A publicação real no EventBus/API continua sendo o aceite de integração
+da #52 e não é substituída por este mock de interface.

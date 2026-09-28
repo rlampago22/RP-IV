@@ -60,6 +60,11 @@ a { color: inherit; text-decoration: none; }
 
 .scada-top-right { display: flex; align-items: center; gap: 12px; }
 
+.scada-user { display: grid; gap: 2px; text-align: right; }
+.scada-user strong { font-size: 12px; }
+.scada-user span { color: var(--muted); font-size: 10px; }
+.scada-logout { padding: 7px 9px; }
+
 .scada-badge {
   display: inline-flex;
   align-items: center;
@@ -320,6 +325,45 @@ button.scada-btn-ghost {
   color: var(--muted);
 }
 
+button.scada-btn:disabled { cursor: wait; opacity: .65; }
+
+/* ---------- Autenticação ---------- */
+.auth-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: radial-gradient(circle at 50% 0%, #172a47 0%, var(--bg) 52%);
+}
+
+.auth-card {
+  width: min(100%, 430px);
+  display: grid;
+  gap: 12px;
+  padding: 28px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 28px 70px rgb(0 0 0 / 30%);
+}
+
+.auth-card h1 { margin: 0; font-size: 26px; }
+.auth-card > p:not(.scada-kicker) { margin: 0; color: var(--muted); line-height: 1.5; font-size: 14px; }
+.auth-form { display: grid; gap: 14px; margin-top: 4px; }
+.auth-form label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 700; }
+.auth-form input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #0b1220;
+  color: var(--text);
+  font: inherit;
+}
+.auth-form input:focus { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.auth-error { margin: 0; color: #fecdd3; font-size: 13px; }
+.auth-loading { color: var(--muted); font-size: 14px; }
+
 .scada-pill {
   display: inline-flex;
   padding: 3px 10px;
@@ -366,4 +410,10 @@ button.scada-btn-ghost {
   .scada-split,
   .scada-metrics,
   .scada-scenarios { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 620px) {
+  .scada-top { align-items: flex-start; }
+  .scada-top-right { flex-wrap: wrap; justify-content: flex-end; }
+  .scada-user { display: none; }
 }

@@ -1,4 +1,4 @@
-export default function DemoPage() {
+export default function DemoPage({ onCritical, onNormal }) {
   return (
     <section>
       <p className="scada-kicker">T05 · Roteiro Marcus</p>
@@ -8,7 +8,7 @@ export default function DemoPage() {
       </p>
 
       <div className="scada-scenarios">
-        <button type="button" className="scada-scenario">
+        <button type="button" className="scada-scenario" onClick={onNormal}>
           <strong>Normal / Tempo Real</strong>
           <span>Medições na faixa · núcleo ESTÁVEL</span>
         </button>
@@ -20,14 +20,15 @@ export default function DemoPage() {
           <strong>Falha Sensor (Exceção)</strong>
           <span>FALHA_SENSOR_DETECTADA · manutenção</span>
         </button>
-        <button type="button" className="scada-scenario">
+        <button type="button" className="scada-scenario" onClick={onCritical}>
           <strong>Simular Anomalia (Crítico)</strong>
           <span>Temp 372 · fluxo baixo · ALARME_EMITIDO</span>
         </button>
       </div>
 
       <div className="scada-note">
-        Integração: estes botões devem publicar no EventBus via API (S4 · issue #52).
+        Demo UI: os cenários atualizam o estado compartilhado das telas; a publicação real no
+        EventBus via API segue planejada para S4 · issue #52.
         Protótipo interativo: <code>docs/ui/propostas/opcao-a.html</code>.
       </div>
     </section>

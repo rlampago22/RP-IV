@@ -1,4 +1,4 @@
-export default function AuditoriaPage() {
+export default function AuditoriaPage({ events }) {
   return (
     <section>
       <p className="scada-kicker">T04 · RNF-03/05</p>
@@ -17,30 +17,14 @@ export default function AuditoriaPage() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>18</td>
-                <td>2026-09-15T22:45:01Z</td>
-                <td className="ev">MEDICAO_REGISTRADA</td>
-                <td>a2f91c0e…</td>
-              </tr>
-              <tr>
-                <td>17</td>
-                <td>2026-09-15T22:44:58Z</td>
-                <td className="ev">ALARME_EMITIDO</td>
-                <td>b7e12a44…</td>
-              </tr>
-              <tr>
-                <td>16</td>
-                <td>2026-09-15T22:44:50Z</td>
-                <td className="ev">OBSERVACAO_REGISTRADA</td>
-                <td>c91d03ab…</td>
-              </tr>
-              <tr>
-                <td>15</td>
-                <td>2026-09-15T22:40:00Z</td>
-                <td className="ev">FALHA_SENSOR_DETECTADA</td>
-                <td>d4aa8812…</td>
-              </tr>
+              {events.map((event, index) => (
+                <tr key={`${event.type}-${index}`}>
+                  <td>{events.length - index}</td>
+                  <td>sessão atual</td>
+                  <td className="ev">{event.type}</td>
+                  <td>mock-{String(events.length - index).padStart(4, '0')}…</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
