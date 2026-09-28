@@ -118,6 +118,16 @@ a { color: inherit; text-decoration: none; }
   color: #fde68a;
 }
 
+.scada-api-error {
+  margin: 0 20px 12px;
+  padding: 9px 12px;
+  border: 1px solid rgb(168 85 247 / 45%);
+  border-radius: 8px;
+  background: rgb(168 85 247 / 12%);
+  color: #e9d5ff;
+  font-size: 12px;
+}
+
 .scada-main {
   flex: 1;
   padding: 0 20px 28px;

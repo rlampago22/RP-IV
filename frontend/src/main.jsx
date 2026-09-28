@@ -30,7 +30,7 @@ const BADGE_CLASSE = {
 }
 
 function Shell() {
-  const { estado, origemMock, reconhecerAlarme } = useEstado()
+  const { estado, origemMock, erroApi, reconhecerAlarme } = useEstado()
   const alarmeAtivo = estado.alarmes.find((a) => a.status === 'ATIVO')
 
   return (
@@ -67,6 +67,12 @@ function Shell() {
           </NavLink>
         ))}
       </nav>
+
+      {erroApi && (
+        <div className="scada-api-error" role="alert">
+          Falha na API: {erroApi}
+        </div>
+      )}
 
       {alarmeAtivo && (
         <div className="scada-banner">

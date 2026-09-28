@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 /**
  * Stub HTTP (JDK {@code com.sun.net.httpserver} — Zero External Dependencies) que expõe o
- * estado derivado do EventBus para o frontend React (T01/T02, Opção A).
+ * estado derivado do EventBus para o frontend React (T01/T02/T03/T05, Opção A).
  * Rotas e formato documentados em docs/api-estado-contrato.md.
  */
 public final class ApiEstadoHttpServer {
@@ -41,6 +41,7 @@ public final class ApiEstadoHttpServer {
         server.createContext("/api/tempo-real/pausar", exchange -> tratarTempoReal(exchange, false));
         server.createContext("/api/cenarios/normal", exchange -> tratarCenario(exchange, true));
         server.createContext("/api/cenarios/observacao", exchange -> tratarCenario(exchange, false));
+        server.createContext("/api/demo/anomalia", this::tratarAnomaliaDemo);
         server.createContext("/api/alarmes/", this::tratarAcaoAlarme);
         server.setExecutor(null);
         server.start();
@@ -90,6 +91,19 @@ public final class ApiEstadoHttpServer {
         } else {
             CenariosMedicao.aplicarObservacao(reator);
         }
+        responder(exchange, 200, EstadoJson.escrever(estado.snapshot()));
+    }
+
+    private void tratarAnomaliaDemo(HttpExchange exchange) throws IOException {
+        if (comCorsEPreflight(exchange, "POST")) {
+            return;
+        }
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
+            return;
+        }
+        estado.definirTempoReal(false);
+        reator.receberLeitura(1L, 372.0);
         responder(exchange, 200, EstadoJson.escrever(estado.snapshot()));
     }
 

@@ -42,10 +42,13 @@ A migração `mvp/` → `backend/` (Maven/Gradle) é indicada em [`backend-java.
 | `POST` | `/api/tempo-real/pausar` | Desliga a simulação periódica |
 | `POST` | `/api/cenarios/normal` | Pausa tempo-real e aplica seed Normal (`CenariosMedicao` → `ReatorFacade.receberLeitura`) — 6 leituras estáveis por sensor |
 | `POST` | `/api/cenarios/observacao` | Pausa tempo-real e aplica seed Observação (Normal + temp 328 °C → `ObservacaoRegistrada`) |
+| `POST` | `/api/demo/anomalia` | Cenário de demonstração: registra temperatura de 372 °C e emite `AlarmeEmitido` |
 | `POST` | `/api/alarmes/{id}/reconhecer` | Publica `AlarmeReconhecido` para o alarme `{id}` (operador fixo "Operador de Reator (UI Web)") |
 | `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` para o alarme `{id}` (responsável fixo "Engenheiro de Turno (UI Web)") |
 
 Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, para o front sempre re-sincronizar após uma ação. CORS liberado (`Access-Control-Allow-Origin: *`) para consumo local do Vite.
+
+`/api/demo/anomalia` é somente um gatilho do roteiro acadêmico. Não representa uma operação disponível ao operador em produção.
 
 > Simplificação assumida: as rotas de ação não recebem corpo (operador/justificativa fixos). Documentado aqui para não ser lido como "hardcode não documentado".
 

@@ -156,6 +156,11 @@ export function estadoMockObservacao() {
   return aplicarSeedMock(MOCK_OBSERVACAO)
 }
 
+/** Demo T03/T05 — temperatura 372 °C → AlarmeEmitido. */
+export function simularAnomalia() {
+  return chamar('/api/demo/anomalia', { method: 'POST' })
+}
+
 export function reconhecerAlarme(alarmeId) {
   return chamar(`/api/alarmes/${encodeURIComponent(alarmeId)}/reconhecer`, { method: 'POST' })
 }
