@@ -29,8 +29,9 @@ Tudo no sistema se organiza em torno de **eventos de domínio** publicados e con
 | ControleReator | Orquestra medição; pode publicar e disparar avaliação |
 | Alarmes | Consome/avalia; publica `AlarmeEmitido` |
 | AuditoriaLogs | Consumidor append-only |
-| PersistenciaReator | Persistência do núcleo (efeito colateral controlado do fluxo) |
-| API / Frontend (web) | Adaptadores: observam estado derivado dos eventos |
+| RegistroAuditoria | Persistência em arquivo append-only com cadeia SHA-256 |
+| Frontend React | T01–T05 integradas por estado demonstrativo compartilhado |
+| API HTTP | Adaptador futuro entre a interface web e o núcleo Java |
 
 ---
 
@@ -38,15 +39,15 @@ Tudo no sistema se organiza em torno de **eventos de domínio** publicados e con
 
 | RNF | Mecanismo EDA |
 |-----|----------------|
-| RNF01 Desempenho | Publish assíncrono; produtor não bloqueia em consumidores |
-| RNF02 Disponibilidade | Falha em um consumidor não derruba o produtor |
+| RNF01 Desempenho | **Parcial:** publish síncrono no MVP; assíncrono permanece como evolução |
+| RNF02 Disponibilidade | **Parcial:** exceções de assinantes são isoladas, mas não há redundância |
 | RNF03 Integridade | Evento como fato; validação antes do publish |
 | RNF04 Tolerância a falhas | Isolamento por assinante/módulo |
 | RNF05 Auditabilidade | Consumidor dedicado de auditoria |
 | RNF06 Manutenibilidade | Novos consumidores sem alterar produtores |
-| RNF07 Escalabilidade | Mais consumidores no mesmo contrato de eventos |
-| RNF09 Persistência | Efeitos de persistência no fluxo do núcleo |
-| RNF10 Testabilidade | Bus mockável; eventos simulados |
+| RNF07 Escalabilidade | Contratos permitem novos consumidores; escala distribuída ainda não existe |
+| RNF09 Persistência | **Parcial:** auditoria persiste; medições/alarmes ficam em memória |
+| RNF10 Testabilidade | Eventos simulados e 11 cenários automatizados locais |
 
 ---
 
@@ -63,9 +64,9 @@ GestaoRH, Evacuacao, AnaliseRelatorios, rastreio amplo de materiais, etc. — le
 | Pacotes (EDA) | [diagramas/pacotes.puml](diagramas/pacotes.puml) |
 | Componentes lógicos | [diagramas/componentes-logicos.puml](diagramas/componentes-logicos.puml) |
 | Componentes físicos | [diagramas/componentes-fisicos.puml](diagramas/componentes-fisicos.puml) |
-| Casos de uso MVP | [diagramas/casos-de-uso-mvp.puml](diagramas/casos-de-uso-mvp.puml) |
+| Casos de uso MVP | [Astah editável](../marcus/diagramas/Marcus-UML-MVP.asta) |
 | Classes núcleo | [diagramas/classes-projeto-mvp.puml](diagramas/classes-projeto-mvp.puml) |
-| SEQ UC01 / UC02 | [seq-uc01-medicao.puml](diagramas/seq-uc01-medicao.puml), [seq-uc02-alarme.puml](diagramas/seq-uc02-alarme.puml) |
+| SEQ UC01 / UC02 | [Astah editável](../marcus/diagramas/Marcus-UML-MVP.asta) |
 
 Outros artefatos (Astah APS completo, ER auxiliar) ficam em arquivo legado / não são entrega ativa.
 
@@ -74,5 +75,6 @@ Outros artefatos (Astah APS completo, ER auxiliar) ficam em arquivo legado / nã
 ## 6. Stack de realização
 
 - **Backend:** Java (EDA + EventBus)
-- **Frontend:** React (Vite) — supervisão web; consome API/estado derivado dos eventos
+- **Frontend:** React (Vite) — supervisão web; hoje usa estado demonstrativo compartilhado
+- **Integração futura:** API HTTP para substituir o estado simulado por eventos reais do Java
 - **GoF:** Observer/Pub-Sub, Strategy, Factory, Facade

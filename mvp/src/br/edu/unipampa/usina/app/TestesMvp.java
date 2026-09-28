@@ -138,7 +138,17 @@ public final class TestesMvp {
         Files.deleteIfExists(logAdulterado);
         Files.deleteIfExists(logTeste);
 
-        System.out.println("\n[SUCESSO] 11 verificacoes de requisitos Must (RF01-RF06 / RNF01-RNF10) passaram com 100% de exito!");
+        // 12. Histórico curto consultável (S3 / Bernardo — issue #45)
+        List<MedicaoReator> porTemp = reator.consultarHistorico(1L);
+        exigir(!porTemp.isEmpty(), "HIST-01: Historico por sensor TEMPERATURA nao pode ser vazio.");
+        exigir(porTemp.stream().allMatch(m -> m.getSensor().id() == 1L),
+            "HIST-01: Filtro por sensorId deve retornar apenas o sensor pedido.");
+        List<MedicaoReator> recentes = reator.consultarHistoricoRecente(2);
+        exigir(recentes.size() == 2, "HIST-02: consultarHistoricoRecente(2) deve retornar 2 itens.");
+        exigir(reator.getRepository().capacidadeMaxima() >= 1,
+            "HIST-03: ReatorRepository deve expor capacidade do historico curto.");
+
+        System.out.println("\n[SUCESSO] 11 verificacoes Must + historico curto (SEQ-UC01 / T02) passaram!");
     }
 
     private static void exigir(boolean condicao, String mensagem) {

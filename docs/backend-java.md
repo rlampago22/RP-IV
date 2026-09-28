@@ -12,7 +12,13 @@ A pasta [`../backend/`](../backend/) é o **destino** no monorepo (`backend/` + 
 
 Migrar gradualmente o domínio de `mvp/src/...` → `backend/`, expondo API HTTP para o `frontend/` React (Opção A).
 
-A primeira fatia de autenticação web está documentada em [`backend-autenticacao.md`](backend-autenticacao.md) e implementada em `backend/` com migrations Flyway, H2 local e sessão HTTP.
+## API de estado (stub, issues #41/#44)
+
+`mvp/src/br/edu/unipampa/usina/apiestado/` expõe `GET/POST http://localhost:8080/api/*` derivado do EventBus (JDK `com.sun.net.httpserver`, sem dependências externas). Contrato completo, endpoints e como rodar: [`api-estado-contrato.md`](api-estado-contrato.md).
+
+## Autenticação web (em evolução)
+
+A primeira fatia de autenticação está em `backend/`, com migrations Flyway, PostgreSQL local e sessão HTTP. A API de autenticação usa porta separada da API de estado do MVP para permitir que ambas coexistam durante a migração.
 
 ## Trilhas (entrega vertical)
 

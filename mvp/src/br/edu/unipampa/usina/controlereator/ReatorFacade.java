@@ -5,23 +5,35 @@ import br.edu.unipampa.usina.infraestruturaeventos.FalhaSensorDetectada;
 import br.edu.unipampa.usina.infraestruturaeventos.MedicaoRegistrada;
 import br.edu.unipampa.usina.infraestruturaeventos.ObservacaoRegistrada;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/** Ponto de entrada do módulo ControleReator (padrão Facade). */
+/**
+ * Ponto de entrada do módulo ControleReator (padrão Facade).
+ *
+ * <p>Alinhado ao SEQ-UC01 (fluxo principal):
+ * Sensor → receberLeitura → MedicaoReator.registrarMedicao →
+ * ReatorRepository.salvarMedicao → EventBus.publicar(MedicaoRegistrada).
+ * Avaliação de limiar / alarme ocorre via assinante {@code AlarmeFacade}
+ * no barramento (desacoplamento EDA).
+ */
 public final class ReatorFacade {
     private static final List<String> DESTINATARIOS_FALHA =
         List.of("Equipe Tecnica", "Engenheiro de Seguranca");
 
     private final EventBus eventBus;
+    private final ReatorRepository repository;
     private final Map<Long, Sensor> sensores = new LinkedHashMap<>();
-    private final List<MedicaoReator> historico = new ArrayList<>();
 
     public ReatorFacade(EventBus eventBus) {
+        this(eventBus, new ReatorRepository());
+    }
+
+    public ReatorFacade(EventBus eventBus, ReatorRepository repository) {
         this.eventBus = eventBus;
+        this.repository = repository;
     }
 
     public void registrarSensor(Sensor sensor) {
@@ -32,6 +44,13 @@ public final class ReatorFacade {
         return sensores.get(sensorId);
     }
 
+    public List<Sensor> listarSensores() {
+        return List.copyOf(sensores.values());
+    }
+
+    /**
+     * SEQ-UC01 — Registrar medição (fluxo principal até publicação no EventBus).
+     */
     public MedicaoReator receberLeitura(long sensorId, double valor) {
         Sensor sensor = sensores.get(sensorId);
         if (sensor == null) {
@@ -40,7 +59,7 @@ public final class ReatorFacade {
 
         MedicaoReator medicao = new MedicaoReator();
         medicao.registrarMedicao(valor, sensor, Instant.now());
-        historico.add(medicao);
+        repository.salvarMedicao(medicao);
 
         System.out.printf(
             Locale.ROOT,
@@ -108,6 +127,20 @@ public final class ReatorFacade {
     }
 
     public List<MedicaoReator> consultarHistorico() {
-        return List.copyOf(historico);
+        return repository.listarTodas();
+    }
+
+    /** Histórico filtrado por sensor (T02 / telemetria). */
+    public List<MedicaoReator> consultarHistorico(long sensorId) {
+        return repository.listarPorSensor(sensorId);
+    }
+
+    /** Últimas N medições do repositório (histórico curto). */
+    public List<MedicaoReator> consultarHistoricoRecente(int limite) {
+        return repository.listarRecentes(limite);
+    }
+
+    public ReatorRepository getRepository() {
+        return repository;
     }
 }

@@ -7,34 +7,15 @@ Regras aplicadas do feedback APS (domínio usina, não militar): fluxo principal
 
 ---
 
-## 1. Diagrama de Casos de Uso (descrição textual / Mermaid)
+## 1. Diagrama de Casos de Uso — Astah
 
-```mermaid
-flowchart TB
-  subgraph boundary [SistemaControleUsina]
-    UC01[UC01 Registrar Medicao de Reator]
-    UC02[UC02 Emitir Alarme por Limiar]
-    UC03[UC03 Auditar Evento]
-    UC04[UC04 Controlar Acesso Area Restrita]
-    UC01 -->|include| UC02
-    UC01 -->|include| UC03
-    UC02 -->|include| UC03
-  end
-  Sensor[Sensor externo]
-  Operador[Operador de Reator]
-  Supervisao[Supervisao Central]
-  Guarda[Guarda Acesso]
-  Sensor --> UC01
-  Operador --> UC02
-  Supervisao --> UC02
-  Guarda --> UC04
-```
+![Diagrama UML de casos de uso do núcleo MVP](<../marcus/diagramas/Marcus-UML-MVP/01 - Casos de Uso MVP.png>)
 
 - **System Boundary:** `SistemaControleUsina`
-- UC04 é Should (documentado; implementação Marco 3)
+- UC04 é Should e permanece documentado abaixo, fora do diagrama Must desta entrega
 - UCs de evacuação/RH/materiais: backlog Won't
 
-Fonte PlantUML: [diagramas/casos-de-uso-mvp.puml](diagramas/casos-de-uso-mvp.puml)
+Fonte UML editável: [Marcus-UML-MVP.asta](../marcus/diagramas/Marcus-UML-MVP.asta). A imagem acima foi exportada pelo próprio Astah; não é Mermaid.
 
 ---
 
@@ -43,11 +24,11 @@ Fonte PlantUML: [diagramas/casos-de-uso-mvp.puml](diagramas/casos-de-uso-mvp.pum
 | Campo | Conteúdo |
 |-------|----------|
 | Nome | Registrar Medição de Reator |
-| Resumo | Persiste uma medição proveniente de sensor e dispara avaliação de limiar. |
+| Resumo | Registra uma medição proveniente de sensor e dispara avaliação de limiar. |
 | Ator primário | Sensor (sistema externo) |
 | Atores secundários | Operador de Reator (acompanha o resultado em caso de alarme) |
 | Pré-condições | Sensor identificado; reator cadastrado; limiares configurados |
-| Pós-condições | Medição persistida; evento `MedicaoRegistrada` publicado; UC02 e UC03 executados por inclusão |
+| Pós-condições | Medição mantida no histórico em memória; evento `MedicaoRegistrada` publicado; UC02 e UC03 executados por inclusão |
 
 ### Fluxo principal (linear)
 
@@ -56,7 +37,7 @@ Fonte PlantUML: [diagramas/casos-de-uso-mvp.puml](diagramas/casos-de-uso-mvp.pum
 | 1 | Sensor | Envia leitura (temperatura/pressão/radiação/…) |
 | 2 | Sistema | Valida formato e associação Sensor–Reator |
 | 3 | Sistema | `MedicaoReator.registrarMedicao(...)` |
-| 4 | Sistema | Persiste via `PersistenciaReator` |
+| 4 | Sistema | Adiciona a medição ao histórico em memória de `ReatorFacade` |
 | 5 | Sistema | Publica `MedicaoRegistrada` no EventBus |
 | 6 | Sistema | Inclui **UC02 Emitir Alarme por Limiar** |
 | 7 | Sistema | Inclui **UC03 Auditar Evento** |
@@ -92,7 +73,7 @@ O fluxo termina após registrar, avaliar e auditar a medição. Consultar o hist
 | 2 | Sistema | Avalia limiar (`AvaliadorLimiar`) |
 | 3 | Sistema | `AlarmeFactory` cria instância de `Alarme` |
 | 4 | Sistema | `Alarme.emitirAlerta()` notifica **Operador** e **Supervisão Central** |
-| 5 | Sistema | `Alarme.registrarEvento()` persiste ocorrência |
+| 5 | Sistema | `Alarme.registrarEvento()` marca a ocorrência no objeto mantido em memória |
 | 6 | Sistema | Publica `AlarmeEmitido` |
 | 7 | Sistema | Inclui **UC03 Auditar Evento** |
 
@@ -101,7 +82,7 @@ O fluxo termina após registrar, avaliar e auditar a medição. Consultar o hist
 | ID | Condição | Tratamento |
 |----|----------|------------|
 | A1 | Limiar respeitado | Sistema registra avaliação OK e encerra sem notificação de alarme |
-| E1 | Falha ao notificar Supervisão | Sistema registra falha de entrega e mantém alarme persistido para reenvio |
+| E1 | Falha em futura integração de notificação | Tratamento ainda não implementado; a versão atual notifica apenas pelo console |
 
 ---
 
@@ -121,9 +102,9 @@ O fluxo termina após registrar, avaliar e auditar a medição. Consultar o hist
 | # | Ação do sistema |
 |---|-----------------|
 | 1 | Consome evento do EventBus |
-| 2 | Normaliza payload (tipo, timestamp, origem) |
-| 3 | Persiste `RegistroAuditoria` |
-| 4 | Confirma consumo |
+| 2 | Normaliza tipo, timestamp e resumo do evento |
+| 3 | Calcula o SHA-256 encadeado ao hash anterior |
+| 4 | Anexa `EntradaAuditoria` ao arquivo `dados/auditoria.log` |
 
 ### Exceção
 

@@ -1,9 +1,16 @@
-export default function AuditoriaPage({ events }) {
+import { useEstado } from '../state/EstadoContext.jsx'
+
+export default function AuditoriaPage() {
+  const { estado } = useEstado()
+  const eventos = estado.eventos ?? []
+
   return (
     <section>
       <p className="scada-kicker">T04 · RNF-03/05</p>
       <h1 className="scada-heading">Auditoria</h1>
-      <p className="scada-lead">Trilha append-only · cadeia SHA-256 (mock visual)</p>
+      <p className="scada-lead">
+        Trilha de eventos EDA via <code>/api/estado</code> (hash SHA-256 no MVP Java).
+      </p>
 
       <div className="scada-card" style={{ marginTop: 16 }}>
         <div className="scada-table-wrap" style={{ maxHeight: 'none' }}>
@@ -13,23 +20,30 @@ export default function AuditoriaPage({ events }) {
                 <th>#</th>
                 <th>Timestamp</th>
                 <th>Evento</th>
-                <th>Hash</th>
+                <th>Detalhe</th>
               </tr>
             </thead>
             <tbody>
-              {events.map((event, index) => (
-                <tr key={`${event.type}-${index}`}>
-                  <td>{events.length - index}</td>
-                  <td>sessão atual</td>
-                  <td className="ev">{event.type}</td>
-                  <td>mock-{String(events.length - index).padStart(4, '0')}…</td>
+              {eventos.length === 0 && (
+                <tr>
+                  <td colSpan={4}>Sem eventos de auditoria nesta sessão.</td>
+                </tr>
+              )}
+              {eventos.map((row, i) => (
+                <tr key={`${row.ocorridoEm}-${row.tipo}-${i}`}>
+                  <td>{eventos.length - i}</td>
+                  <td>{row.ocorridoEm}</td>
+                  <td className="ev">{row.tipo}</td>
+                  <td>{row.resumo}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <div className="scada-actions">
-          <button type="button" className="scada-btn scada-btn-ghost">Abrir Log</button>
+          <button type="button" className="scada-btn scada-btn-ghost">
+            Abrir Log
+          </button>
         </div>
       </div>
     </section>

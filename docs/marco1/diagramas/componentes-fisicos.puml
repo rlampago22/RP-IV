@@ -1,35 +1,45 @@
 @startuml componentes-fisicos-mvp
-title Diagrama de Componentes Físicos — artefatos para versão executável (MVP)
+title Componentes Físicos — artefatos realmente executáveis no MVP
 skinparam componentStyle uml2
 skinparam shadowing false
 
-node "Host de execução (dev/lab)" {
-  artifact "usina-controle-mvp.jar" as APP
-  artifact "application.properties" as CFG
-  artifact "logback.xml" as LOGCFG
-  artifact "event-bus.jar\n(biblioteca in-process)" as BUSLIB
-  artifact "h2-*.jar / sqlite-jdbc" as DBDRV
-  database "reator.db\n(PersistenciaReator)" as DB
-  artifact "README.md / scripts" as DOC
+node "Computador de demonstração" {
+  node "JDK / JRE" as JavaRuntime {
+    artifact "mvp/src/**/*.java" as JavaSrc
+    artifact "mvp/out/**/*.class" as Classes
+    artifact "mvp/executar-mvp.ps1" as ScriptJava
+    artifact "mvp/INICIAR-MVP.vbs" as AtalhoJava
+  }
+
+  folder "mvp/dados" {
+    artifact "auditoria.log\nappend-only + cadeia SHA-256" as Log
+  }
+
+  node "Node.js + Vite" as NodeRuntime {
+    artifact "frontend/src/**/*.jsx + CSS" as ReactSrc
+    artifact "frontend/package.json" as PackageJson
+    artifact "frontend/dist/**" as ReactDist
+  }
+
+  node "Navegador" as Browser
 }
 
-APP ..> CFG : lê
-APP ..> LOGCFG : lê
-APP --> BUSLIB : usa
-APP --> DBDRV : usa
-APP --> DB : persiste
-DOC ..> APP : instrui execução
+ScriptJava --> JavaSrc : compila
+ScriptJava --> Classes : gera/executa
+AtalhoJava --> ScriptJava : inicia
+Classes --> Log : anexa eventos auditados
+PackageJson --> ReactSrc : scripts/dependências
+ReactSrc --> ReactDist : npm run build
+Browser --> ReactDist : carrega interface
 
-cloud "Simulador externo (opcional)" as SIM {
-  artifact "sensor-simulator.jar" as SIMJAR
-}
-SIMJAR ..> APP : publica eventos\n(via API/CLI no Marco 2)\nou processo único
+note bottom of Classes
+  Não há JAR oficial, banco relacional,
+  driver de banco ou broker externo nesta versão.
+end note
 
-note bottom of APP
-  Pacotes Java empacotados no JAR:
-  controle.reator, alarmes,
-  infraestrutura.eventos,
-  auditoria.logs, persistencia.reator
+note bottom of ReactDist
+  Interface e Java ainda são executados
+  separadamente; a API HTTP é trabalho futuro.
 end note
 
 @enduml

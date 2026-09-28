@@ -1,16 +1,35 @@
-<!DOCTYPE html><html><head><meta charset=utf-8>
-<style>
-body { font-family: Helvetica, Arial, sans-serif; font-size: 11pt; margin: 24px; }
-h1 { font-size: 18pt; } h2 { font-size: 14pt; } h3 { font-size: 12pt; }
-table { border-collapse: collapse; width: 100%; margin: 8px 0; }
-th, td { border: 1px solid #333; padding: 4px 6px; vertical-align: top; }
-code { font-size: 9pt; }
-pre { font-size: 8pt; background: #f4f4f4; padding: 6px; }
-hr { margin: 18px 0; }
-</style></head><body><h1>Entrega Marco 1 — RP4 (AL0343)</h1>
-<p><strong>Sistema de Controle de Usina Nuclear</strong><br />
-<strong>Universidade Federal do Pampa — Campus Alegrete</strong><br />
-<strong>Repositório:</strong> https://github.com/rlampago22/RP-IV</p>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Entrega Marco 1 — RP4</title>
+  <style>
+    @page { size: A4; margin: 16mm 14mm 18mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #172033; font: 10.5pt/1.45 "Segoe UI", Arial, sans-serif; }
+    .document { max-width: 100%; }
+    .appendix { break-before: page; }
+    h1 { color: #0b3558; font-size: 22pt; margin: 0 0 12px; border-bottom: 3px solid #168aad; padding-bottom: 8px; }
+    h2 { color: #0b4f6c; font-size: 16pt; margin: 20px 0 8px; break-after: avoid; }
+    h3 { color: #116a7b; font-size: 12.5pt; margin: 16px 0 6px; break-after: avoid; }
+    p { margin: 6px 0 10px; }
+    a { color: #075985; text-decoration: none; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 9pt; break-inside: auto; }
+    tr { break-inside: avoid; }
+    th { background: #dff3f7; color: #153b4a; }
+    th, td { border: 1px solid #8ba6b3; padding: 5px 7px; text-align: left; vertical-align: top; }
+    code { color: #7c2d12; background: #fff5eb; padding: 1px 3px; border-radius: 3px; }
+    pre { white-space: pre-wrap; background: #f2f6f8; border: 1px solid #ccdbe2; padding: 10px; break-inside: avoid; }
+    pre code { background: transparent; padding: 0; }
+    img { display: block; max-width: 100%; max-height: 240mm; object-fit: contain; margin: 12px auto 18px; break-inside: avoid; }
+    blockquote { margin: 10px 0; border-left: 4px solid #168aad; padding: 4px 12px; background: #f1f9fb; }
+    hr { border: 0; border-top: 1px solid #bfd2da; margin: 18px 0; }
+    ul, ol { margin: 6px 0 12px 22px; }
+    .cover-document > h1:first-child { margin-top: 26mm; font-size: 25pt; }
+  </style>
+</head>
+<body><section class="document cover-document" data-source="ENTREGA-MARCO1.md"><h1>Entrega Marco 1 — RP4 (AL0343)</h1>
+<p><strong>Sistema de Controle de Usina Nuclear</strong><br><strong>Universidade Federal do Pampa — Campus Alegrete</strong><br><strong>Repositório:</strong> <a href="https://github.com/rlampago22/RP-IV">https://github.com/rlampago22/RP-IV</a></p>
 <h2>Equipe</h2>
 <table>
 <thead>
@@ -18,8 +37,7 @@ hr { margin: 18px 0; }
 <th>Integrante</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>Álvaro Domingues</td>
 </tr>
 <tr>
@@ -34,10 +52,9 @@ hr { margin: 18px 0; }
 <tr>
 <td>Marcus Querol</td>
 </tr>
-</tbody>
-</table>
-<p><strong>Arquitetura:</strong> Orientada a Eventos (EDA) + módulos independentes + persistência dedicada (<strong>mantida</strong> do legado APS).</p>
-<hr />
+</tbody></table>
+<p><strong>Arquitetura:</strong> Orientada a Eventos (EDA) in-process + módulos independentes + auditoria persistente em arquivo.</p>
+<hr>
 <h2>Sumário da entrega</h2>
 <p>Este documento consolida o que o professor pediu para a segunda-feira (recuperação / Marco 1):</p>
 <ol>
@@ -46,10 +63,10 @@ hr { margin: 18px 0; }
 <li>Proposta de MVP  </li>
 <li>Projeto refatorado: pacotes + componentes lógicos + componentes físicos  </li>
 <li>Artefatos adicionais necessários: UCs, classes, sequências, ER do núcleo  </li>
-<li>Checklist de correções dos feedbacks APS  </li>
+<li>Checklist de correções dos feedbacks APS</li>
 </ol>
-<p>Fontes detalhadas em Markdown/PlantUML na pasta <code>docs/marco1/</code>.</p>
-<hr />
+<p>Fontes detalhadas em Markdown, Astah e PlantUML na pasta <code>docs/marco1/</code> e em <code>docs/marcus/diagramas/</code>.</p>
+<hr>
 <h2>1. Requisitos Funcionais e Não Funcionais</h2>
 <p>Ver documento completo: <a href="01-requisitos-rf-rnf.md">01-requisitos-rf-rnf.md</a></p>
 <h3>RF (resumo Must)</h3>
@@ -60,8 +77,7 @@ hr { margin: 18px 0; }
 <th>Requisito</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RF01</td>
 <td>Coletar medições de reator</td>
 </tr>
@@ -85,11 +101,10 @@ hr { margin: 18px 0; }
 <td>RF06</td>
 <td>Auditar eventos</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3>RNF (resumo)</h3>
 <p>RNF01 Desempenho · RNF02 Confiabilidade · RNF03 Integridade · RNF04 Tolerância a falhas · RNF05 Auditabilidade · RNF06 Manutenibilidade · RNF07 Escalabilidade · RNF08 Segurança · RNF09 Persistência segura do núcleo · RNF10 Testabilidade — todos justificados pela EDA em <a href="04-arquitetura-eda.md">04-arquitetura-eda.md</a>.</p>
-<hr />
+<hr>
 <h2>2. Priorização MoSCoW</h2>
 <p>Ver: <a href="02-priorizacao-moscow.md">02-priorizacao-moscow.md</a></p>
 <table>
@@ -99,8 +114,7 @@ hr { margin: 18px 0; }
 <th>Conteúdo</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td><strong>Must</strong></td>
 <td>RF01–RF06 + artefatos de projeto do núcleo</td>
 </tr>
@@ -113,35 +127,37 @@ hr { margin: 18px 0; }
 <td>RF09–RF10 Emergência + <code>ProtocoloEmergencia</code></td>
 </tr>
 <tr>
-<td><strong>Won't</strong></td>
+<td><strong>Won&#39;t</strong></td>
 <td>Evacuação, RH, conformidade ampla, IA, microserviços reais</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>3. Proposta de MVP</h2>
 <p>Ver: <a href="03-proposta-mvp.md">03-proposta-mvp.md</a></p>
 <p>Fluxo demonstrável:</p>
-<p><code>_([diagrama Mermaid — ver repositório GitHub])_</code></p>
+<p><img src="diagramas/componentes-logicos-mvp.png" alt="Componentes lógicos do MVP"></p>
+<p>Fonte UML: <a href="diagramas/componentes-logicos-mvp.puml">diagramas/componentes-logicos-mvp.puml</a>. O <code>EventBus</code> implementado é síncrono e executado no mesmo processo Java.</p>
 <ul>
-<li><strong>Marco 1:</strong> documentação + esqueleto Java  </li>
-<li><strong>Marco 2:</strong> implementação Must + GoF  </li>
-<li><strong>Marco 3:</strong> Should (acesso) ou Could (contingência)</li>
+<li><strong>Marco 1:</strong> documentação e esqueleto Java</li>
+<li><strong>Marco 2:</strong> fluxo Must funcional, GoF e auditoria persistente</li>
+<li><strong>Marco 3:</strong> interface React T01–T05, integração HTTP e preparação da demonstração</li>
 </ul>
-<hr />
+<hr>
 <h2>4. Projeto arquitetural refatorado</h2>
 <h3>4.1 Justificativa EDA</h3>
 <p>Ver: <a href="04-arquitetura-eda.md">04-arquitetura-eda.md</a></p>
 <h3>4.2 Diagrama de pacotes</h3>
 <p>Fonte: <a href="diagramas/pacotes.puml">diagramas/pacotes.puml</a></p>
-<p><code>_([diagrama Mermaid — ver repositório GitHub])_</code></p>
+<p><img src="diagramas/pacotes-mvp-usina.png" alt="Diagrama de pacotes do MVP"></p>
 <h3>4.3 Componentes lógicos</h3>
 <p>Fonte: <a href="diagramas/componentes-logicos.puml">diagramas/componentes-logicos.puml</a></p>
-<p>Pacotes com Facade + entidades corrigidas (<code>MedicaoReator.registrarMedicao</code>, <code>Alarme.emitirAlerta</code> / <code>registrarEvento</code>) + portas <code>IEventPublisher</code> / <code>IEventSubscriber</code>.</p>
+<p><img src="diagramas/componentes-logicos-mvp.png" alt="Diagrama de componentes lógicos"></p>
+<p>Componentes com Facade, Observer/Pub-Sub, Strategy e Factory, além do estado compartilhado das telas T01–T05. A integração HTTP entre React e Java está marcada como futura.</p>
 <h3>4.4 Componentes físicos (executável)</h3>
 <p>Fonte: <a href="diagramas/componentes-fisicos.puml">diagramas/componentes-fisicos.puml</a></p>
-<p>Artefatos: <code>usina-controle-mvp.jar</code>, <code>application.properties</code>, driver DB, <code>event-bus</code>, base <code>reator.db</code>.</p>
-<hr />
+<p><img src="diagramas/componentes-fisicos-mvp.png" alt="Diagrama de componentes físicos"></p>
+<p>Artefatos reais: fontes e classes Java, scripts de execução, log de auditoria, fontes React e build Vite. Não há JAR oficial, banco relacional, driver de banco ou broker externo nesta versão.</p>
+<hr>
 <h2>5. Casos de uso, classes e sequências</h2>
 <table>
 <thead>
@@ -150,14 +166,13 @@ hr { margin: 18px 0; }
 <th>Arquivo</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>UCs MVP</td>
 <td><a href="05-casos-uso-mvp.md">05-casos-uso-mvp.md</a></td>
 </tr>
 <tr>
 <td>Diagrama UC</td>
-<td><a href="diagramas/casos-de-uso-mvp.puml">diagramas/casos-de-uso-mvp.puml</a></td>
+<td><a href="../marcus/diagramas/Marcus-UML-MVP.asta">Astah editável</a> e <a href="../marcus/diagramas/Marcus-UML-MVP/01%20-%20Casos%20de%20Uso%20MVP.png">PNG</a></td>
 </tr>
 <tr>
 <td>Classes projeto</td>
@@ -172,44 +187,41 @@ hr { margin: 18px 0; }
 <td><a href="07-sequencias-mvp.md">07-sequencias-mvp.md</a></td>
 </tr>
 <tr>
-<td>SEQ PlantUML</td>
-<td><a href="diagramas/seq-uc01-medicao.puml">diagramas/seq-uc01-medicao.puml</a>, <a href="diagramas/seq-uc02-alarme.puml">diagramas/seq-uc02-alarme.puml</a></td>
+<td>Sequências UML</td>
+<td><a href="../marcus/diagramas/Marcus-UML-MVP.asta">Astah editável</a>, <a href="../marcus/diagramas/Marcus-UML-MVP/02%20-%20SEQ%20UC01%20Registrar%20Medi%C3%A7%C3%A3o.png">SEQ-UC01</a> e <a href="../marcus/diagramas/Marcus-UML-MVP/03%20-%20SEQ%20UC02%20Emitir%20Alarme.png">SEQ-UC02</a></td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <p>Pontos de correção APS aplicados: system boundary, include de alarme/auditoria, destinatários explícitos, sem <code>if</code> no fluxo principal, métodos/classes das sequências presentes no diagrama de classes.</p>
-<hr />
+<hr>
 <h2>6. Mapeamento relacional (núcleo)</h2>
 <p>Ver: <a href="08-mapeamento-relacional-mvp.md">08-mapeamento-relacional-mvp.md</a> · <a href="diagramas/er-nucleo-mvp.puml">diagramas/er-nucleo-mvp.puml</a></p>
 <p>Correções: enums → tabelas; <code>VARCHAR</code>; FKs Sensor/Medicao/Alarme/Turbina→Reator; sem N:N injustificado no núcleo.</p>
-<hr />
+<hr>
 <h2>7. Checklist de feedback APS</h2>
 <p>Ver: <a href="checklist-feedback-aps.md">checklist-feedback-aps.md</a></p>
-<hr />
+<hr>
 <h2>8. Esqueleto de código</h2>
-<p>Pacotes Java em <code>src/main/java/br/edu/unipampa/usina/</code> espelhando a arquitetura. Classes com métodos exigidos pelo feedback já declarados; corpo funcional no Marco 2.</p>
-<hr />
+<p>O núcleo funcional está em <code>mvp/src/br/edu/unipampa/usina/</code>, com EventBus, controle de reator, alarmes e auditoria. A pasta <code>src/</code> permanece como legado do esqueleto inicial.</p>
+<hr>
 <h2>9. Como gerar PDF desta entrega</h2>
 <p>Opção A — exportar este arquivo + anexos pelo VS Code / Typora / Pandoc:</p>
 <pre><code class="language-bash">pandoc docs/marco1/ENTREGA-MARCO1.md -o docs/marco1/ENTREGA-MARCO1.pdf --resource-path=docs/marco1
 </code></pre>
-<p>Opção B — abrir os <code>.puml</code> em https://www.plantuml.com/plantuml ou extensão PlantUML e colar as imagens no PDF final da equipe.</p>
+<p>Opção B — abrir os <code>.puml</code> em <a href="https://www.plantuml.com/plantuml">https://www.plantuml.com/plantuml</a> ou extensão PlantUML e colar as imagens no PDF final da equipe.</p>
 <p>Opção C — entregar o link do GitHub + este Markdown (conforme orientação do professor).</p>
-<hr />
+<hr>
 <h2>10. Próximos passos (Marco 2)</h2>
 <ol>
-<li>Implementar <code>EventBus</code> real in-process  </li>
-<li>Simulador de sensores → <code>ReatorFacade.receberLeitura</code>  </li>
-<li>Strategy de limiar + Factory/Facade de alarme  </li>
-<li>Persistência H2/SQLite  </li>
-<li>Demonstração ponta a ponta no README  </li>
+<li>Criar API HTTP Java para ligar o React ao núcleo EDA</li>
+<li>Substituir o estado demonstrativo do React por dados reais da API</li>
+<li>Decidir persistência de medições/alarmes e documentar a escolha</li>
+<li>Polir testes, roteiro e evidências da demonstração</li>
+<li>Manter Astah, documentação e código sincronizados</li>
 </ol>
-<hr />
-<h1>01 — Requisitos Funcionais e Não Funcionais</h1>
-<p><strong>Disciplina:</strong> AL0343 — Resolução de Problemas IV<br />
-<strong>Sistema:</strong> Controle de Usina Nuclear<br />
-<strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
-<hr />
+</section>
+<section class="document appendix" data-source="01-requisitos-rf-rnf.md"><h1>01 — Requisitos Funcionais e Não Funcionais</h1>
+<p><strong>Disciplina:</strong> AL0343 — Resolução de Problemas IV<br><strong>Sistema:</strong> Controle de Usina Nuclear<br><strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
+<hr>
 <h2>1. Requisitos Funcionais (RF)</h2>
 <p>Escopo refinado a partir do legado APS, com foco no que o sistema de controle digital realmente faz (sensores físicos e intervenções médicas/estruturais permanecem fora).</p>
 <h3>Núcleo operacional (MVP Must)</h3>
@@ -221,8 +233,7 @@ hr { margin: 18px 0; }
 <th>Descrição</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RF01</td>
 <td>Coletar medições de reator</td>
 <td>Registrar temperatura, pressão, radiação, fluxo de resfriamento e demais parâmetros operacionais recebidos dos sensores já existentes.</td>
@@ -252,8 +263,7 @@ hr { margin: 18px 0; }
 <td>Auditar eventos</td>
 <td>Registrar trilha de eventos relevantes (medições críticas, alarmes, publicações no barramento).</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3>Acesso (MVP Should)</h3>
 <table>
 <thead>
@@ -263,8 +273,7 @@ hr { margin: 18px 0; }
 <th>Descrição</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RF07</td>
 <td>Autenticar acesso a área restrita</td>
 <td>Validar credencial (crachá/biometria simulada) para áreas classificadas.</td>
@@ -274,8 +283,7 @@ hr { margin: 18px 0; }
 <td>Registrar acesso</td>
 <td>Persistir tentativa/resultado de acesso em <code>RegistroAcesso</code> (sucesso ou falha).</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3>Contingência (MVP Could)</h3>
 <table>
 <thead>
@@ -285,8 +293,7 @@ hr { margin: 18px 0; }
 <th>Descrição</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RF09</td>
 <td>Criar emergência</td>
 <td>Permitir que operador autorizado registre uma emergência (<code>Emergencia.criarEmergencia</code>).</td>
@@ -296,9 +303,8 @@ hr { margin: 18px 0; }
 <td>Ativar protocolo de contingência</td>
 <td>Associar e acionar <code>ProtocoloEmergencia</code> a partir de uma emergência ativa.</td>
 </tr>
-</tbody>
-</table>
-<h3>Fora do MVP desta disciplina (Won't — documentados para rastreio)</h3>
+</tbody></table>
+<h3>Fora do MVP desta disciplina (Won&#39;t — documentados para rastreio)</h3>
 <table>
 <thead>
 <tr>
@@ -307,8 +313,7 @@ hr { margin: 18px 0; }
 <th>Motivo</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RF11</td>
 <td>Gestão completa de evacuação</td>
 <td>Complexidade alta; fora do Must/Should</td>
@@ -333,15 +338,14 @@ hr { margin: 18px 0; }
 <td>Rastreio completo de material radioativo</td>
 <td>Backlog pós-núcleo</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3>Fora do escopo do software (infraestrutura física)</h3>
 <ul>
 <li>Instalação/manutenção de sensores físicos</li>
 <li>Procedimentos médicos de descontaminação</li>
 <li>Construção de barreiras físicas de contenção</li>
 </ul>
-<hr />
+<hr>
 <h2>2. Requisitos Não Funcionais (RNF)</h2>
 <p>Alinhados à justificativa da arquitetura EDA mantida.</p>
 <table>
@@ -353,8 +357,7 @@ hr { margin: 18px 0; }
 <th>Como a EDA contribui</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RNF01</td>
 <td>Desempenho / tempo de resposta</td>
 <td>Publicação de medição não deve bloquear o produtor enquanto consumidores processam.</td>
@@ -381,7 +384,7 @@ hr { margin: 18px 0; }
 <tr>
 <td>RNF05</td>
 <td>Auditabilidade</td>
-<td>Histórico imutável (ou append-only) de eventos relevantes.</td>
+<td>Histórico append-only de eventos relevantes com adulteração detectável.</td>
 <td>Pacote AuditoriaLogs + eventos</td>
 </tr>
 <tr>
@@ -414,9 +417,14 @@ hr { margin: 18px 0; }
 <td>Módulos testáveis com eventos simulados.</td>
 <td>Event bus mockável</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<h3>Situação no MVP atual</h3>
+<ul>
+<li><strong>Atendidos localmente:</strong> RNF03, RNF05, RNF06 e RNF10.</li>
+<li><strong>Parciais:</strong> RNF02 e RNF04 possuem isolamento de exceções por subscriber; RNF09 persiste somente a auditoria.</li>
+<li><strong>Planejados:</strong> publicação assíncrona, retenção/fila, redundância e banco para medições/alarmes. Portanto, RNF01, RNF07 e o restante de RNF09 não devem ser apresentados como concluídos.</li>
+</ul>
+<hr>
 <h2>3. Atores</h2>
 <table>
 <thead>
@@ -426,8 +434,7 @@ hr { margin: 18px 0; }
 <th>Papel</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>Operador de Reator</td>
 <td>Primário</td>
 <td>Monitora medições, recebe alarmes, pode acionar contingência</td>
@@ -452,14 +459,12 @@ hr { margin: 18px 0; }
 <td>Primário (config)</td>
 <td>Configura limiares e parâmetros</td>
 </tr>
-</tbody>
-</table>
-<hr />
-<h1>02 — Priorização MoSCoW</h1>
-<p><strong>Sistema:</strong> Controle de Usina Nuclear — RP4<br />
-<strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
+</tbody></table>
+</section>
+<section class="document appendix" data-source="02-priorizacao-moscow.md"><h1>02 — Priorização MoSCoW</h1>
+<p><strong>Sistema:</strong> Controle de Usina Nuclear — RP4<br><strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
 <p>Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projeto até o fim da disciplina, com entrega recuperável no Marco 1.</p>
-<hr />
+<hr>
 <h2>Must (obrigatório no MVP)</h2>
 <table>
 <thead>
@@ -469,8 +474,7 @@ hr { margin: 18px 0; }
 <th>Justificativa</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RF01</td>
 <td>Coletar medições de reator</td>
 <td>Fluxo produtor de eventos</td>
@@ -505,10 +509,9 @@ hr { margin: 18px 0; }
 <td>Subconjunto de qualidade do núcleo</td>
 <td>Sustentam escolha EDA</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <p><strong>Artefatos Must do Marco 1:</strong> RF/RNF, MoSCoW, proposta MVP, pacotes, componentes lógico/físico, UCs/classes/sequências do núcleo, ER do núcleo.</p>
-<hr />
+<hr>
 <h2>Should (desejável — Marco 2/3 se o núcleo estiver estável)</h2>
 <table>
 <thead>
@@ -518,8 +521,7 @@ hr { margin: 18px 0; }
 <th>Justificativa</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RF07</td>
 <td>Autenticar acesso restrito</td>
 <td>Amplia domínio sem mudar arquitetura</td>
@@ -534,9 +536,8 @@ hr { margin: 18px 0; }
 <td>Segurança granular</td>
 <td>Natural ao pacote SegurancaAcesso</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>Could (se houver capacidade no Marco 3)</h2>
 <table>
 <thead>
@@ -546,8 +547,7 @@ hr { margin: 18px 0; }
 <th>Justificativa</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RF09</td>
 <td><code>Emergencia.criarEmergencia</code></td>
 <td>Feedback APS + domínio</td>
@@ -562,10 +562,9 @@ hr { margin: 18px 0; }
 <td><code>HistoricoSubstituicao</code></td>
 <td>Só se manutenção entrar no escopo</td>
 </tr>
-</tbody>
-</table>
-<hr />
-<h2>Won't (fora do MVP da disciplina)</h2>
+</tbody></table>
+<hr>
+<h2>Won&#39;t (fora do MVP da disciplina)</h2>
 <table>
 <thead>
 <tr>
@@ -574,8 +573,7 @@ hr { margin: 18px 0; }
 <th>Motivo</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RF11</td>
 <td>Evacuação completa</td>
 <td>Escopo grande, pouco retorno para padrões</td>
@@ -605,9 +603,8 @@ hr { margin: 18px 0; }
 <td>Microserviços reais / cluster</td>
 <td>EDA in-process basta no MVP acadêmico</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>Ordem de implementação sugerida</h2>
 <ol>
 <li>Event bus + publicação de <code>MedicaoRegistrada</code></li>
@@ -617,23 +614,21 @@ hr { margin: 18px 0; }
 <li>(Should) RegistroAcesso</li>
 <li>(Could) Emergencia + ProtocoloEmergencia</li>
 </ol>
-<hr />
-<h1>03 — Proposta de MVP</h1>
-<p><strong>Sistema:</strong> Controle de Usina Nuclear<br />
-<strong>Disciplina:</strong> AL0343 — RP4<br />
-<strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
-<hr />
+</section>
+<section class="document appendix" data-source="03-proposta-mvp.md"><h1>03 — Proposta de MVP</h1>
+<p><strong>Sistema:</strong> Controle de Usina Nuclear<br><strong>Disciplina:</strong> AL0343 — RP4<br><strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
+<hr>
 <h2>1. Problema</h2>
 <p>Operadores precisam acompanhar parâmetros de reatores em tempo quase real, receber alarmes quando limites seguros são violados e manter trilha auditável dos eventos — sem acoplar o monitoramento a módulos secundários (RH, evacuação, relatórios).</p>
 <h2>2. Solução MVP</h2>
 <p>Um software Java modular com <strong>arquitetura orientada a eventos (EDA)</strong>:</p>
 <ol>
-<li>Um <strong>simulador de sensores</strong> publica eventos de medição no barramento.</li>
-<li>O módulo <strong>ControleReator</strong> persiste a medição e avalia limiares.</li>
-<li>O módulo <strong>Alarmes</strong> emite e registra alarmes, notificando Operador e Supervisão Central.</li>
-<li>O módulo <strong>AuditoriaLogs</strong> consome eventos relevantes e grava trilha append-only.</li>
+<li>A aplicação de demonstração envia leituras simuladas ao <strong>ControleReator</strong>.</li>
+<li>O <strong>ControleReator</strong> mantém medições em memória e publica eventos no barramento.</li>
+<li>O módulo <strong>Alarmes</strong> consome as medições, avalia limiares, mantém os alarmes em memória e notifica Operador e Supervisão Central pelo console.</li>
+<li>O módulo <strong>AuditoriaLogs</strong> consome todos os eventos e grava uma trilha append-only encadeada por SHA-256.</li>
 </ol>
-<p>A persistência do núcleo fica no pacote <strong>PersistenciaReator</strong> (dedicada). Demais módulos do legado APS permanecem no diagrama como <code>«future»</code>.</p>
+<p>Nesta versão, apenas a auditoria possui persistência em arquivo. Banco para medições e alarmes, API HTTP e mensageria durável são evoluções planejadas, não funcionalidades prontas.</p>
 <h2>3. Escopo incluso (Must)</h2>
 <ul>
 <li>RF01–RF06</li>
@@ -641,7 +636,7 @@ hr { margin: 18px 0; }
 <li>Casos de uso e sequências do núcleo alinhados às classes</li>
 <li>Mapeamento relacional corrigido do núcleo</li>
 </ul>
-<h2>4. Escopo excluído (Won't nesta disciplina)</h2>
+<h2>4. Escopo excluído (Won&#39;t nesta disciplina)</h2>
 <p>Evacuação, RH/treinamentos, conformidade ampla, IA preditiva, rastreio completo de materiais, implantação em cluster.</p>
 <h2>5. Critérios de aceite do MVP (fim da disciplina / Marco 2+)</h2>
 <table>
@@ -651,14 +646,13 @@ hr { margin: 18px 0; }
 <th>Critério</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>1</td>
-<td>É possível simular N medições e vê-las persistidas</td>
+<td>É possível simular N medições e consultá-las no histórico em memória durante a execução</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Medição acima do limiar gera alarme persistido e notificação explícita aos atores</td>
+<td>Medição acima do limiar gera alarme em memória, notificação explícita aos atores e evento persistido na auditoria</td>
 </tr>
 <tr>
 <td>3</td>
@@ -672,8 +666,7 @@ hr { margin: 18px 0; }
 <td>5</td>
 <td>README permite executar o fluxo ponta a ponta</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h2>6. Entregas por marco</h2>
 <table>
 <thead>
@@ -682,21 +675,19 @@ hr { margin: 18px 0; }
 <th>Entrega</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td><strong>1 (atual)</strong></td>
-<td>Documentação: RF/RNF, MoSCoW, MVP, arquitetura, pacotes, componentes, UCs/classes/sequências/ER do núcleo + esqueleto de pacotes Java</td>
+<tbody><tr>
+<td><strong>1</strong></td>
+<td>Documentação inicial, arquitetura e esqueleto de pacotes Java</td>
 </tr>
 <tr>
 <td><strong>2</strong></td>
-<td>Implementação do fluxo Must + padrões de projeto</td>
+<td>Fluxo Must funcional + padrões de projeto + auditoria persistente</td>
 </tr>
 <tr>
-<td><strong>3</strong></td>
-<td>Should (acesso) <strong>ou</strong> Could (contingência) + polish/testes</td>
+<td><strong>3 (em preparação)</strong></td>
+<td>Interface React T01–T05, integração HTTP e preparação da demonstração</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h2>7. Riscos e mitigação</h2>
 <table>
 <thead>
@@ -705,8 +696,7 @@ hr { margin: 18px 0; }
 <th>Mitigação</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>Escopo herdar todos os UCs da APS</td>
 <td>MoSCoW estrito; <code>«future»</code> nos diagramas</td>
 </tr>
@@ -718,78 +708,80 @@ hr { margin: 18px 0; }
 <td>Atraso</td>
 <td>Núcleo Must primeiro; Should/Could opcionais</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h2>8. Valor pedagógico</h2>
 <p>O MVP demonstra exatamente o que a disciplina avalia: <strong>padrão arquitetural escolhido e justificado</strong> + <strong>aplicação de padrões de projeto</strong> em um problema contínuo da APS, sem redesenhar a arquitetura.</p>
-<hr />
-<h1>04 — Arquitetura EDA (mantida)</h1>
-<p><strong>Sistema:</strong> Controle de Usina Nuclear — RP4<br />
-<strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
-<hr />
-<h2>1. Decisão</h2>
-<p>A arquitetura <strong>não foi redesenhada</strong>. Mantém-se o estilo híbrido já justificado na APS:</p>
+</section>
+<section class="document appendix" data-source="04-arquitetura-eda.md"><h1>04 — Arquitetura Orientada a Eventos (EDA)</h1>
+<p><strong>Sistema:</strong> Controle de Usina Nuclear — RP4<br><strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol<br><strong>Decisão:</strong> a <strong>única</strong> arquitetura do projeto é <strong>EDA</strong> (Event-Driven Architecture).</p>
+<hr>
+<h2>1. Decisão (EDA only)</h2>
+<p>Não adotamos arquitetura híbrida, MVC como estilo principal, nem microserviços/cluster no MVP.</p>
+<p>Tudo no sistema se organiza em torno de <strong>eventos de domínio</strong> publicados e consumidos via barramento:</p>
 <ul>
-<li>Arquitetura Orientada a Eventos (<strong>EDA</strong>)</li>
-<li>Módulos independentes (design modular)</li>
-<li>Persistência dedicada por módulo</li>
-<li>Distribuição lógica (no MVP acadêmico: processos/pacotes; sem cluster obrigatório)</li>
+<li>Produtores publicam fatos (<code>MedicaoRegistrada</code>, <code>AlarmeEmitido</code>, …)</li>
+<li>Consumidores reagem de forma desacoplada</li>
+<li>O MVP usa <strong>EventBus in-process</strong> (Java); a EDA permanece válida se o bus evoluir</li>
 </ul>
-<h2>2. Componentes lógicos da EDA no MVP</h2>
+<p><strong>Módulos, Facade e persistência dedicada</strong> não são “outras arquiteturas”: são <strong>mecanismos de realização da EDA</strong> (isolamento de produtores/consumidores e de dados do núcleo).</p>
+<hr>
+<h2>2. Componentes lógicos (EDA)</h2>
 <table>
 <thead>
 <tr>
 <th>Elemento</th>
-<th>Papel</th>
+<th>Papel na EDA</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td>SensorSimulator</td>
-<td>Produtor de eventos <code>MedicaoRegistrada</code></td>
+<tbody><tr>
+<td>Sensor / simulador</td>
+<td>Produtor de <code>MedicaoRegistrada</code></td>
 </tr>
 <tr>
 <td>InfraestruturaEventos (EventBus)</td>
-<td>Barramento in-process; desacopla produtores e consumidores</td>
+<td>Barramento; desacopla pub/sub</td>
 </tr>
 <tr>
 <td>ControleReator</td>
-<td>Consome medições, orquestra persistência e avaliação de limiar</td>
+<td>Orquestra medição; pode publicar e disparar avaliação</td>
 </tr>
 <tr>
 <td>Alarmes</td>
-<td>Emite/registra alarmes; publica <code>AlarmeEmitido</code></td>
+<td>Consome/avalia; publica <code>AlarmeEmitido</code></td>
 </tr>
 <tr>
 <td>AuditoriaLogs</td>
-<td>Consome eventos relevantes; trilha append-only</td>
+<td>Consumidor append-only</td>
 </tr>
 <tr>
-<td>PersistenciaReator</td>
-<td>DB dedicado do núcleo (H2/SQLite no Marco 2)</td>
+<td>RegistroAuditoria</td>
+<td>Persistência em arquivo append-only com cadeia SHA-256</td>
 </tr>
 <tr>
-<td>SegurancaAcesso</td>
-<td>Stub/<code>«future»</code> no Marco 1; Should no Marco 3</td>
+<td>Frontend React</td>
+<td>T01–T05 integradas por estado demonstrativo compartilhado</td>
 </tr>
-</tbody>
-</table>
+<tr>
+<td>API HTTP</td>
+<td>Adaptador futuro entre a interface web e o núcleo Java</td>
+</tr>
+</tbody></table>
+<hr>
 <h2>3. Ligação aos RNFs</h2>
 <table>
 <thead>
 <tr>
 <th>RNF</th>
-<th>Mecanismo arquitetural</th>
+<th>Mecanismo EDA</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RNF01 Desempenho</td>
-<td>Publicação assíncrona; produtor não espera consumidores</td>
+<td><strong>Parcial:</strong> publish síncrono no MVP; assíncrono permanece como evolução</td>
 </tr>
 <tr>
 <td>RNF02 Disponibilidade</td>
-<td>Falha em AuditoriaLogs não impede ControleReator</td>
+<td><strong>Parcial:</strong> exceções de assinantes são isoladas, mas não há redundância</td>
 </tr>
 <tr>
 <td>RNF03 Integridade</td>
@@ -797,7 +789,7 @@ hr { margin: 18px 0; }
 </tr>
 <tr>
 <td>RNF04 Tolerância a falhas</td>
-<td>Isolamento por módulo</td>
+<td>Isolamento por assinante/módulo</td>
 </tr>
 <tr>
 <td>RNF05 Auditabilidade</td>
@@ -805,55 +797,81 @@ hr { margin: 18px 0; }
 </tr>
 <tr>
 <td>RNF06 Manutenibilidade</td>
-<td>Limiares/estratégias trocáveis sem reescrever o bus</td>
+<td>Novos consumidores sem alterar produtores</td>
 </tr>
 <tr>
 <td>RNF07 Escalabilidade</td>
-<td>Consumidores independentes (futuro: mais instâncias)</td>
+<td>Contratos permitem novos consumidores; escala distribuída ainda não existe</td>
 </tr>
 <tr>
-<td>RNF09 Persistência do núcleo</td>
-<td>Pacote PersistenciaReator separado</td>
+<td>RNF09 Persistência</td>
+<td><strong>Parcial:</strong> auditoria persiste; medições/alarmes ficam em memória</td>
 </tr>
 <tr>
 <td>RNF10 Testabilidade</td>
-<td>Bus mockável; simulador de eventos</td>
+<td>Eventos simulados e 11 cenários automatizados locais</td>
 </tr>
-</tbody>
-</table>
-<h2>4. O que permanece <code>«future»</code></h2>
-<p>Pacotes do legado APS fora do Must: GestaoRH, Evacuacao, AnaliseRelatorios, GestaoManutencao (exceto se Could entrar), rastreio completo de materiais, etc. Permanecem no diagrama de pacotes para não “sumir” com o legado, mas <strong>não entram no MVP</strong>.</p>
-<h2>5. Diagramas</h2>
-<p>Fontes PlantUML:</p>
+</tbody></table>
+<hr>
+<h2>4. Fora do MVP (<code>«future»</code>)</h2>
+<p>GestaoRH, Evacuacao, AnaliseRelatorios, rastreio amplo de materiais, etc. — legado APS, <strong>não</strong> entram no Must. Podem aparecer no diagrama de pacotes só como <code>«future»</code>.</p>
+<hr>
+<h2>5. Diagramas essenciais (versionados)</h2>
+<table>
+<thead>
+<tr>
+<th>Diagrama</th>
+<th>Arquivo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pacotes (EDA)</td>
+<td><a href="diagramas/pacotes.puml">diagramas/pacotes.puml</a></td>
+</tr>
+<tr>
+<td>Componentes lógicos</td>
+<td><a href="diagramas/componentes-logicos.puml">diagramas/componentes-logicos.puml</a></td>
+</tr>
+<tr>
+<td>Componentes físicos</td>
+<td><a href="diagramas/componentes-fisicos.puml">diagramas/componentes-fisicos.puml</a></td>
+</tr>
+<tr>
+<td>Casos de uso MVP</td>
+<td><a href="../marcus/diagramas/Marcus-UML-MVP.asta">Astah editável</a></td>
+</tr>
+<tr>
+<td>Classes núcleo</td>
+<td><a href="diagramas/classes-projeto-mvp.puml">diagramas/classes-projeto-mvp.puml</a></td>
+</tr>
+<tr>
+<td>SEQ UC01 / UC02</td>
+<td><a href="../marcus/diagramas/Marcus-UML-MVP.asta">Astah editável</a></td>
+</tr>
+</tbody></table>
+<p>Outros artefatos (Astah APS completo, ER auxiliar) ficam em arquivo legado / não são entrega ativa.</p>
+<hr>
+<h2>6. Stack de realização</h2>
 <ul>
-<li><a href="diagramas/pacotes.puml">diagramas/pacotes.puml</a></li>
-<li><a href="diagramas/componentes-logicos.puml">diagramas/componentes-logicos.puml</a></li>
-<li><a href="diagramas/componentes-fisicos.puml">diagramas/componentes-fisicos.puml</a></li>
+<li><strong>Backend:</strong> Java (EDA + EventBus)</li>
+<li><strong>Frontend:</strong> React (Vite) — supervisão web; hoje usa estado demonstrativo compartilhado</li>
+<li><strong>Integração futura:</strong> API HTTP para substituir o estado simulado por eventos reais do Java</li>
+<li><strong>GoF:</strong> Observer/Pub-Sub, Strategy, Factory, Facade</li>
 </ul>
-<p>Renderização textual também está em <a href="ENTREGA-MARCO1.md">ENTREGA-MARCO1.md</a> (Mermaid) para leitura sem ferramenta.</p>
-<h2>6. Evolução Marco 2+</h2>
-<p>No código Java, os pacotes espelham este desenho. Padrões GoF previstos:</p>
-<ul>
-<li>Observer / Pub-Sub (EventBus)</li>
-<li>Strategy (avaliação de limiares)</li>
-<li>Factory (criação de eventos/alarmes)</li>
-<li>Facade (controladores de módulo)</li>
-</ul>
-<hr />
-<h1>05 — Casos de Uso do MVP (refatorados)</h1>
-<p><strong>Sistema:</strong> Controle de Usina Nuclear — RP4<br />
-<strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
+</section>
+<section class="document appendix" data-source="05-casos-uso-mvp.md"><h1>05 — Casos de Uso do MVP (refatorados)</h1>
+<p><strong>Sistema:</strong> Controle de Usina Nuclear — RP4<br><strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
 <p>Regras aplicadas do feedback APS (domínio usina, não militar): fluxo principal linear (sem <code>if</code>), system boundary, atores secundários explícitos, <code>«include»</code> quando o alerta é obrigatório, um UC = um objetivo.</p>
-<hr />
-<h2>1. Diagrama de Casos de Uso (descrição textual / Mermaid)</h2>
-<p><code>_([diagrama Mermaid — ver repositório GitHub])_</code></p>
+<hr>
+<h2>1. Diagrama de Casos de Uso — Astah</h2>
+<p><img src="../marcus/diagramas/Marcus-UML-MVP/01%20-%20Casos%20de%20Uso%20MVP.png" alt="Diagrama UML de casos de uso do núcleo MVP"></p>
 <ul>
 <li><strong>System Boundary:</strong> <code>SistemaControleUsina</code></li>
-<li>UC04 é Should (documentado; implementação Marco 3)</li>
-<li>UCs de evacuação/RH/materiais: backlog Won't</li>
+<li>UC04 é Should e permanece documentado abaixo, fora do diagrama Must desta entrega</li>
+<li>UCs de evacuação/RH/materiais: backlog Won&#39;t</li>
 </ul>
-<p>Fonte PlantUML: <a href="diagramas/casos-de-uso-mvp.puml">diagramas/casos-de-uso-mvp.puml</a></p>
-<hr />
+<p>Fonte UML editável: <a href="../marcus/diagramas/Marcus-UML-MVP.asta">Marcus-UML-MVP.asta</a>. A imagem acima foi exportada pelo próprio Astah; não é Mermaid.</p>
+<hr>
 <h2>2. UC01 — Registrar Medição de Reator</h2>
 <table>
 <thead>
@@ -862,22 +880,21 @@ hr { margin: 18px 0; }
 <th>Conteúdo</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>Nome</td>
 <td>Registrar Medição de Reator</td>
 </tr>
 <tr>
 <td>Resumo</td>
-<td>Persiste uma medição proveniente de sensor e dispara avaliação de limiar.</td>
+<td>Registra uma medição proveniente de sensor e dispara avaliação de limiar.</td>
 </tr>
 <tr>
 <td>Ator primário</td>
-<td>Operador de Reator (ou processo automático alimentado pelo Sensor)</td>
+<td>Sensor (sistema externo)</td>
 </tr>
 <tr>
 <td>Atores secundários</td>
-<td>Sensor (sistema externo)</td>
+<td>Operador de Reator (acompanha o resultado em caso de alarme)</td>
 </tr>
 <tr>
 <td>Pré-condições</td>
@@ -885,10 +902,9 @@ hr { margin: 18px 0; }
 </tr>
 <tr>
 <td>Pós-condições</td>
-<td>Medição persistida; evento <code>MedicaoRegistrada</code> publicado; UC02 e UC03 incluídos quando aplicável</td>
+<td>Medição mantida no histórico em memória; evento <code>MedicaoRegistrada</code> publicado; UC02 e UC03 executados por inclusão</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3>Fluxo principal (linear)</h3>
 <table>
 <thead>
@@ -898,8 +914,7 @@ hr { margin: 18px 0; }
 <th>Ação</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>1</td>
 <td>Sensor</td>
 <td>Envia leitura (temperatura/pressão/radiação/…)</td>
@@ -917,7 +932,7 @@ hr { margin: 18px 0; }
 <tr>
 <td>4</td>
 <td>Sistema</td>
-<td>Persiste via <code>PersistenciaReator</code></td>
+<td>Adiciona a medição ao histórico em memória de <code>ReatorFacade</code></td>
 </tr>
 <tr>
 <td>5</td>
@@ -934,13 +949,8 @@ hr { margin: 18px 0; }
 <td>Sistema</td>
 <td>Inclui <strong>UC03 Auditar Evento</strong></td>
 </tr>
-<tr>
-<td>8</td>
-<td>Operador</td>
-<td>Consulta medição no histórico</td>
-</tr>
-</tbody>
-</table>
+</tbody></table>
+<p>O fluxo termina após registrar, avaliar e auditar a medição. Consultar o histórico é outro objetivo e, portanto, não integra o UC01.</p>
 <h3>Fluxos alternativos / exceção</h3>
 <table>
 <thead>
@@ -950,8 +960,7 @@ hr { margin: 18px 0; }
 <th>Tratamento</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>E1</td>
 <td>Leitura inválida</td>
 <td>Sistema rejeita, registra falha de validação e <strong>não</strong> publica medição</td>
@@ -966,9 +975,8 @@ hr { margin: 18px 0; }
 <td>Limiar não violado</td>
 <td>UC02 registra avaliação sem emitir alarme (pós-condição: sem <code>AlarmeEmitido</code>)</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>3. UC02 — Emitir Alarme por Limiar</h2>
 <table>
 <thead>
@@ -977,8 +985,7 @@ hr { margin: 18px 0; }
 <th>Conteúdo</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>Nome</td>
 <td>Emitir Alarme por Limiar</td>
 </tr>
@@ -1002,8 +1009,7 @@ hr { margin: 18px 0; }
 <td>Pós-condições</td>
 <td>Alarme emitido e registrado <strong>ou</strong> avaliação registrada sem alarme (A1)</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3>Fluxo principal (violação de limiar — caminho feliz do alarme)</h3>
 <table>
 <thead>
@@ -1013,8 +1019,7 @@ hr { margin: 18px 0; }
 <th>Ação</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>1</td>
 <td>Sistema</td>
 <td>Obtém medição e limiar configurado</td>
@@ -1037,7 +1042,7 @@ hr { margin: 18px 0; }
 <tr>
 <td>5</td>
 <td>Sistema</td>
-<td><code>Alarme.registrarEvento()</code> persiste ocorrência</td>
+<td><code>Alarme.registrarEvento()</code> marca a ocorrência no objeto mantido em memória</td>
 </tr>
 <tr>
 <td>6</td>
@@ -1049,8 +1054,7 @@ hr { margin: 18px 0; }
 <td>Sistema</td>
 <td>Inclui <strong>UC03 Auditar Evento</strong></td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3>Alternativas</h3>
 <table>
 <thead>
@@ -1060,20 +1064,18 @@ hr { margin: 18px 0; }
 <th>Tratamento</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>A1</td>
 <td>Limiar respeitado</td>
 <td>Sistema registra avaliação OK e encerra sem notificação de alarme</td>
 </tr>
 <tr>
 <td>E1</td>
-<td>Falha ao notificar Supervisão</td>
-<td>Sistema registra falha de entrega e mantém alarme persistido para reenvio</td>
+<td>Falha em futura integração de notificação</td>
+<td>Tratamento ainda não implementado; a versão atual notifica apenas pelo console</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>4. UC03 — Auditar Evento</h2>
 <table>
 <thead>
@@ -1082,8 +1084,7 @@ hr { margin: 18px 0; }
 <th>Conteúdo</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>Nome</td>
 <td>Auditar Evento</td>
 </tr>
@@ -1107,8 +1108,7 @@ hr { margin: 18px 0; }
 <td>Pós-condições</td>
 <td><code>RegistroAuditoria</code> persistido</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3>Fluxo principal</h3>
 <table>
 <thead>
@@ -1117,25 +1117,23 @@ hr { margin: 18px 0; }
 <th>Ação do sistema</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>1</td>
 <td>Consome evento do EventBus</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Normaliza payload (tipo, timestamp, origem)</td>
+<td>Normaliza tipo, timestamp e resumo do evento</td>
 </tr>
 <tr>
 <td>3</td>
-<td>Persiste <code>RegistroAuditoria</code></td>
+<td>Calcula o SHA-256 encadeado ao hash anterior</td>
 </tr>
 <tr>
 <td>4</td>
-<td>Confirma consumo</td>
+<td>Anexa <code>EntradaAuditoria</code> ao arquivo <code>dados/auditoria.log</code></td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3>Exceção</h3>
 <table>
 <thead>
@@ -1145,15 +1143,13 @@ hr { margin: 18px 0; }
 <th>Tratamento</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>E1</td>
 <td>Falha de persistência de auditoria</td>
 <td>Log local de erro; <strong>não</strong> interrompe ControleReator (RNF02/RNF04)</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>5. UC04 — Controlar Acesso a Área Restrita (Should)</h2>
 <table>
 <thead>
@@ -1162,8 +1158,7 @@ hr { margin: 18px 0; }
 <th>Conteúdo</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>Nome</td>
 <td>Controlar Acesso a Área Restrita</td>
 </tr>
@@ -1187,8 +1182,7 @@ hr { margin: 18px 0; }
 <td>Pós-condições</td>
 <td><code>RegistroAcesso</code> persistido</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3>Fluxo principal (acesso autorizado)</h3>
 <table>
 <thead>
@@ -1198,8 +1192,7 @@ hr { margin: 18px 0; }
 <th>Ação</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>1</td>
 <td>Guarda</td>
 <td>Apresenta credencial no ponto de acesso</td>
@@ -1224,8 +1217,7 @@ hr { margin: 18px 0; }
 <td>Sistema</td>
 <td>Publica <code>AcessoRegistrado</code> (opcional) e inclui UC03</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3>Alternativa</h3>
 <table>
 <thead>
@@ -1235,29 +1227,26 @@ hr { margin: 18px 0; }
 <th>Tratamento</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>A1</td>
 <td>Credencial inválida ou nível insuficiente</td>
 <td>Nega acesso; <code>RegistroAcesso</code> com FALHA; notifica Operador se área crítica</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>6. Backlog de UCs (não documentados em detalhe no Marco 1)</h2>
 <ul>
 <li>Ativar Protocolo de Contingência (Could) — exige <code>Emergencia.criarEmergencia</code> + <code>ProtocoloEmergencia</code></li>
-<li>Rastrear Materiais, Evacuação, RH, Relatórios — Won't</li>
+<li>Rastrear Materiais, Evacuação, RH, Relatórios — Won&#39;t</li>
 </ul>
-<hr />
-<h1>06 — Diagrama de Classes de Projeto (núcleo MVP)</h1>
-<p><strong>Sistema:</strong> Controle de Usina Nuclear — RP4<br />
-<strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
-<p>Corrige inconsistências do feedback APS (classes/métodos faltantes nas sequências). Classes <code>«future»</code> listadas para rastreio, sem obrigatoriedade de sequência no Marco 1.</p>
-<p>Fonte PlantUML: <a href="diagramas/classes-projeto-mvp.puml">diagramas/classes-projeto-mvp.puml</a></p>
-<hr />
-<h2>1. Classes do núcleo (Must)</h2>
-<h3>InfraestruturaEventos</h3>
+</section>
+<section class="document appendix" data-source="06-classes-projeto-mvp.md"><h1>06 — Diagrama de Classes de Projeto (núcleo MVP)</h1>
+<p><strong>Sistema:</strong> Controle de Usina Nuclear — RP4<br><strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
+<p>Este documento descreve somente as classes que existem no núcleo Java atual. Classes futuras não aparecem no diagrama ativo para não repetir a inconsistência apontada pelo professor entre UML e código.</p>
+<p>Fonte UML: <a href="diagramas/classes-projeto-mvp.puml">diagramas/classes-projeto-mvp.puml</a></p>
+<p><img src="diagramas/classes-projeto-mvp.png" alt="Diagrama UML de classes do núcleo implementado"></p>
+<hr>
+<h2>1. Infraestrutura de eventos</h2>
 <table>
 <thead>
 <tr>
@@ -1266,30 +1255,29 @@ hr { margin: 18px 0; }
 <th>Métodos principais</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td><code>EventBus</code></td>
-<td>Pub/Sub in-process</td>
-<td><code>publicar(EventoDominio)</code>, <code>assinar(tipo, IEventSubscriber)</code></td>
-</tr>
-<tr>
+<tbody><tr>
 <td><code>EventoDominio</code></td>
-<td>Fato imutável</td>
-<td><code>getTipo()</code>, <code>getTimestamp()</code>, <code>getPayload()</code></td>
-</tr>
-<tr>
-<td><code>IEventPublisher</code></td>
-<td>Porta de publicação</td>
-<td><code>publicar(...)</code></td>
+<td>Contrato comum dos fatos publicados</td>
+<td><code>tipo()</code>, <code>ocorridoEm()</code>, <code>resumo()</code></td>
 </tr>
 <tr>
 <td><code>IEventSubscriber</code></td>
-<td>Porta de consumo</td>
+<td>Contrato de consumo</td>
 <td><code>onEvento(EventoDominio)</code></td>
 </tr>
-</tbody>
-</table>
-<h3>ControleReator</h3>
+<tr>
+<td><code>EventBus</code></td>
+<td>Observer/Pub-Sub síncrono e in-process</td>
+<td><code>assinarTodos(...)</code>, <code>assinar(...)</code>, <code>publicar(...)</code></td>
+</tr>
+<tr>
+<td>Eventos concretos</td>
+<td>Dados imutáveis representados por records</td>
+<td><code>MedicaoRegistrada</code>, <code>ObservacaoRegistrada</code>, <code>FalhaSensorDetectada</code>, <code>AlarmeEmitido</code>, <code>AlarmeReconhecido</code>, <code>AlarmeResolvido</code></td>
+</tr>
+</tbody></table>
+<p>O <code>EventBus</code> isola exceções por assinante, mas não oferece fila, retenção ou entrega assíncrona nesta versão.</p>
+<h2>2. Controle de reator</h2>
 <table>
 <thead>
 <tr>
@@ -1298,40 +1286,60 @@ hr { margin: 18px 0; }
 <th>Métodos principais</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td><code>ReatorFacade</code></td>
-<td>Fachada do módulo</td>
-<td><code>receberLeitura(...)</code>, <code>consultarHistorico(...)</code></td>
-</tr>
-<tr>
-<td><code>Reator</code></td>
-<td>Entidade agregadora</td>
-<td><code>getId()</code>, <code>getStatusOperacional()</code>, <code>associarSensor(Sensor)</code></td>
+<td>Fachada para sensores, leituras e falhas simuladas</td>
+<td><code>registrarSensor</code>, <code>receberLeitura</code>, <code>simularFalhaSensor</code>, <code>consultarHistorico</code></td>
 </tr>
 <tr>
 <td><code>Sensor</code></td>
-<td>Entidade</td>
-<td><code>getId()</code>, <code>getTipo()</code>, <code>getStatus()</code>, <code>obterLocalizacao()</code></td>
+<td>Record com tipo, unidade e faixas operacional/de observação</td>
+<td><code>isNaFaixaObservacao</code></td>
 </tr>
 <tr>
 <td><code>MedicaoReator</code></td>
-<td>Entidade</td>
-<td><strong><code>registrarMedicao(...)</code></strong>, <code>getValor()</code>, <code>getTimestamp()</code>, <code>getSensor()</code></td>
+<td>Entidade de medição associada a um sensor</td>
+<td><code>registrarMedicao</code>, <code>getValor</code>, <code>getTimestamp</code>, <code>getSensor</code></td>
+</tr>
+</tbody></table>
+<p>Sensores e histórico de medições são mantidos em memória pela <code>ReatorFacade</code>. Não existe <code>ReatorRepository</code> no código atual.</p>
+<h2>3. Alarmes</h2>
+<table>
+<thead>
+<tr>
+<th>Classe</th>
+<th>Padrão/responsabilidade</th>
+<th>Métodos principais</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>AlarmeFacade</code></td>
+<td>Facade e subscriber de <code>MedicaoRegistrada</code></td>
+<td><code>onEvento</code>, <code>processarAvaliacao</code>, <code>reconhecerAlarme</code>, <code>resolverAlarme</code>, <code>consultarAlarmes</code></td>
 </tr>
 <tr>
 <td><code>AvaliadorLimiar</code></td>
 <td>Strategy</td>
-<td><code>avaliar(MedicaoReator, Limiar): ResultadoAvaliacao</code></td>
+<td><code>foraDaFaixaSegura</code></td>
 </tr>
 <tr>
-<td><code>Limiar</code></td>
-<td>Configuração</td>
-<td><code>getParametro()</code>, <code>getValorMax()</code>, <code>getValorMin()</code></td>
+<td><code>AvaliadorFaixaSegura</code></td>
+<td>Implementação da Strategy</td>
+<td><code>foraDaFaixaSegura</code></td>
 </tr>
-</tbody>
-</table>
-<h3>Alarmes</h3>
+<tr>
+<td><code>AlarmeFactory</code></td>
+<td>Factory</td>
+<td><code>criar(MedicaoRegistrada)</code></td>
+</tr>
+<tr>
+<td><code>Alarme</code></td>
+<td>Entidade e ciclo de vida do alarme</td>
+<td><code>emitirAlerta</code>, <code>registrarEvento</code>, <code>reconhecer</code>, <code>resolver</code></td>
+</tr>
+</tbody></table>
+<p>Os alarmes ficam em memória durante a execução. O registro durável correspondente ocorre por meio dos eventos consumidos pela auditoria.</p>
+<h2>4. Auditoria</h2>
 <table>
 <thead>
 <tr>
@@ -1340,146 +1348,68 @@ hr { margin: 18px 0; }
 <th>Métodos principais</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td><code>AlarmeFacade</code></td>
-<td>Fachada</td>
-<td><code>processarAvaliacao(ResultadoAvaliacao)</code></td>
-</tr>
-<tr>
-<td><code>Alarme</code></td>
-<td>Entidade</td>
-<td><strong><code>emitirAlerta(destinatarios)</code></strong>, <strong><code>registrarEvento()</code></strong>, <code>getStatus()</code>, <code>getTipo()</code></td>
-</tr>
-<tr>
-<td><code>AlarmeFactory</code></td>
-<td>Factory</td>
-<td><code>criar(MedicaoReator, TipoAlarme): Alarme</code></td>
-</tr>
-</tbody>
-</table>
-<h3>PersistenciaReator / Auditoria</h3>
-<table>
-<thead>
-<tr>
-<th>Classe</th>
-<th>Métodos</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>ReatorRepository</code></td>
-<td><code>salvarMedicao</code>, <code>salvarAlarme</code>, <code>buscarHistorico</code></td>
-</tr>
-<tr>
+<tbody><tr>
 <td><code>AuditoriaSubscriber</code></td>
+<td>Subscriber global do EventBus</td>
 <td><code>onEvento</code></td>
 </tr>
 <tr>
 <td><code>RegistroAuditoria</code></td>
-<td><code>registrar(EventoDominio)</code></td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2>2. Classes Should / Could (corrigem feedback; sequências só se implementadas)</h2>
-<table>
-<thead>
-<tr>
-<th>Classe</th>
-<th>Marco</th>
-<th>Métodos</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>RegistroAcesso</code></td>
-<td>Should</td>
-<td><code>registrar(credencial, area, resultado)</code>, <code>getResultado()</code></td>
+<td>Persistência append-only e verificação da cadeia SHA-256</td>
+<td><code>registrar</code>, <code>consultar</code>, <code>verificarIntegridade</code>, <code>verificarIntegridadeArquivo</code></td>
 </tr>
 <tr>
-<td><code>AcessoFacade</code></td>
-<td>Should</td>
-<td><code>solicitarAcesso(...)</code></td>
+<td><code>EntradaAuditoria</code></td>
+<td>Record persistido no log</td>
+<td><code>linhaPersistida</code>, <code>hashCurto</code></td>
 </tr>
-<tr>
-<td><code>Emergencia</code></td>
-<td>Could</td>
-<td><strong><code>criarEmergencia(...)</code></strong>, <code>getStatus()</code>, <code>getTipo()</code></td>
-</tr>
-<tr>
-<td><code>ProtocoloEmergencia</code></td>
-<td>Could</td>
-<td><code>ativar()</code>, <code>getPassos()</code>, <code>associarEmergencia(Emergencia)</code></td>
-</tr>
-<tr>
-<td><code>HistoricoSubstituicao</code></td>
-<td>Could/backlog</td>
-<td><code>registrarSubstituicao(...)</code></td>
-</tr>
-<tr>
-<td><code>Localizacao</code></td>
-<td>backlog material</td>
-<td><code>atualizarPosicao(...)</code>, <code>getNivelSeguranca()</code></td>
-</tr>
-<tr>
-<td><code>MaterialRadioativo</code></td>
-<td>backlog</td>
-<td><code>getTipo()</code>, <code>getLocalizacao()</code></td>
-</tr>
-<tr>
-<td><code>Movimentacao</code></td>
-<td>backlog</td>
-<td><strong><code>registrarMovimentacao(...)</code></strong> na entidade (não só no controller)</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2>3. Regras de consistência (checklist do professor)</h2>
+</tbody></table>
+<p>A cadeia SHA-256 torna adulterações detectáveis; ela não impede que o arquivo físico seja alterado.</p>
+<h2>5. Regras de consistência</h2>
 <ol>
-<li>Toda mensagem em diagrama de sequência do MVP referencia método existente nesta lista.</li>
-<li>Lógica de registro de domínio fica na <strong>entidade</strong> (<code>registrarMedicao</code>, <code>registrarEvento</code>, <code>registrar</code> em <code>RegistroAcesso</code>), não apenas no controller/facade.</li>
-<li>Destinatários de <code>emitirAlerta</code> incluem Operador e Supervisão Central (modelo de análise / UC).</li>
+<li>Toda mensagem nos diagramas SEQ-UC01 e SEQ-UC02 corresponde a um método existente.</li>
+<li>O diagrama não apresenta banco, repository, broker externo ou API HTTP como implementados.</li>
+<li>Operador de Reator e Supervisão Central são destinatários explícitos do alarme.</li>
+<li>Funcionalidades Should/Could permanecem nos requisitos e backlog, fora do diagrama de classes implementadas.</li>
 </ol>
-<hr />
-<h2>4. Relacionamentos principais (núcleo)</h2>
-<pre><code class="language-text">Reator 1──* Sensor
-Sensor 1──* MedicaoReator
-MedicaoReator *──1 Limiar (por parâmetro avaliado)
-Alarme *──1 MedicaoReator (origem)
-Alarme *──1 TipoAlarme (tabela de domínio no ER)
-EventBus ◄── ReatorFacade, AlarmeFacade, AuditoriaSubscriber
+<h2>6. Relacionamentos principais</h2>
+<pre><code class="language-text">ReatorFacade 1 o-- * Sensor
+ReatorFacade 1 o-- * MedicaoReator
+MedicaoReator * --&gt; 1 Sensor
+AlarmeFacade 1 o-- * Alarme
+Alarme * --&gt; 1 MedicaoRegistrada
+EventBus --&gt; IEventSubscriber
+AuditoriaSubscriber --&gt; RegistroAuditoria --&gt; EntradaAuditoria
 </code></pre>
-<hr />
-<h1>07 — Diagramas de Sequência (núcleo MVP)</h1>
-<p><strong>Sistema:</strong> Controle de Usina Nuclear — RP4<br />
-<strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
-<p>Todas as mensagens referenciam métodos existentes em <a href="06-classes-projeto-mvp.md">06-classes-projeto-mvp.md</a>.</p>
-<p>Fontes PlantUML: <a href="diagramas/seq-uc01-medicao.puml">diagramas/seq-uc01-medicao.puml</a>, <a href="diagramas/seq-uc02-alarme.puml">diagramas/seq-uc02-alarme.puml</a></p>
-<hr />
+</section>
+<section class="document appendix" data-source="07-sequencias-mvp.md"><h1>07 — Diagramas de Sequência (núcleo MVP)</h1>
+<p><strong>Sistema:</strong> Controle de Usina Nuclear — RP4<br><strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
+<p>Todas as mensagens referenciam métodos existentes no código do MVP e em <a href="06-classes-projeto-mvp.md">06-classes-projeto-mvp.md</a>.</p>
+<p>Fonte UML editável: <a href="../marcus/diagramas/Marcus-UML-MVP.asta">Marcus-UML-MVP.asta</a>. As imagens foram exportadas pelo Astah.</p>
+<hr>
 <h2>SEQ-UC01 — Registrar Medição (fluxo principal até include de alarme)</h2>
-<p><code>_([diagrama Mermaid — ver repositório GitHub])_</code></p>
-<hr />
+<p><img src="../marcus/diagramas/Marcus-UML-MVP/02%20-%20SEQ%20UC01%20Registrar%20Medi%C3%A7%C3%A3o.png" alt="Diagrama UML de sequência UC01"></p>
+<p>O desenho acompanha o código atual: o histórico de medições ainda é mantido em memória por <code>ReatorFacade</code>; portanto, não foi inventada uma chamada a <code>ReatorRepository</code>.</p>
+<hr>
 <h2>SEQ-UC02 — Emitir Alarme (limiar violado)</h2>
-<p><code>_([diagrama Mermaid — ver repositório GitHub])_</code></p>
-<hr />
+<p><img src="../marcus/diagramas/Marcus-UML-MVP/03%20-%20SEQ%20UC02%20Emitir%20Alarme.png" alt="Diagrama UML de sequência UC02"></p>
+<p>As notificações a Operador e Supervisão Central representam a saída de console realizada por <code>AlarmeFacade</code>; ainda não existe serviço externo de notificação nem persistência de alarme em banco.</p>
+<hr>
 <h2>SEQ-UC02-A1 — Limiar não violado (alternativa)</h2>
 <ol>
-<li><code>AlarmeFacade.processarAvaliacao</code> recebe <code>isViolado() == false</code></li>
+<li><code>AlarmeFacade.processarAvaliacao</code> recebe <code>violado == false</code></li>
 <li>Facade encerra sem <code>emitirAlerta</code></li>
-<li>Opcional: publica <code>AvaliacaoLimiarOk</code> para auditoria</li>
+<li>Nenhum <code>AlarmeEmitido</code> é publicado; a medição original já foi auditada</li>
 </ol>
-<hr />
+<hr>
 <h2>SEQ-UC04 (Should — rascunho)</h2>
-<p><code>Guarda -&gt; AcessoFacade.solicitarAcesso -&gt; RegistroAcesso.registrar -&gt; EventBus</code><br />
-Implementação e desenho detalhado no Marco 3.</p>
-<hr />
-<h1>08 — Mapeamento Relacional (núcleo MVP corrigido)</h1>
-<p><strong>Sistema:</strong> Controle de Usina Nuclear — RP4<br />
-<strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
+<p><code>Guarda -&gt; AcessoFacade.solicitarAcesso -&gt; RegistroAcesso.registrar -&gt; EventBus</code><br>Implementação e desenho detalhado no Marco 3.</p>
+</section>
+<section class="document appendix" data-source="08-mapeamento-relacional-mvp.md"><h1>08 — Mapeamento Relacional (núcleo MVP corrigido)</h1>
+<p><strong>Sistema:</strong> Controle de Usina Nuclear — RP4<br><strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
 <p>Correções do feedback APS (nota 4) aplicadas ao <strong>recorte Must</strong>. Tipos usam <code>VARCHAR</code> / <code>INTEGER</code> / <code>DECIMAL</code> / <code>TIMESTAMP</code> (não existe <code>String</code> em SQL). Enums viram <strong>tabelas de domínio</strong>. Comparação de chaves conforme multiplicidades (sem N:N injustificado).</p>
 <p>Fonte: <a href="diagramas/er-nucleo-mvp.puml">diagramas/er-nucleo-mvp.puml</a></p>
-<hr />
+<hr>
 <h2>1. Tabelas de domínio (enums)</h2>
 <table>
 <thead>
@@ -1490,8 +1420,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Substitui</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td><code>status_operacional</code></td>
 <td><code>id_status_operacional</code> INT</td>
 <td><code>codigo VARCHAR(40) UNIQUE</code>, <code>descricao VARCHAR(120)</code></td>
@@ -1521,9 +1450,8 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td><code>codigo VARCHAR(40)</code>, <code>descricao VARCHAR(120)</code></td>
 <td>StatusAlarmeEnum</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>2. Tabelas de entidades do núcleo</h2>
 <h3><code>reator</code></h3>
 <table>
@@ -1534,8 +1462,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Restrição</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>id_reator</td>
 <td>INT</td>
 <td>PK</td>
@@ -1550,8 +1477,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>INT</td>
 <td>FK → status_operacional NOT NULL</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3><code>turbina</code> (relacionamento corrigido)</h3>
 <table>
 <thead>
@@ -1561,8 +1487,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Restrição</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>id_turbina</td>
 <td>INT</td>
 <td>PK</td>
@@ -1582,8 +1507,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>INT</td>
 <td>FK → status_operacional</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3><code>sensor</code></h3>
 <table>
 <thead>
@@ -1593,8 +1517,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Restrição</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>id_sensor</td>
 <td>INT</td>
 <td>PK</td>
@@ -1619,8 +1542,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>INT</td>
 <td>FK → status_sensor</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3><code>medicao_reator</code></h3>
 <table>
 <thead>
@@ -1630,8 +1552,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Restrição</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>id_medicao</td>
 <td>INT</td>
 <td>PK</td>
@@ -1661,8 +1582,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>TIMESTAMP</td>
 <td>NOT NULL</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3><code>alarme</code></h3>
 <table>
 <thead>
@@ -1672,8 +1592,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Restrição</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>id_alarme</td>
 <td>INT</td>
 <td>PK</td>
@@ -1708,8 +1627,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>TIMESTAMP</td>
 <td>NOT NULL</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3><code>registro_auditoria</code></h3>
 <table>
 <thead>
@@ -1719,8 +1637,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Restrição</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>id_registro</td>
 <td>INT</td>
 <td>PK</td>
@@ -1740,8 +1657,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>TIMESTAMP</td>
 <td>NOT NULL</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <h3><code>limiar</code></h3>
 <table>
 <thead>
@@ -1751,8 +1667,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Restrição</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>id_limiar</td>
 <td>INT</td>
 <td>PK</td>
@@ -1777,9 +1692,8 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>DECIMAL(18,6)</td>
 <td></td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>3. Should (acesso) — recorte mínimo</h2>
 <h3><code>registro_acesso</code></h3>
 <table>
@@ -1790,8 +1704,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Restrição</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>id_registro_acesso</td>
 <td>INT</td>
 <td>PK</td>
@@ -1816,10 +1729,9 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>TIMESTAMP</td>
 <td>NOT NULL</td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <p><strong>Não</strong> incluir <code>id_cargo</code> nesta tabela (feedback APS).</p>
-<hr />
+<hr>
 <h2>4. O que NÃO entra no ER do Marco 1 (backlog documentado)</h2>
 <table>
 <thead>
@@ -1828,8 +1740,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Decisão</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>ContingenciaEnum / Emergencia enums → tabelas</td>
 <td>Could — quando RF09/RF10 entrarem</td>
 </tr>
@@ -1843,7 +1754,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 </tr>
 <tr>
 <td>Capacitacao/Treinamento invertidos, Alocacao, FuncionarioEnum</td>
-<td>Won't MVP</td>
+<td>Won&#39;t MVP</td>
 </tr>
 <tr>
 <td>Material/Movimentacao FKs</td>
@@ -1853,9 +1764,8 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>Componente–Evacuacao / Substituicao–Manutencao</td>
 <td>Backlog manutenção</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>5. Comparação de chaves (exemplos)</h2>
 <table>
 <thead>
@@ -1865,8 +1775,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Onde fica a FK</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>Reator 1 — * Turbina</td>
 <td>1:N</td>
 <td><code>turbina.id_reator</code></td>
@@ -1891,14 +1800,13 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>1:N</td>
 <td><code>alarme.id_medicao</code></td>
 </tr>
-</tbody>
-</table>
+</tbody></table>
 <p>Nenhuma tabela associativa N:N no núcleo.</p>
-<hr />
-<h1>Checklist — Feedback APS → ações no RP4 Marco 1</h1>
+</section>
+<section class="document appendix" data-source="checklist-feedback-aps.md"><h1>Checklist — Feedback APS → ações no RP4 Marco 1</h1>
 <p><strong>Equipe:</strong> Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol</p>
 <p>Legenda: <strong>Feito</strong> = endereçado nos docs do Marco 1 | <strong>Backlog</strong> = documentado para depois | <strong>N/A</strong> = domínio descartado (feedback militar)</p>
-<hr />
+<hr>
 <h2>A) Casos de uso / modelo (regras; domínio usina)</h2>
 <table>
 <thead>
@@ -1908,8 +1816,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Status</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td><code>if</code> no fluxo principal</td>
 <td>Fluxos principais lineares; condições em alternativas (UC01–UC04)</td>
 <td>Feito</td>
@@ -1944,9 +1851,8 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>Ignorado (outro sistema)</td>
 <td>N/A</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>B) Sequência × classes (nota 0)</h2>
 <table>
 <thead>
@@ -1956,8 +1862,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Status</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td><code>Alarme.emitirAlerta</code> / <code>registrarEvento</code></td>
 <td>Incluídos em classes + SEQ-UC02</td>
 <td>Feito</td>
@@ -1969,13 +1874,13 @@ Implementação e desenho detalhado no Marco 3.</p>
 </tr>
 <tr>
 <td><code>ProtocoloEmergencia</code> ausente</td>
-<td>Classe <code>«future»</code> / Could documentada</td>
-<td>Feito (doc) / Backlog código</td>
+<td>Requisito Could documentado, fora do diagrama de classes implementadas</td>
+<td>Backlog código</td>
 </tr>
 <tr>
 <td><code>RegistroAcesso</code> ausente</td>
-<td>Classe Should documentada</td>
-<td>Feito (doc)</td>
+<td>Requisito Should documentado, fora do diagrama de classes implementadas</td>
+<td>Backlog código</td>
 </tr>
 <tr>
 <td><code>Emergencia.criarEmergencia</code></td>
@@ -1992,9 +1897,8 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>Regra: registro na entidade; materiais fora do Must</td>
 <td>Backlog RF15</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>C) Modelo relacional (nota 4) — núcleo</h2>
 <table>
 <thead>
@@ -2004,8 +1908,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Status</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>Usar VARCHAR não String</td>
 <td>ER núcleo usa VARCHAR</td>
 <td>Feito</td>
@@ -2052,7 +1955,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 </tr>
 <tr>
 <td>RH/Capacitacao/Alocacao/Acesso.id_cargo</td>
-<td>Won't / Should sem id_cargo</td>
+<td>Won&#39;t / Should sem id_cargo</td>
 <td>Backlog / parcial</td>
 </tr>
 <tr>
@@ -2060,9 +1963,8 @@ Implementação e desenho detalhado no Marco 3.</p>
 <td>Fora do núcleo MVP</td>
 <td>Backlog</td>
 </tr>
-</tbody>
-</table>
-<hr />
+</tbody></table>
+<hr>
 <h2>D) Entregáveis pedidos pelo professor (Marco 1)</h2>
 <table>
 <thead>
@@ -2072,8 +1974,7 @@ Implementação e desenho detalhado no Marco 3.</p>
 <th>Status</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>RF e RNF</td>
 <td>01-requisitos-rf-rnf.md</td>
 <td>Feito</td>
@@ -2090,34 +1991,39 @@ Implementação e desenho detalhado no Marco 3.</p>
 </tr>
 <tr>
 <td>Pacotes</td>
-<td>diagramas/pacotes.puml + 04</td>
+<td><code>diagramas/pacotes.puml</code> + PNG + doc 04</td>
 <td>Feito</td>
 </tr>
 <tr>
 <td>Componentes lógicos</td>
-<td>diagramas/componentes-logicos.puml</td>
+<td><code>diagramas/componentes-logicos.puml</code> + PNG</td>
 <td>Feito</td>
 </tr>
 <tr>
 <td>Componentes físicos</td>
-<td>diagramas/componentes-fisicos.puml</td>
+<td><code>diagramas/componentes-fisicos.puml</code> + PNG</td>
 <td>Feito</td>
 </tr>
 <tr>
-<td>UCs / classes / sequências / ER</td>
-<td>05–08</td>
+<td>UCs / sequências</td>
+<td><code>docs/marcus/diagramas/Marcus-UML-MVP.asta</code> + PNGs</td>
 <td>Feito</td>
 </tr>
 <tr>
-<td>Esqueleto Java</td>
-<td>src/main/java/...</td>
+<td>Classes / ER</td>
+<td>docs 06–08 + PNGs UML</td>
+<td>Feito</td>
+</tr>
+<tr>
+<td>Núcleo Java funcional</td>
+<td><code>mvp/src/br/edu/unipampa/usina/...</code></td>
 <td>Feito</td>
 </tr>
 <tr>
 <td>PDF consolidado</td>
-<td>ENTREGA-MARCO1.md (exportar PDF)</td>
+<td><code>ENTREGA-MARCO1.pdf</code> regenerado com os diagramas</td>
 <td>Feito</td>
 </tr>
-</tbody>
-</table>
-<hr /></body></html>
+</tbody></table>
+</section></body>
+</html>

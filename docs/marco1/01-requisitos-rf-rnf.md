@@ -63,12 +63,18 @@ Alinhados à justificativa da arquitetura EDA mantida.
 | RNF02 | Confiabilidade / disponibilidade | Falha em consumidor de relatório não derruba monitoramento crítico. | Baixo acoplamento; fila/retenção de eventos |
 | RNF03 | Integridade | Medições e alarmes devem ser precisos e rastreáveis à origem. | Evento como fato; validação no produtor |
 | RNF04 | Tolerância a falhas | Isolar falha de módulo (ex.: auditoria) sem parar ControleReator. | Módulos independentes |
-| RNF05 | Auditabilidade | Histórico imutável (ou append-only) de eventos relevantes. | Pacote AuditoriaLogs + eventos |
+| RNF05 | Auditabilidade | Histórico append-only de eventos relevantes com adulteração detectável. | Pacote AuditoriaLogs + eventos |
 | RNF06 | Manutenibilidade | Alterar limiares/estratégia de alarme sem reescrever todo o sistema. | Módulos + Strategy (Marco 2) |
 | RNF07 | Escalabilidade | Possibilidade futura de escalar consumidores independentemente. | Persistência dedicada + bus |
 | RNF08 | Segurança | Políticas de acesso granuláveis por módulo. | Pacote SegurancaAcesso |
 | RNF09 | Persistência segura do núcleo | Medições e alarmes com backup/recuperação simples no MVP. | DB dedicado do módulo reator |
 | RNF10 | Testabilidade | Módulos testáveis com eventos simulados. | Event bus mockável |
+
+### Situação no MVP atual
+
+- **Atendidos localmente:** RNF03, RNF05, RNF06 e RNF10.
+- **Parciais:** RNF02 e RNF04 possuem isolamento de exceções por subscriber; RNF09 persiste somente a auditoria.
+- **Planejados:** publicação assíncrona, retenção/fila, redundância e banco para medições/alarmes. Portanto, RNF01, RNF07 e o restante de RNF09 não devem ser apresentados como concluídos.
 
 ---
 

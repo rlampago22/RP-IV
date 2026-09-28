@@ -6,8 +6,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Barramento in-process do MVP.
+ * Barramento síncrono in-process do MVP.
  * Implementa Observer/Pub-Sub e desacopla produtores de consumidores com isolamento de falhas.
+ * Entrega assíncrona e retenção de mensagens permanecem como evolução arquitetural.
  */
 public final class EventBus {
     private final List<IEventSubscriber> assinantesGlobais = new CopyOnWriteArrayList<>();

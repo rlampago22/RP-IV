@@ -12,8 +12,8 @@ import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
 import java.nio.file.Path;
 
 /**
- * Demonstração integrada em console dos requisitos Must (RF01–RF06 e RNF01–RNF10)
- * contemplando o documento de 69 páginas da disciplina.
+ * Demonstração integrada do recorte Must RF01–RF06 e das qualidades verificáveis
+ * no MVP local: integridade, tolerância a falhas, auditabilidade e testabilidade.
  */
 public final class DemoMvp {
     private DemoMvp() {}

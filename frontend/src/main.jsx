@@ -7,6 +7,7 @@ import SensoresPage from './pages/SensoresPage.jsx'
 import AlarmesPage from './pages/AlarmesPage.jsx'
 import AuditoriaPage from './pages/AuditoriaPage.jsx'
 import DemoPage from './pages/DemoPage.jsx'
+import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import { authApi } from './services/authApi.js'
 
@@ -18,7 +19,23 @@ const TABS = [
   { to: '/demo', text: 'Demo / Cenários' },
 ]
 
-const PERFIS_DA_CENTRAL = new Set(['OPERADOR_REATOR', 'SUPERVISAO_CENTRAL', 'ADMINISTRADOR_SISTEMA'])
+const BADGE_TEXTO = {
+  ESTAVEL: '● ESTÁVEL',
+  ATENCAO: '● ATENÇÃO',
+  CRITICO: '● CRÍTICO',
+}
+
+const BADGE_CLASSE = {
+  ESTAVEL: '',
+  ATENCAO: ' warn',
+  CRITICO: ' crit',
+}
+
+const PERFIS_DA_CENTRAL = new Set([
+  'OPERADOR_REATOR',
+  'SUPERVISAO_CENTRAL',
+  'ADMINISTRADOR_SISTEMA',
+])
 
 function App() {
   const [usuario, setUsuario] = useState(undefined)
@@ -35,57 +52,32 @@ function App() {
     return <LoginPage onLogin={async (email, senha) => setUsuario(await authApi.login(email, senha))} />
   }
 
-  return <Shell usuario={usuario} onLogout={async () => { await authApi.logout(); setUsuario(null) }} />
-}
-
-function Shell({ usuario, onLogout }) {
-  const [alarmState, setAlarmState] = useState('stable')
-  const [apiOnline, setApiOnline] = useState(false)
-  const [events, setEvents] = useState([
-    { type: 'MEDICAO_REGISTRADA', detail: 'ciclo tempo real' },
-  ])
-
-  const addEvent = (type, detail) => {
-    setEvents((current) => [{ type, detail }, ...current])
-  }
-  const simulateCritical = () => {
-    setAlarmState('active')
-    addEvent('ALARME_EMITIDO', 'Temp 372 °C · fluxo 420 m³/h')
-  }
-  const acknowledgeAlarm = () => {
-    if (alarmState !== 'active') return
-    setAlarmState('acknowledged')
-    addEvent('ALARME_RECONHECIDO', 'Operador de Reator confirmou a ocorrência')
-  }
-  const resolveAlarm = () => {
-    if (alarmState === 'stable') return
-    setAlarmState('stable')
-    addEvent('ALARME_RESOLVIDO', 'Parâmetros normalizados pelo operador')
-  }
-
-  const isCritical = alarmState === 'active'
-  const isAcknowledged = alarmState === 'acknowledged'
   const podeAcessarCentral = usuario.papeis.some((papel) => PERFIS_DA_CENTRAL.has(papel))
-
-  useEffect(() => {
-    if (!podeAcessarCentral) return undefined
-    let ativo = true
-    authApi.centralStatus().then(() => ativo && setApiOnline(true)).catch(() => ativo && setApiOnline(false))
-    return () => { ativo = false }
-  }, [podeAcessarCentral])
-
   if (!podeAcessarCentral) {
     return (
       <main className="auth-screen">
         <section className="auth-card">
           <p className="scada-kicker">Acesso autenticado</p>
           <h1>Perfil sem acesso à Central</h1>
-          <p>O perfil Guarda / Controle de Acesso é destinado ao UC04 de áreas restritas e não possui acesso à supervisão operacional.</p>
-          <button type="button" className="scada-btn scada-btn-ghost" onClick={onLogout}>Sair</button>
+          <p>O perfil Guarda / Controle de Acesso é destinado ao UC04 e não possui acesso à supervisão operacional.</p>
+          <button type="button" className="scada-btn scada-btn-ghost" onClick={async () => { await authApi.logout(); setUsuario(null) }}>Sair</button>
         </section>
       </main>
     )
   }
+
+  return (
+    <EstadoProvider>
+      <BrowserRouter>
+        <Shell usuario={usuario} onLogout={async () => { await authApi.logout(); setUsuario(null) }} />
+      </BrowserRouter>
+    </EstadoProvider>
+  )
+}
+
+function Shell({ usuario, onLogout }) {
+  const { estado, origemMock, reconhecerAlarme } = useEstado()
+  const alarmeAtivo = estado.alarmes.find((a) => a.status === 'ATIVO')
 
   return (
     <div className="scada-shell">
@@ -94,7 +86,9 @@ function Shell({ usuario, onLogout }) {
           <div className="scada-dot">RN</div>
           <div>
             <h1>Central de Supervisão · Reator-01</h1>
-            <small>Opção A — SCADA escuro · API {apiOnline ? 'ONLINE' : 'OFFLINE'} · EventBus ONLINE</small>
+            <small>
+              Opção A — SCADA escuro · EventBus {origemMock ? 'MOCK (API offline)' : 'ONLINE'}
+            </small>
           </div>
         </div>
         <div className="scada-top-right">
@@ -102,8 +96,11 @@ function Shell({ usuario, onLogout }) {
             <strong>{usuario.nome}</strong>
             <span>{usuario.papeis.map((papel) => papel.replaceAll('_', ' ')).join(' · ')}</span>
           </div>
-          <span className={`scada-badge${isCritical ? ' crit' : isAcknowledged ? ' warn' : ''}`}>
-            {isCritical ? '● CRÍTICO' : isAcknowledged ? '● EM TRATAMENTO' : '● ESTÁVEL'}
+          {origemMock && (
+            <span className="scada-pill warn">MOCK · rode mvp/4-EXECUTAR-API-ESTADO.bat</span>
+          )}
+          <span className={`scada-badge${BADGE_CLASSE[estado.status] ?? ''}`}>
+            {BADGE_TEXTO[estado.status] ?? estado.status}
           </span>
           <button type="button" className="scada-btn scada-btn-ghost scada-logout" onClick={onLogout}>Sair</button>
         </div>
@@ -122,13 +119,13 @@ function Shell({ usuario, onLogout }) {
         ))}
       </nav>
 
-      {isCritical && (
+      {alarmeAtivo && (
         <div className="scada-banner">
-          <span>ALARME ATIVO — Temperatura acima do limiar (T-CORE-01).</span>
+          <span>ALARME ATIVO — {alarmeAtivo.mensagem}</span>
           <button
             type="button"
             className="scada-btn scada-btn-amber"
-            onClick={acknowledgeAlarm}
+            onClick={() => reconhecerAlarme(alarmeAtivo.id)}
           >
             Validar / Reconhecer
           </button>
@@ -137,11 +134,11 @@ function Shell({ usuario, onLogout }) {
 
       <main className="scada-main">
         <Routes>
-          <Route path="/" element={<OverviewPage alarmState={alarmState} events={events} onAcknowledge={acknowledgeAlarm} onResolve={resolveAlarm} />} />
+          <Route path="/" element={<OverviewPage />} />
           <Route path="/sensores" element={<SensoresPage />} />
-          <Route path="/alarmes" element={<AlarmesPage alarmState={alarmState} onAcknowledge={acknowledgeAlarm} onResolve={resolveAlarm} />} />
-          <Route path="/auditoria" element={<AuditoriaPage events={events} />} />
-          <Route path="/demo" element={<DemoPage onCritical={simulateCritical} onNormal={resolveAlarm} />} />
+          <Route path="/alarmes" element={<AlarmesPage />} />
+          <Route path="/auditoria" element={<AuditoriaPage />} />
+          <Route path="/demo" element={<DemoPage />} />
         </Routes>
       </main>
     </div>
@@ -150,8 +147,6 @@ function Shell({ usuario, onLogout }) {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <App />
   </React.StrictMode>
 )

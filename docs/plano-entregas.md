@@ -8,23 +8,17 @@
 
 ## 1. Fluxo do MVP (Must)
 
-```mermaid
-flowchart LR
-  Sensor --> ReatorFacade
-  ReatorFacade -->|MedicaoRegistrada| EventBus
-  EventBus --> AvaliadorLimiar
-  AvaliadorLimiar -->|limiar violado| Alarmes
-  Alarmes -->|AlarmeEmitido| EventBus
-  EventBus --> AuditoriaLogs
-  EventBus --> ApiEstado
-  ApiEstado --> ReactUI
-```
+![Componentes lógicos do MVP](marco1/diagramas/componentes-logicos-mvp.png)
+
+Fonte UML: [`marco1/diagramas/componentes-logicos-mvp.puml`](marco1/diagramas/componentes-logicos-mvp.puml). A API entre o React e o Java está marcada no diagrama como evolução futura; hoje a interface web usa estado demonstrativo compartilhado.
 
 | Camada | O que faz |
 |--------|-----------|
-| Domínio Java | Publica/consome eventos; persiste núcleo |
+| Domínio Java | Publica/consome eventos; mantém medições e alarmes em memória |
 | API (a evoluir) | Expõe estado derivado dos eventos ao front |
 | React | Telas T01–T05 de supervisão |
+
+A auditoria é a persistência existente nesta versão: arquivo `mvp/dados/auditoria.log` com encadeamento SHA-256.
 
 Telas: ver [`ui/idealizacao-telas.md`](ui/idealizacao-telas.md).
 
