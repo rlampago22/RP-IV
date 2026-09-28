@@ -70,11 +70,10 @@ export default function SensoresPage() {
 
   return (
     <section>
-      <p className="scada-kicker">T02 · Telemetria RF-1</p>
-      <h1 className="scada-heading">Sensores</h1>
+      <p className="scada-kicker">TELEMETRIA INSTRUMENTAL • MALHA PRIMÁRIA</p>
+      <h1 className="scada-heading">Sensores Operacionais</h1>
       <p className="scada-lead">
-        Lista RF-1 com barra, status e histórico curto (MedicaoRegistrada / ReatorRepository).
-        Fonte: {origemMock ? 'mock local (API offline)' : '/api/estado'} — mesmo contrato da T01.
+        Monitoramento contínuo de grandezas físicas com limites operacionais, margens de segurança e tendência recente.
       </p>
 
       <div className="scada-sensors" style={{ marginTop: 16 }}>

@@ -52,10 +52,10 @@ export default function DemoPage() {
 
   return (
     <section>
-      <p className="scada-kicker">T05 · Roteiro Marcus (Issue #52)</p>
-      <h1 className="scada-heading">Demo / Cenários</h1>
+      <p className="scada-kicker">SIMULADOR OPERACIONAL • INJEÇÃO DE CENÁRIOS</p>
+      <h1 className="scada-heading">Simulação de Cenários</h1>
       <p className="scada-lead">
-        Dispara os fluxos da apresentação: Normal, Observação, Falha Sensor e Anomalia Crítica diretamente no barramento EDA.
+        Injeção controlada de condições operacionais para validação de resposta do sistema: Normal, Atenção Preventiva, Falha Instrumental e Anomalia Crítica.
       </p>
 
       <div className="scada-scenarios">
@@ -84,8 +84,7 @@ export default function DemoPage() {
       )}
 
       <div className="scada-note" role="status" style={{ marginTop: '1rem' }}>
-        Status da conexão: <strong>{origemMock ? 'Mock Offline (API desligada)' : 'Conectado à API Java (EventBus Ativo)'}</strong>.
-        Para demonstração integrada completa, certifique-se de que o backend Java está rodando via <code>mvp/4-EXECUTAR-API-ESTADO.bat</code>.
+        Barramento de telemetria: <strong>{origemMock ? 'Modo Simulado Local (Offline)' : 'Conectado à Usina em Tempo Real (EventBus Online)'}</strong>.
       </div>
     </section>
   )

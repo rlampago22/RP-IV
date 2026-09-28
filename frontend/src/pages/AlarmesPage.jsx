@@ -18,11 +18,10 @@ export default function AlarmesPage() {
 
   return (
     <section>
-      <p className="scada-kicker">T03 · UC01 / RF-2</p>
-      <h1 className="scada-heading">Alarmes</h1>
+      <p className="scada-kicker">SISTEMA DE SEGURANÇA E PROTEÇÃO RADIOLÓGICA</p>
+      <h1 className="scada-heading">Gestão de Alarmes</h1>
       <p className="scada-lead">
-        Emitido → Reconhecido → Resolvido. Consome <code>/api/estado</code> via EstadoContext;
-        back GoF/Strategy em <code>mvp/.../alarmes/</code>.
+        Painel central de ocorrências com protocolo formal de reconhecimento operacional e encerramento de alertas.
       </p>
 
       <div className="scada-card" style={{ marginTop: 16 }}>

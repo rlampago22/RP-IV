@@ -41,13 +41,13 @@ function Shell() {
           <div>
             <h1>Central de Supervisão · Reator-01</h1>
             <small>
-              Opção A — SCADA escuro · EventBus {origemMock ? 'MOCK (API offline)' : 'ONLINE'}
+              Unidade Geradora 01 • Sistema SCADA Digital • Barramento {origemMock ? 'Simulado' : 'Online'}
             </small>
           </div>
         </div>
         <div className="scada-top-right">
           {origemMock && (
-            <span className="scada-pill warn">MOCK · rode mvp/4-EXECUTAR-API-ESTADO.bat</span>
+            <span className="scada-pill warn">MODO SIMULAÇÃO LOCAL</span>
           )}
           <span className={`scada-badge${BADGE_CLASSE[estado.status] ?? ''}`}>
             {BADGE_TEXTO[estado.status] ?? estado.status}
