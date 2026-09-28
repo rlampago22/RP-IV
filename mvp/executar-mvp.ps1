@@ -25,6 +25,10 @@ if ($LASTEXITCODE -ne 0) {
 if ($Testar) {
     Write-Host 'Executando testes...' -ForegroundColor Cyan
     & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.TestesMvp
+    if ($LASTEXITCODE -ne 0) {
+        throw 'A suite Must falhou.'
+    }
+    & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.TestesApiAlarmes
 } else {
     Write-Host 'Executando demonstração...' -ForegroundColor Cyan
     & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.DemoMvp

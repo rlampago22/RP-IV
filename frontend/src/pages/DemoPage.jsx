@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useEstado } from '../state/EstadoContext.jsx'
 
 const SCENARIOS = [
   { key: 'NORMAL', title: 'Normal / Tempo Real', detail: 'Medições na faixa · núcleo ESTÁVEL' },
@@ -27,6 +28,20 @@ const SCENARIOS = [
  */
 export default function DemoPage() {
   const [scenario, setScenario] = useState('NORMAL')
+  const [mensagem, setMensagem] = useState('')
+  const { simularAnomalia } = useEstado()
+
+  async function selecionarCenario(chave) {
+    setScenario(chave)
+    if (chave === 'CRITICO') {
+      const sucesso = await simularAnomalia()
+      setMensagem(sucesso
+        ? 'Anomalia enviada à API. O banner e a fila de alarmes foram atualizados.'
+        : 'Não foi possível simular a anomalia. Confira se a API Java está rodando.')
+      return
+    }
+    setMensagem('')
+  }
 
   return (
     <section>
@@ -42,7 +57,7 @@ export default function DemoPage() {
             key={item.key}
             type="button"
             className="scada-scenario"
-            onClick={() => setScenario(item.key)}
+            onClick={() => selecionarCenario(item.key)}
           >
             <strong>{item.title}</strong>
             <span>{item.detail}</span>
@@ -51,10 +66,7 @@ export default function DemoPage() {
       </div>
 
       <div className="scada-note" role="status">
-        Cenário selecionado: <strong>{scenario}</strong>. T01–T04 usam{' '}
-        <code>EstadoContext</code> (<code>/api/estado</code>). Para anomalia ao vivo, use{' '}
-        <strong>Iniciar Tempo Real</strong> na Visão Geral com a API Java rodando (
-        <code>mvp/4-EXECUTAR-API-ESTADO.bat</code>). Integração T05→EventBus: issue #52.
+        Cenário selecionado: <strong>{scenario}</strong>. {mensagem || 'T01–T04 consomem o snapshot live de /api/estado.'}
       </div>
     </section>
   )

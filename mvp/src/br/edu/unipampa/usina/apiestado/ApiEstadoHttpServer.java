@@ -1,6 +1,7 @@
 package br.edu.unipampa.usina.apiestado;
 
 import br.edu.unipampa.usina.alarmes.AlarmeFacade;
+import br.edu.unipampa.usina.controlereator.ReatorFacade;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
@@ -22,12 +23,14 @@ public final class ApiEstadoHttpServer {
 
     private final EstadoAgregador estado;
     private final AlarmeFacade alarmes;
+    private final ReatorFacade reator;
     private final int porta;
     private HttpServer server;
 
-    public ApiEstadoHttpServer(EstadoAgregador estado, AlarmeFacade alarmes, int porta) {
+    public ApiEstadoHttpServer(EstadoAgregador estado, AlarmeFacade alarmes, ReatorFacade reator, int porta) {
         this.estado = estado;
         this.alarmes = alarmes;
+        this.reator = reator;
         this.porta = porta;
     }
 
@@ -36,6 +39,7 @@ public final class ApiEstadoHttpServer {
         server.createContext("/api/estado", this::tratarEstado);
         server.createContext("/api/tempo-real/iniciar", exchange -> tratarTempoReal(exchange, true));
         server.createContext("/api/tempo-real/pausar", exchange -> tratarTempoReal(exchange, false));
+        server.createContext("/api/demo/anomalia", this::tratarAnomaliaDemo);
         server.createContext("/api/alarmes/", this::tratarAcaoAlarme);
         server.setExecutor(null);
         server.start();
@@ -68,6 +72,18 @@ public final class ApiEstadoHttpServer {
             return;
         }
         estado.definirTempoReal(ativo);
+        responder(exchange, 200, EstadoJson.escrever(estado.snapshot()));
+    }
+
+    private void tratarAnomaliaDemo(HttpExchange exchange) throws IOException {
+        if (comCorsEPreflight(exchange, "POST")) {
+            return;
+        }
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
+            return;
+        }
+        reator.receberLeitura(1L, 372.0);
         responder(exchange, 200, EstadoJson.escrever(estado.snapshot()));
     }
 

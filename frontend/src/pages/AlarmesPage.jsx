@@ -11,7 +11,7 @@ function formatarHora(iso) {
 }
 
 export default function AlarmesPage() {
-  const { estado, reconhecerAlarme, resolverAlarme } = useEstado()
+  const { estado, erroApi, reconhecerAlarme, resolverAlarme } = useEstado()
   const alarmes = estado.alarmes ?? []
   const pendentes = alarmes.filter((a) => a.status !== 'RESOLVIDO')
   const resolvidos = alarmes.filter((a) => a.status === 'RESOLVIDO')
@@ -64,6 +64,7 @@ export default function AlarmesPage() {
                   <button
                     type="button"
                     className="scada-btn scada-btn-green"
+                    disabled={a.status !== 'RECONHECIDO'}
                     onClick={() => resolverAlarme(a.id)}
                   >
                     Normalizar / Encerrar
@@ -110,6 +111,7 @@ export default function AlarmesPage() {
           Backend: <code>AvaliadorLimiar</code> (Strategy), <code>AlarmeFactory</code>,{' '}
           <code>AlarmeFacade</code> + API <code>/api/alarmes/&#123;id&#125;/reconhecer|resolver</code>.
         </div>
+        {erroApi && <p className="scada-api-error" role="alert">{erroApi}</p>}
       </div>
     </section>
   )

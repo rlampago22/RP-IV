@@ -4,6 +4,7 @@ import {
   buscarEstado,
   iniciarTempoReal,
   pausarTempoReal,
+  simularAnomalia,
   reconhecerAlarme,
   resolverAlarme,
 } from '../api/estado.js'
@@ -15,6 +16,7 @@ const EstadoContext = createContext(null)
 export function EstadoProvider({ children }) {
   const [estado, setEstado] = useState(ESTADO_MOCK)
   const [origemMock, setOrigemMock] = useState(true)
+  const [erroApi, setErroApi] = useState('')
   const emVooRef = useRef(false)
 
   const atualizar = useCallback(async () => {
@@ -24,9 +26,11 @@ export function EstadoProvider({ children }) {
       const dados = await buscarEstado()
       setEstado(dados)
       setOrigemMock(false)
-    } catch {
+      setErroApi('')
+    } catch (erro) {
       // API Java (mvp/4-EXECUTAR-API-ESTADO.bat) indisponível — mantém T01 usável com o mock documentado.
       setOrigemMock(true)
+      setErroApi(erro.message)
     } finally {
       emVooRef.current = false
     }
@@ -39,20 +43,29 @@ export function EstadoProvider({ children }) {
   }, [atualizar])
 
   const executarAcao = useCallback(async (acao) => {
+    if (emVooRef.current) return false
+    emVooRef.current = true
     try {
       const dados = await acao()
       setEstado(dados)
       setOrigemMock(false)
-    } catch {
-      // Sem backend: ação vira no-op silencioso (mock não tem ciclo de vida de alarme real).
+      setErroApi('')
+      return true
+    } catch (erro) {
+      setErroApi(erro.message)
+      return false
+    } finally {
+      emVooRef.current = false
     }
   }, [])
 
   const valor = {
     estado,
     origemMock,
+    erroApi,
     iniciarTempoReal: () => executarAcao(iniciarTempoReal),
     pausarTempoReal: () => executarAcao(pausarTempoReal),
+    simularAnomalia: () => executarAcao(simularAnomalia),
     reconhecerAlarme: (alarmeId) => executarAcao(() => reconhecerAlarme(alarmeId)),
     resolverAlarme: (alarmeId) => executarAcao(() => resolverAlarme(alarmeId)),
   }
