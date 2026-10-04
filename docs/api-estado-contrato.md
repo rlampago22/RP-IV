@@ -40,9 +40,11 @@ A migração `mvp/` → `backend/` (Maven/Gradle) é indicada em [`backend-java.
 | `GET` | `/api/estado` | Retorna o snapshot atual (ver contrato JSON abaixo) |
 | `POST` | `/api/tempo-real/iniciar` | Liga a simulação periódica de leituras (varia os 4 sensores a cada 3s) |
 | `POST` | `/api/tempo-real/pausar` | Desliga a simulação periódica |
-| `POST` | `/api/cenarios/normal` | Pausa tempo-real e aplica seed Normal (`CenariosMedicao` → `ReatorFacade.receberLeitura`) — 6 leituras estáveis por sensor |
-| `POST` | `/api/cenarios/observacao` | Pausa tempo-real e aplica seed Observação (Normal + temp 328 °C → `ObservacaoRegistrada`) |
-| `POST` | `/api/demo/anomalia` | Cenário de demonstração: registra temperatura de 372 °C e emite `AlarmeEmitido` |
+| `POST` | `/api/cenarios/normal` | Pausa tempo-real e aplica seed Normal (`CenariosMedicao` → 6 leituras estáveis por sensor) |
+| `POST` | `/api/cenarios/observacao` | Seed Observação (Normal + temp 328 °C → `ObservacaoRegistrada`) |
+| `POST` | `/api/cenarios/falha` | Simula falha de telemetria no sensor de pressão (`FalhaSensorDetectada`) |
+| `POST` | `/api/cenarios/critico` | Anomalia crítica: temp 372 °C + fluxo 420 → `AlarmeEmitido` |
+| `POST` | `/api/demo/anomalia` | Alias do roteiro T03: mesmo efeito de `/api/cenarios/critico` |
 | `POST` | `/api/alarmes/{id}/reconhecer` | Publica `AlarmeReconhecido` para o alarme `{id}` (operador fixo "Operador de Reator (UI Web)") |
 | `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` para o alarme `{id}` (responsável fixo "Engenheiro de Turno (UI Web)") |
 
