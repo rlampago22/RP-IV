@@ -86,23 +86,22 @@ export default function SensoresPage() {
 
   return (
     <section>
-      <p className="scada-kicker">T02 · Telemetria RF-1</p>
-      <h1 className="scada-heading">Sensores</h1>
+      <p className="scada-kicker">TELEMETRIA INSTRUMENTAL • MALHA PRIMÁRIA</p>
+      <h1 className="scada-heading">Sensores Operacionais</h1>
       <p className="scada-lead">
-        Lista RF-1 com barra, status e histórico curto alinhados à T01 via{' '}
-        <code>/api/estado</code>. Fonte:{' '}
-        {origemMock ? 'mock local (API offline)' : '/api/estado'} · núcleo{' '}
-        <span className={`scada-pill ${statusNucleo.cls}`}>{statusNucleo.label}</span>
+        Monitoramento contínuo de grandezas físicas com limites operacionais, margens de segurança e
+        tendência recente. Fonte: {origemMock ? 'simulado local (offline)' : 'telemetria ao vivo'} ·
+        núcleo <span className={`scada-pill ${statusNucleo.cls}`}>{statusNucleo.label}</span>
       </p>
 
-      <div className="scada-scenarios" aria-label="Seeds de medição">
+      <div className="scada-scenarios" aria-label="Condições de medição">
         <button type="button" className="scada-scenario" onClick={aplicarCenarioNormal}>
-          <strong>Seed · Normal</strong>
-          <span>POST /api/cenarios/normal — 6 leituras estáveis (sparkline previsível)</span>
+          <strong>Condição · Normal</strong>
+          <span>6 leituras estáveis — tendência previsível no histórico</span>
         </button>
         <button type="button" className="scada-scenario" onClick={aplicarCenarioObservacao}>
-          <strong>Seed · Observação</strong>
-          <span>POST /api/cenarios/observacao — temp 328 °C (atenção UC01 Alt. 1)</span>
+          <strong>Condição · Observação</strong>
+          <span>Temperatura 328 °C — faixa de atenção preventiva</span>
         </button>
       </div>
 

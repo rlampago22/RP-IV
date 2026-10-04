@@ -21,34 +21,40 @@ const SCENARIOS = [
 ]
 
 /**
- * T05 — botões do roteiro Marcus.
- * Estado live T01–T04 vem de EstadoContext (/api/estado).
- * Cenários locais ficam registrados aqui; ligação completa = S4 #52.
- * Reducer de referência: mvpDemoState.js
+ * T05 — botões do roteiro Marcus (Issue #52).
+ * Dispara cenários via /api/cenarios/{key} atualizando o EventBus e refletindo em T01–T04.
  */
 export default function DemoPage() {
+  const { dispararCenario, origemMock } = useEstado()
   const [scenario, setScenario] = useState('NORMAL')
-  const [mensagem, setMensagem] = useState('')
-  const { simularAnomalia } = useEstado()
+  const [disparando, setDisparando] = useState(false)
+  const [mensagemFeedback, setMensagemFeedback] = useState(null)
 
-  async function selecionarCenario(chave) {
-    setScenario(chave)
-    if (chave === 'CRITICO') {
-      const sucesso = await simularAnomalia()
-      setMensagem(sucesso
-        ? 'Anomalia enviada à API. O banner e a fila de alarmes foram atualizados.'
-        : 'Não foi possível simular a anomalia. Confira se a API Java está rodando.')
-      return
+  const handleDisparar = async (item) => {
+    setScenario(item.key)
+    setDisparando(true)
+    setMensagemFeedback(null)
+    const ok = await dispararCenario(item.key)
+    if (ok) {
+      setMensagemFeedback({
+        tipo: 'sucesso',
+        texto: `Cenário "${item.title}" disparado com sucesso no EventBus! Verifique T01 (Overview), T03 (Alarmes) e T04 (Auditoria).`,
+      })
+    } else {
+      setMensagemFeedback({
+        tipo: 'erro',
+        texto: 'Não foi possível disparar o cenário. Confira se a API Java está rodando (mvp/4-EXECUTAR-API-ESTADO.bat).',
+      })
     }
-    setMensagem('')
+    setDisparando(false)
   }
 
   return (
     <section>
-      <p className="scada-kicker">T05 · Roteiro Marcus</p>
-      <h1 className="scada-heading">Demo / Cenários</h1>
+      <p className="scada-kicker">SIMULADOR OPERACIONAL • INJEÇÃO DE CENÁRIOS</p>
+      <h1 className="scada-heading">Simulação de Cenários</h1>
       <p className="scada-lead">
-        Dispara os fluxos da apresentação: Normal, Observação, Falha Sensor, Anomalia Crítica.
+        Injeção controlada de condições operacionais para validação de resposta do sistema: Normal, Atenção Preventiva, Falha Instrumental e Anomalia Crítica.
       </p>
 
       <div className="scada-scenarios">
@@ -56,8 +62,9 @@ export default function DemoPage() {
           <button
             key={item.key}
             type="button"
-            className="scada-scenario"
-            onClick={() => selecionarCenario(item.key)}
+            className={`scada-scenario ${scenario === item.key ? 'scada-scenario-active' : ''}`}
+            disabled={disparando}
+            onClick={() => handleDisparar(item)}
           >
             <strong>{item.title}</strong>
             <span>{item.detail}</span>
@@ -65,8 +72,24 @@ export default function DemoPage() {
         ))}
       </div>
 
-      <div className="scada-note" role="status">
-        Cenário selecionado: <strong>{scenario}</strong>. {mensagem || 'T01–T04 consomem o snapshot live de /api/estado.'}
+      {mensagemFeedback && (
+        <div
+          className={`scada-note ${mensagemFeedback.tipo === 'sucesso' ? 'scada-note-ok' : ''}`}
+          role="status"
+          style={{ marginTop: '1rem' }}
+        >
+          {mensagemFeedback.texto}
+        </div>
+      )}
+
+      <div className="scada-note" role="status" style={{ marginTop: '1rem' }}>
+        Barramento de telemetria:{' '}
+        <strong>
+          {origemMock
+            ? 'Modo Simulado Local (Offline)'
+            : 'Conectado à Usina em Tempo Real (EventBus Online)'}
+        </strong>
+        .
       </div>
     </section>
   )
