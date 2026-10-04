@@ -106,10 +106,7 @@ public final class ApiEstadoHttpServer {
                 2L,
                 "Falha de comunicacao de telemetria no barramento"
             );
-            case "critico" -> {
-                reator.receberLeitura(1L, 372.0);
-                reator.receberLeitura(4L, 420.0);
-            }
+            case "critico" -> aplicarAnomaliaCritica();
             default -> {
                 responder(exchange, 400, "{\"erro\":\"cenario desconhecido: " + cenario + "\"}");
                 return;
@@ -128,9 +125,16 @@ public final class ApiEstadoHttpServer {
             return;
         }
         estado.definirTempoReal(false);
-        reator.receberLeitura(1L, 372.0);
-        reator.receberLeitura(4L, 420.0);
+        aplicarAnomaliaCritica();
         responder(exchange, 200, EstadoJson.escrever(estado.snapshot()));
+    }
+
+    /** Temp crítica; fluxo baixo só se o sensor 4 estiver cadastrado (demo completa). */
+    private void aplicarAnomaliaCritica() {
+        reator.receberLeitura(1L, 372.0);
+        if (reator.obterSensor(4L) != null) {
+            reator.receberLeitura(4L, 420.0);
+        }
     }
 
     private void tratarAcaoAlarme(HttpExchange exchange) throws IOException {
