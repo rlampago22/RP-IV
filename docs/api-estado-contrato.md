@@ -1,8 +1,8 @@
 # Contrato — API de Estado (EventBus → T01 Overview)
 
-**Trilha:** Bruno (EventBus, API de estado) · **Issues:** [#41](https://github.com/rlampago22/RP-IV/issues/41) (débito), [#44](https://github.com/rlampago22/RP-IV/issues/44) (S3)
+**Trilha:** Bruno (EventBus, API de estado) · Bernardo (seeds T02) · **Issues:** [#41](https://github.com/rlampago22/RP-IV/issues/41), [#44](https://github.com/rlampago22/RP-IV/issues/44) (S3), [#50](https://github.com/rlampago22/RP-IV/issues/50) (S4)
 **Fonte:** `mvp/src/br/edu/unipampa/usina/apiestado/` · **Stub HTTP** (`com.sun.net.httpserver`, JDK puro — Zero External Dependencies, mesmo padrão do resto do `mvp/`)
-**Consumidor:** `frontend/src/api/estado.js` (T01 Overview, Opção A)
+**Consumidor:** `frontend/src/api/estado.js` (T01 Overview + T02 Sensores, Opção A)
 
 ---
 
@@ -40,6 +40,8 @@ A migração `mvp/` → `backend/` (Maven/Gradle) é indicada em [`backend-java.
 | `GET` | `/api/estado` | Retorna o snapshot atual (ver contrato JSON abaixo) |
 | `POST` | `/api/tempo-real/iniciar` | Liga a simulação periódica de leituras (varia os 4 sensores a cada 3s) |
 | `POST` | `/api/tempo-real/pausar` | Desliga a simulação periódica |
+| `POST` | `/api/cenarios/normal` | Pausa tempo-real e aplica seed Normal (`CenariosMedicao` → `ReatorFacade.receberLeitura`) — 6 leituras estáveis por sensor |
+| `POST` | `/api/cenarios/observacao` | Pausa tempo-real e aplica seed Observação (Normal + temp 328 °C → `ObservacaoRegistrada`) |
 | `POST` | `/api/alarmes/{id}/reconhecer` | Publica `AlarmeReconhecido` para o alarme `{id}` (operador fixo "Operador de Reator (UI Web)") |
 | `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` para o alarme `{id}` (responsável fixo "Engenheiro de Turno (UI Web)") |
 
@@ -62,7 +64,8 @@ Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, p
       "valor": 310.5,
       "limiteMinimo": 0.0,
       "limiteMaximo": 350.0,
-      "atualizadoEm": "2026-09-20T20:37:44.331Z"
+      "atualizadoEm": "2026-09-20T20:37:44.331Z",
+      "historico": [308.0, 309.0, 309.5, 310.0, 310.2, 310.5]
     }
   ],
   "contadores": { "medicoes": 4, "alarmes": 0, "auditoria": 4 },
@@ -96,6 +99,7 @@ Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, p
 | `tempoReal` | `boolean` | Reflete `/api/tempo-real/iniciar` \| `/pausar` |
 | `atualizadoEm` | `string` (ISO-8601) | Timestamp do snapshot (não do último evento) |
 | `sensores[]` | array | Última leitura conhecida de cada sensor (`MedicaoRegistrada`); vazio até a 1ª leitura |
+| `sensores[].historico` | `number[]` | Últimas até 6 leituras do sensor (antigo → atual), buffer no `EstadoAgregador` a partir de `MedicaoRegistrada` — alimenta sparkline/tabela da T02 |
 | `contadores.medicoes` | `int` | Total de `MedicaoRegistrada` desde o start do processo |
 | `contadores.alarmes` | `int` | Total de `AlarmeEmitido` (não decresce ao resolver) |
 | `contadores.auditoria` | `int` | Total de eventos de qualquer tipo publicados no bus (equivalente ao que `AuditoriaSubscriber` grava) |
@@ -104,7 +108,7 @@ Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, p
 
 ## 5. Consumo no frontend
 
-`frontend/src/api/estado.js` define `CONTRATO_MOCK` (mesmo formato acima) usado como fallback quando o `fetch` falha, e `frontend/src/state/EstadoContext.jsx` faz polling a cada 3s. O T01 (`OverviewPage.jsx`) e o shell (badge/banner em `main.jsx`) leem exclusivamente desse contexto — não há mais valores de sensor/alarme hardcoded soltos no componente.
+`frontend/src/api/estado.js` define `ESTADO_MOCK` (mesmo formato acima) usado como fallback quando o `fetch` falha, e `frontend/src/state/EstadoContext.jsx` faz polling a cada 3s. T01 (`OverviewPage.jsx`), T02 (`SensoresPage.jsx` — seeds Normal/Observação + histórico) e o shell (badge/banner em `main.jsx`) leem exclusivamente desse contexto.
 
 ## 6. Testes
 

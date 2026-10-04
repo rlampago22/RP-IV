@@ -37,8 +37,20 @@ public final class EstadoJson {
                 .append("\"valor\":").append(sensor.valor()).append(',')
                 .append("\"limiteMinimo\":").append(sensor.limiteMinimo()).append(',')
                 .append("\"limiteMaximo\":").append(sensor.limiteMaximo()).append(',')
-                .append("\"atualizadoEm\":").append(str(sensor.atualizadoEm().toString()))
+                .append("\"atualizadoEm\":").append(str(sensor.atualizadoEm().toString())).append(',')
+                .append("\"historico\":").append(doubles(sensor.historico()))
                 .append('}');
+        }
+        return json.append(']').toString();
+    }
+
+    private static String doubles(List<Double> valores) {
+        StringBuilder json = new StringBuilder("[");
+        for (int i = 0; i < valores.size(); i++) {
+            if (i > 0) {
+                json.append(',');
+            }
+            json.append(valores.get(i));
         }
         return json.append(']').toString();
     }

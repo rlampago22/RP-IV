@@ -1,6 +1,7 @@
 package br.edu.unipampa.usina.apiestado;
 
 import br.edu.unipampa.usina.alarmes.AlarmeFacade;
+import br.edu.unipampa.usina.controlereator.ReatorFacade;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
@@ -13,7 +14,7 @@ import java.util.regex.Pattern;
 
 /**
  * Stub HTTP (JDK {@code com.sun.net.httpserver} — Zero External Dependencies) que expõe o
- * estado derivado do EventBus para o frontend React (T01 Overview, Opção A).
+ * estado derivado do EventBus para o frontend React (T01/T02, Opção A).
  * Rotas e formato documentados em docs/api-estado-contrato.md.
  */
 public final class ApiEstadoHttpServer {
@@ -22,12 +23,14 @@ public final class ApiEstadoHttpServer {
 
     private final EstadoAgregador estado;
     private final AlarmeFacade alarmes;
+    private final ReatorFacade reator;
     private final int porta;
     private HttpServer server;
 
-    public ApiEstadoHttpServer(EstadoAgregador estado, AlarmeFacade alarmes, int porta) {
+    public ApiEstadoHttpServer(EstadoAgregador estado, AlarmeFacade alarmes, ReatorFacade reator, int porta) {
         this.estado = estado;
         this.alarmes = alarmes;
+        this.reator = reator;
         this.porta = porta;
     }
 
@@ -36,6 +39,8 @@ public final class ApiEstadoHttpServer {
         server.createContext("/api/estado", this::tratarEstado);
         server.createContext("/api/tempo-real/iniciar", exchange -> tratarTempoReal(exchange, true));
         server.createContext("/api/tempo-real/pausar", exchange -> tratarTempoReal(exchange, false));
+        server.createContext("/api/cenarios/normal", exchange -> tratarCenario(exchange, true));
+        server.createContext("/api/cenarios/observacao", exchange -> tratarCenario(exchange, false));
         server.createContext("/api/alarmes/", this::tratarAcaoAlarme);
         server.setExecutor(null);
         server.start();
@@ -68,6 +73,23 @@ public final class ApiEstadoHttpServer {
             return;
         }
         estado.definirTempoReal(ativo);
+        responder(exchange, 200, EstadoJson.escrever(estado.snapshot()));
+    }
+
+    private void tratarCenario(HttpExchange exchange, boolean normal) throws IOException {
+        if (comCorsEPreflight(exchange, "POST")) {
+            return;
+        }
+        if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
+            return;
+        }
+        estado.definirTempoReal(false);
+        if (normal) {
+            CenariosMedicao.aplicarNormal(reator);
+        } else {
+            CenariosMedicao.aplicarObservacao(reator);
+        }
         responder(exchange, 200, EstadoJson.escrever(estado.snapshot()));
     }
 
@@ -106,7 +128,6 @@ public final class ApiEstadoHttpServer {
         responder(exchange, 404, "{\"erro\":\"rota nao encontrada\"}");
     }
 
-    /** Adiciona cabeçalhos CORS e resolve o preflight OPTIONS. Retorna true se a requisição já foi respondida. */
     private boolean comCorsEPreflight(HttpExchange exchange, String metodoPermitido) throws IOException {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", metodoPermitido + ", OPTIONS");

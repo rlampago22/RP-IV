@@ -1,7 +1,6 @@
 /**
- * Contrato compartilhado T01/T02 — sensores RF-1 + histórico curto (mock).
- * Espelha o que `ReatorFacade` / `ReatorRepository` expõem no MVP Java.
- * Quando a API do Bruno (#44) existir, trocar a origem destes dados.
+ * Meta RF-1 compartilhada T01/T02 — faixas de atenção + fallback offline.
+ * Valores live/histórico vêm de `/api/estado` (EstadoContext). Seeds: CenariosMedicao.
  */
 
 export const SENSORES_RF1 = [
@@ -10,12 +9,12 @@ export const SENSORES_RF1 = [
     sensorId: 1,
     tipo: 'TEMPERATURA',
     unidade: '°C',
-    valor: 312.0,
+    valor: 310.5,
     min: 0,
     max: 350,
     atencaoMin: 20,
     atencaoMax: 325,
-    historico: [308.2, 309.5, 310.1, 311.0, 311.4, 312.0],
+    historico: [308.0, 309.0, 309.5, 310.0, 310.2, 310.5],
   },
   {
     id: 'P-PRIM-01',
@@ -27,31 +26,31 @@ export const SENSORES_RF1 = [
     max: 160,
     atencaoMin: 10,
     atencaoMax: 155,
-    historico: [152.0, 153.2, 154.0, 154.5, 154.8, 155.0],
+    historico: [152.0, 153.0, 153.5, 154.0, 154.5, 155.0],
   },
   {
     id: 'R-CONT-01',
     sensorId: 3,
     tipo: 'RADIACAO',
     unidade: 'mSv/h',
-    valor: 0.12,
+    valor: 2.4,
     min: 0,
     max: 5,
     atencaoMin: 0.1,
     atencaoMax: 4.2,
-    historico: [0.08, 0.09, 0.1, 0.11, 0.115, 0.12],
+    historico: [2.0, 2.1, 2.2, 2.3, 2.35, 2.4],
   },
   {
     id: 'F-COOL-01',
     sensorId: 4,
     tipo: 'FLUXO',
     unidade: 'm³/h',
-    valor: 980,
+    valor: 1100,
     min: 500,
     max: 1500,
     atencaoMin: 600,
     atencaoMax: 1400,
-    historico: [960, 970, 975, 978, 982, 980],
+    historico: [1080, 1090, 1095, 1100, 1100, 1100],
   },
 ]
 
