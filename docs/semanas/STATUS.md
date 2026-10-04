@@ -40,23 +40,25 @@ Resumo S2: [`2026-09-14/RESUMO-MERGE.md`](2026-09-14/RESUMO-MERGE.md) · S3: [`2
 
 | Aluno | Issue | Status |
 |-------|-------|--------|
-| Álvaro | [#48](https://github.com/rlampago22/RP-IV/issues/48) | Checklist Must já PASS em Dev; login Spring **fica na `alvaro`** (pós-M1). Ver [`2026-09-28/alvaro.md`](2026-09-28/alvaro.md) |
-| Bruno | [#49](https://github.com/rlampago22/RP-IV/issues/49) | Código T01/API já em Dev; READMEs alinhados ao HTTP real (polish #49) |
+| Álvaro | [#48](https://github.com/rlampago22/RP-IV/issues/48) | **CLOSED** — checklist/aceite em Dev; login Spring fora da demo |
+| Bruno | [#49](https://github.com/rlampago22/RP-IV/issues/49) | **CLOSED** — T01/API + READMEs ONLINE |
 | Bernardo | [#50](https://github.com/rlampago22/RP-IV/issues/50) | **CLOSED** · [PR #65](https://github.com/rlampago22/RP-IV/pull/65) |
-| José | [#51](https://github.com/rlampago22/RP-IV/issues/51) | **CLOSED** · código em `desenvolvimento` (rebase + push `jose`) |
+| José | [#51](https://github.com/rlampago22/RP-IV/issues/51) | **CLOSED** |
 | Marcus | [#52](https://github.com/rlampago22/RP-IV/issues/52) | **CLOSED** · [PR #67](https://github.com/rlampago22/RP-IV/pull/67) |
 
-## Marco 1 — 05/10 (apresentar MVP no `desenvolvimento` atual)
+## Marco 1 — 05/10 (OPEN · TOK = código funcionando)
 
-| Aluno | Issue | Foco na individual |
-|-------|-------|--------------------|
-| Álvaro | [#53](https://github.com/rlampago22/RP-IV/issues/53) | Escopo MoSCoW + checklist PASS + UI ONLINE |
-| Bruno | [#54](https://github.com/rlampago22/RP-IV/issues/54) | EDA no código + PDF APS + T01 |
-| Bernardo | [#55](https://github.com/rlampago22/RP-IV/issues/55) | Demo medições T02 (Normal/Observação) |
-| José | [#56](https://github.com/rlampago22/RP-IV/issues/56) | Demo alarme + GoF |
-| Marcus | [#57](https://github.com/rlampago22/RP-IV/issues/57) | T05 + T04 + auditoria SHA-256 |
+Critério do professor: prioridade ao sistema rodando; artefatos só se justificarem. Roteiro: [`2026-09-28/ENTREGA-SEGUNDA.md`](2026-09-28/ENTREGA-SEGUNDA.md).
 
-Slides: cada um prepara **individualmente** (fora do pacote do grupo).
+| Aluno | Issue | Demo ao vivo |
+|-------|-------|----------------|
+| Álvaro | [#53](https://github.com/rlampago22/RP-IV/issues/53) | Escopo Must + checklist PASS + UI ONLINE |
+| Bruno | [#54](https://github.com/rlampago22/RP-IV/issues/54) | EventBus → `/api/estado` → T01 + tempo real |
+| Bernardo | [#55](https://github.com/rlampago22/RP-IV/issues/55) | T02 Normal/Observação + histórico API |
+| José | [#56](https://github.com/rlampago22/RP-IV/issues/56) | Crítico → ACK → Resolver + GoF |
+| Marcus | [#57](https://github.com/rlampago22/RP-IV/issues/57) | T05 4 cenários + T04 + `auditoria.log` |
+
+Slides: cada um prepara **individualmente**. Checkout único: `desenvolvimento`.
 
 ---
 
