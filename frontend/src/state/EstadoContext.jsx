@@ -4,6 +4,10 @@ import {
   buscarEstado,
   iniciarTempoReal,
   pausarTempoReal,
+  aplicarCenarioNormal,
+  aplicarCenarioObservacao,
+  estadoMockNormal,
+  estadoMockObservacao,
   simularAnomalia,
   reconhecerAlarme,
   resolverAlarme,
@@ -28,9 +32,9 @@ export function EstadoProvider({ children }) {
       setOrigemMock(false)
       setErroApi('')
     } catch (erro) {
-      // API Java (mvp/4-EXECUTAR-API-ESTADO.bat) indisponível — mantém T01 usável com o mock documentado.
+  // API Java (mvp/4-EXECUTAR-API-ESTADO.bat) indisponível — mantém T01/T02 usável com o mock documentado.
       setOrigemMock(true)
-      setErroApi(erro.message)
+      setErroApi(erro?.message || 'API indisponivel')
     } finally {
       emVooRef.current = false
     }
@@ -42,7 +46,7 @@ export function EstadoProvider({ children }) {
     return () => clearInterval(intervalo)
   }, [atualizar])
 
-  const executarAcao = useCallback(async (acao) => {
+  const executarAcao = useCallback(async (acao, fallbackMock) => {
     if (emVooRef.current) return false
     emVooRef.current = true
     try {
@@ -52,7 +56,13 @@ export function EstadoProvider({ children }) {
       setErroApi('')
       return true
     } catch (erro) {
-      setErroApi(erro.message)
+      if (fallbackMock) {
+        setEstado(fallbackMock())
+        setOrigemMock(true)
+        setErroApi('')
+        return true
+      }
+      setErroApi(erro?.message || 'Falha na acao')
       return false
     } finally {
       emVooRef.current = false
@@ -65,6 +75,8 @@ export function EstadoProvider({ children }) {
     erroApi,
     iniciarTempoReal: () => executarAcao(iniciarTempoReal),
     pausarTempoReal: () => executarAcao(pausarTempoReal),
+    aplicarCenarioNormal: () => executarAcao(aplicarCenarioNormal, estadoMockNormal),
+    aplicarCenarioObservacao: () => executarAcao(aplicarCenarioObservacao, estadoMockObservacao),
     simularAnomalia: () => executarAcao(simularAnomalia),
     reconhecerAlarme: (alarmeId) => executarAcao(() => reconhecerAlarme(alarmeId)),
     resolverAlarme: (alarmeId) => executarAcao(() => resolverAlarme(alarmeId)),

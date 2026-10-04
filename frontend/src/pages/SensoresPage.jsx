@@ -45,9 +45,12 @@ function Sparkline({ values, color }) {
 
 function mapearDaApi(sensoresApi) {
   return sensoresApi.map((s) => {
-    const mock = SENSORES_RF1.find((m) => m.sensorId === s.id) || SENSORES_RF1[0]
+    const meta = SENSORES_RF1.find((m) => m.sensorId === s.id) || SENSORES_RF1[0]
     const unidade = UNIDADE_EXIBICAO[s.unidade] ?? s.unidade
-    const historicoBase = mock.historico?.slice(0, -1) ?? []
+    const historico =
+      Array.isArray(s.historico) && s.historico.length > 0
+        ? s.historico
+        : [s.valor]
     return {
       id: CODIGO_POR_TIPO[s.tipo] ?? `S-${s.id}`,
       sensorId: s.id,
@@ -56,26 +59,52 @@ function mapearDaApi(sensoresApi) {
       valor: s.valor,
       min: s.limiteMinimo,
       max: s.limiteMaximo,
-      atencaoMin: mock.atencaoMin ?? s.limiteMinimo,
-      atencaoMax: mock.atencaoMax ?? s.limiteMaximo,
-      historico: [...historicoBase, s.valor],
+      atencaoMin: meta.atencaoMin ?? s.limiteMinimo,
+      atencaoMax: meta.atencaoMax ?? s.limiteMaximo,
+      historico,
     }
   })
 }
 
+function celulasHistorico(historico) {
+  const valores = historico ?? []
+  const preenchido = [...Array(Math.max(0, 6 - valores.length)).fill(null), ...valores].slice(-6)
+  return preenchido
+}
+
 export default function SensoresPage() {
-  const { estado, origemMock } = useEstado()
+  const { estado, origemMock, aplicarCenarioNormal, aplicarCenarioObservacao } = useEstado()
   const sensores =
     estado.sensores?.length > 0 ? mapearDaApi(estado.sensores) : SENSORES_RF1
+
+  const statusNucleo =
+    estado.status === 'CRITICO'
+      ? { label: 'CRÍTICO', cls: 'crit' }
+      : estado.status === 'ATENCAO'
+        ? { label: 'ATENÇÃO', cls: 'warn' }
+        : { label: 'ESTÁVEL', cls: 'ok' }
 
   return (
     <section>
       <p className="scada-kicker">T02 · Telemetria RF-1</p>
       <h1 className="scada-heading">Sensores</h1>
       <p className="scada-lead">
-        Lista RF-1 com barra, status e histórico curto (MedicaoRegistrada / ReatorRepository).
-        Fonte: {origemMock ? 'mock local (API offline)' : '/api/estado'} — mesmo contrato da T01.
+        Lista RF-1 com barra, status e histórico curto alinhados à T01 via{' '}
+        <code>/api/estado</code>. Fonte:{' '}
+        {origemMock ? 'mock local (API offline)' : '/api/estado'} · núcleo{' '}
+        <span className={`scada-pill ${statusNucleo.cls}`}>{statusNucleo.label}</span>
       </p>
+
+      <div className="scada-scenarios" aria-label="Seeds de medição">
+        <button type="button" className="scada-scenario" onClick={aplicarCenarioNormal}>
+          <strong>Seed · Normal</strong>
+          <span>POST /api/cenarios/normal — 6 leituras estáveis (sparkline previsível)</span>
+        </button>
+        <button type="button" className="scada-scenario" onClick={aplicarCenarioObservacao}>
+          <strong>Seed · Observação</strong>
+          <span>POST /api/cenarios/observacao — temp 328 °C (atenção UC01 Alt. 1)</span>
+        </button>
+      </div>
 
       <div className="scada-sensors" style={{ marginTop: 16 }}>
         {sensores.map((s) => {
@@ -108,7 +137,7 @@ export default function SensoresPage() {
       </div>
 
       <div className="scada-card" style={{ marginTop: 16 }}>
-        <h2>Histórico recente (ReatorRepository · sparkline)</h2>
+        <h2>Histórico recente (últimas 6 · MedicaoRegistrada)</h2>
         <div className="scada-table-wrap" style={{ maxHeight: 'none' }}>
           <table className="scada-table">
             <thead>
@@ -126,8 +155,8 @@ export default function SensoresPage() {
               {sensores.map((s) => (
                 <tr key={`h-${s.id}`}>
                   <td className="ev">{s.id}</td>
-                  {(s.historico ?? []).map((v, i) => (
-                    <td key={i}>{Number(v).toFixed(2)}</td>
+                  {celulasHistorico(s.historico).map((v, i) => (
+                    <td key={i}>{v == null ? '—' : Number(v).toFixed(2)}</td>
                   ))}
                 </tr>
               ))}
@@ -135,9 +164,10 @@ export default function SensoresPage() {
           </table>
         </div>
         <div className="scada-note">
-          Backend: <code>ReatorFacade.consultarHistorico(sensorId)</code> /
-          <code> consultarHistoricoRecente(n)</code> · SEQ-UC01 em{' '}
-          <code>docs/marco1/07-sequencias-mvp.md</code>
+          Histórico vem do campo <code>sensores[].historico</code> no snapshot (buffer do{' '}
+          <code>EstadoAgregador</code>, espelhando leituras via EventBus). Seeds aplicam{' '}
+          <code>ReatorFacade.receberLeitura</code> — ver <code>CenariosMedicao</code> e{' '}
+          <code>docs/api-estado-contrato.md</code>.
         </div>
       </div>
     </section>
