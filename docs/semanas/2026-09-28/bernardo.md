@@ -49,6 +49,6 @@
 
 - Nenhum para #50. T05 integrado (#52 Marcus) fora do escopo desta semana.
 
-## 6. Próxima semana (S5 / Marco 1 #55)
+## 6. Próxima semana (Marco 1 #55)
 
-- Demo medições T02 no pacote Marco 1 (roteiro + evidência ao vivo).
+- Entrega/demo: [`../2026-10-05/bernardo.md`](../2026-10-05/bernardo.md) — roteiro T02 ao vivo (sem feature nova).
