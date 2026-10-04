@@ -40,8 +40,8 @@ Resumo S2: [`2026-09-14/RESUMO-MERGE.md`](2026-09-14/RESUMO-MERGE.md) · S3: [`2
 
 | Aluno | Issue | Status |
 |-------|-------|--------|
-| Álvaro | [#48](https://github.com/rlampago22/RP-IV/issues/48) | **OPEN** — checklist Must PASS (sem slides no pacote grupo); **não mergear login Spring** até pós-M1 |
-| Bruno | [#49](https://github.com/rlampago22/RP-IV/issues/49) | **OPEN** — polish T01 + READMEs honestos |
+| Álvaro | [#48](https://github.com/rlampago22/RP-IV/issues/48) | Checklist Must já PASS em Dev; login Spring **fica na `alvaro`** (pós-M1). Ver [`2026-09-28/alvaro.md`](2026-09-28/alvaro.md) |
+| Bruno | [#49](https://github.com/rlampago22/RP-IV/issues/49) | Código T01/API já em Dev; READMEs alinhados ao HTTP real (polish #49) |
 | Bernardo | [#50](https://github.com/rlampago22/RP-IV/issues/50) | **CLOSED** · [PR #65](https://github.com/rlampago22/RP-IV/pull/65) |
 | José | [#51](https://github.com/rlampago22/RP-IV/issues/51) | **CLOSED** · código em `desenvolvimento` (rebase + push `jose`) |
 | Marcus | [#52](https://github.com/rlampago22/RP-IV/issues/52) | **CLOSED** · [PR #67](https://github.com/rlampago22/RP-IV/pull/67) |

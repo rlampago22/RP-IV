@@ -13,10 +13,11 @@ cd frontend && npm run dev
 ```
 Ensaio: T02 Normal → Observação → T05 Crítico → T03 ACK/Resolver → T04.
 
-Pendências antes do dia 05:
-- Álvaro #48: checklist Must PASS no sistema atual — **não mergear o login Spring** até depois do Marco 1 (fora do Must e quebra a demo).
-- Bruno #49: polish T01 + READMEs (como rodar / sem promessa falsa).
-- Slides: cada um faz o seu individualmente; o grupo entrega o sistema rodando.
+Para segunda (05/10) — TOK = código funcionando:
+- Checkout único: `desenvolvimento` (já tem T01–T05 + API).
+- **Não mergear login Spring do Álvaro** (quebra/desvia a demo). Checklist Must já está PASS em Dev; Álvaro apresenta aceite + escopo.
+- Bruno: API/T01 já estão em Dev; READMEs atualizados (como rodar ONLINE).
+- Slides: cada um faz o seu. Ver `ENTREGA-SEGUNDA.md`.
 
 Guia: `docs/marcus/GUIA-APRESENTACAO-PROFESSOR.md`
-Tip atual: branch `desenvolvimento` (após #65/#67).
+Tip: branch `desenvolvimento`.
