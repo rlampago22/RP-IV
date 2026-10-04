@@ -163,10 +163,15 @@ export default function SensoresPage() {
           </table>
         </div>
         <div className="scada-note">
-          Histórico vem do campo <code>sensores[].historico</code> no snapshot (buffer do{' '}
-          <code>EstadoAgregador</code>, espelhando leituras via EventBus). Seeds aplicam{' '}
-          <code>ReatorFacade.receberLeitura</code> — ver <code>CenariosMedicao</code> e{' '}
-          <code>docs/api-estado-contrato.md</code>.
+          {origemMock ? (
+            <>Modo offline: histórico do mock local (mesmos valores dos seeds). Suba a API para telemetria real.</>
+          ) : (
+            <>
+              Online: últimas 6 leituras de <code>sensores[].historico</code> no snapshot (
+              <code>MedicaoRegistrada</code> → EventBus). Condições disparam{' '}
+              <code>ReatorFacade.receberLeitura</code> via <code>/api/cenarios/*</code>.
+            </>
+          )}
         </div>
       </div>
     </section>

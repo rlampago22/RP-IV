@@ -54,7 +54,7 @@ Critério do professor: prioridade ao sistema rodando; artefatos só se justific
 |-------|-------|----------------|
 | Álvaro | [#53](https://github.com/rlampago22/RP-IV/issues/53) | Escopo Must + checklist PASS + UI ONLINE |
 | Bruno | [#54](https://github.com/rlampago22/RP-IV/issues/54) | EventBus → `/api/estado` → T01 + tempo real |
-| Bernardo | [#55](https://github.com/rlampago22/RP-IV/issues/55) | T02 Normal/Observação + histórico API |
+| Bernardo | [#55](https://github.com/rlampago22/RP-IV/issues/55) | T02 Normal/Observação + histórico API · roteiro [`2026-10-05/bernardo.md`](2026-10-05/bernardo.md) |
 | José | [#56](https://github.com/rlampago22/RP-IV/issues/56) | Crítico → ACK → Resolver + GoF |
 | Marcus | [#57](https://github.com/rlampago22/RP-IV/issues/57) | T05 4 cenários + T04 + `auditoria.log` |
 
