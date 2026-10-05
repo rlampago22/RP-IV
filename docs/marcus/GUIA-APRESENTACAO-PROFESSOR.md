@@ -15,10 +15,10 @@
   2. **Cliente API Web ([`frontend/src/api/estado.js`](file:///C:/Users/Querol/Documents/ChatGPT/RP%20IV/frontend/src/api/estado.js)):** Adicionada a função exportada `dispararCenario(cenario)`.
   3. **Contexto Global ([`frontend/src/state/EstadoContext.jsx`](file:///C:/Users/Querol/Documents/ChatGPT/RP%20IV/frontend/src/state/EstadoContext.jsx)):** Integrado ao `EstadoProvider`, permitindo que qualquer componente acione cenários e recarregue o estado global.
   4. **Página T05 ([`frontend/src/pages/DemoPage.jsx`](file:///C:/Users/Querol/Documents/ChatGPT/RP%20IV/frontend/src/pages/DemoPage.jsx)):** Botões conectados com feedback visual imediato de sucesso ou erro e indicador de conexão com a API Java.
-* **Resultado:** Agora, ao clicar em "Simular Anomalia (Crítico)" no T05 da Web, o reator na tela T01 (Overview) fica vermelho imediatamente, a aba T03 exibe os alarmes gerados e a aba T04 registra o log criptografado SHA-256.
+* **Resultado:** Agora, ao clicar em "Simular Anomalia (Crítico)" no T05 da Web, o reator na tela T01 (Overview) fica vermelho imediatamente, a aba T03 exibe os alarmes gerados e a aba T04 registra os eventos no log, com selos SHA-256 encadeados.
 
 ### B) Preparação da Issue #57: `Marcus — UCs/auditoria na demo`
-* Seu papel oficial na apresentação do Marco 1 foi blindado: você demonstrará o disparo dos fluxos operacionais (T05) refletindo na auditoria imutável (T04) e saberá explicar tecnicamente a correspondência dos diagramas de sequência SEQ-UC01 e SEQ-UC02.
+* Seu papel oficial na apresentação do Marco 1 foi blindado: você demonstrará o disparo dos fluxos operacionais (T05) refletindo na auditoria à prova de adulteração (T04) e saberá explicar tecnicamente a correspondência dos diagramas de sequência SEQ-UC01 e SEQ-UC02.
 
 ---
 
@@ -27,7 +27,7 @@
 Se o professor perguntar: *"Por que vocês consideram este MVP aderente ao documento de entrega?"*, responda com estes 5 pilares:
 
 1. **Priorização MoSCoW (Must Have):**
-   * O documento oficial (Seção 3) classifica **RF-1** (telemetria em tempo real) e **RF-2** (geração automática de alarmes) como os únicos requisitos indispensáveis (*Must Have*). O MVP implementa ambos de forma 100% funcional.
+   * O documento oficial (Seção 3) lista vários requisitos como *Must Have* (RF-1 a RF-7, RF-9, RF-13, RF-14 e RF-18, além de RNF-01, 02, 03, 04, 06, 07, 08 e 10). O grupo definiu um **recorte para o MVP do Marco 1**, centrado em **RF-1** (telemetria em tempo real) e **RF-2** (geração automática de alarmes), documentado em `docs/marco1/matriz-pdf-aps-vs-rp4.md`. O MVP implementa esse recorte de forma funcional.
    * Os 4 sensores essenciais do documento estão ativos com unidades e limites exatos:
      * `TEMPERATURA` (0 a 350 °C, setpoint normal 310,5 °C)
      * `PRESSAO` (0 a 160 bar, setpoint normal 155,0 bar)
@@ -41,9 +41,10 @@ Se o professor perguntar: *"Por que vocês consideram este MVP aderente ao docum
 3. **Arquitetura Orientada a Eventos (EDA - Seção 8 do Documento):**
    * Desacoplamento real via `EventBus`. O módulo `ControleReator` publica eventos sem saber quem consome. Os módulos `Alarmes` e `AuditoriaLogs` assinam os eventos de forma independente.
    * **RNF-04 (Tolerância a Falhas):** Uma falha ou exceção em um consumidor é isolada e nunca derruba o núcleo do reator.
-4. **Segurança de Dados e Auditoria Inviolável (RNF-03, RNF-05 e RNF-09):**
-   * Arquivo `dados/auditoria.log` em formato append-only protegido por cadeia de hash SHA-256 encadeada.
-   * O sistema detecta qualquer edição física externa (teste automatizado comprova que alterar 1 caractere gera status `FALHA`).
+4. **Integridade dos Dados e Auditoria à Prova de Adulteração (RNF-03, RNF-05 e RNF-09):**
+   * Arquivo `dados/auditoria.log` em formato append-only, com cada registro ligado ao anterior por um selo SHA-256 (cadeia de hash).
+   * O arquivo **não impede** a edição; ele **detecta**: qualquer alteração quebra a cadeia (teste automatizado comprova que alterar 1 caractere gera status `FALHA`), e a tela de Auditoria passa a mostrar INTEGRIDADE COMPROMETIDA. Isso é verificação de integridade, não criptografia.
+   * Hoje só a auditoria persiste em arquivo; medições e alarmes ficam em memória (banco de dados previsto para o Marco 2).
 5. **Padrões de Projeto GoF Rigorosos:**
    * `Facade` (`ReatorFacade`, `AlarmeFacade`), `Observer/Pub-Sub` (`EventBus`), `Strategy` (`AvaliadorLimiar`), `Factory` (`AlarmeFactory`).
 
@@ -54,8 +55,8 @@ Se o professor perguntar: *"Por que vocês consideram este MVP aderente ao docum
 Se o professor perguntar: *"Cadê os outros 12 casos de uso do documento (evacuação, combustíveis, biometria)?"*, responda:
 
 * **Conceito de MVP (Mínimo Produto Viável):** Um MVP acadêmico ou industrial serve para validar a arquitetura e o caminho crítico de maior risco da aplicação (no nosso caso, o controle do reator nuclear e a emissão de alarmes). Tentar construir 13 sistemas distintos em um semestre resultaria em maquetes falsas sem profundidade.
-* **Priorização MoSCoW Documentada:** Na Seção 3 do nosso próprio documento e na auditoria do grupo de 22/09, definimos formalmente:
-  * *Should Have / Could Have / Won't:* Evacuação física (UC08), rastreamento de rejeitos e urânio (UC03/UC05), IA preditiva de manutenção (UC13) e relatórios IAEA (UC11) foram mantidos no projeto arquitetural e no modelo conceitual, mas deixados fora do código executável do Marco 1.
+* **Recorte do MVP documentado:** Na matriz `docs/marco1/matriz-pdf-aps-vs-rp4.md` e na auditoria do grupo de 22/09, definimos formalmente o que entra no código do Marco 1:
+  * *Fora do recorte:* evacuação (RF-9), rastreabilidade de combustível e rejeitos (RF-6), previsão de falhas (RF-13), controle de acesso biométrico (RF-5) e demais módulos foram mantidos no projeto arquitetural e no modelo conceitual, mas ficaram fora do código executável do Marco 1. Vários deles também são *Must* no PDF, então a justificativa é de **escopo do MVP e prazo**, não de prioridade.
 * **A questão do Login / Autenticação:**
   * No documento, o UC02 trata de **acesso físico** às salas da usina (leitores RFID e biometria em catracas e portas blindadas), não de formulário de login web.
   * No software de supervisão, a identificação dos operadores é feita de forma contextual e auditável nas próprias ações (ex.: `Operador de Reator` autentica o reconhecimento, `Engenheiro de Turno` assina a resolução do alarme). Uma tela de login tradicional seria redundante para o Marco 1.
@@ -70,7 +71,7 @@ Você tem duas opções excelentes para apresentar: a **Interface Web React** (q
 ### 🎬 Roteiro Passo a Passo:
 
 #### 1. Abertura Firme (1 minuto)
-> *"Boa noite, professor. Na entrega desta semana e no fechamento do Marco 1, fiquei encarregado de validar a consistência entre o documento oficial de 69 páginas e a implementação do MVP. O nosso foco foi o núcleo Must Have: telemetria dos 4 sensores operacionais em tempo real (RF-1), motor de alarmes com tolerância a falhas (RF-2) e auditabilidade criptográfica (RNF-03/RNF-05) via arquitetura orientada a eventos."*
+> *"Boa noite, professor. Na entrega desta semana e no fechamento do Marco 1, fiquei encarregado de validar a consistência entre o documento oficial de 69 páginas e a implementação do MVP. O nosso foco foi o recorte do MVP, parte dos requisitos Must do documento: telemetria dos 4 sensores operacionais em tempo real (RF-1), motor de alarmes com tolerância a falhas (RF-2) e auditoria com selos SHA-256 encadeados, que detecta qualquer adulteração (RNF-03/RNF-05), via arquitetura orientada a eventos."*
 
 #### 2. Comprovação nos Testes Automatizados (1 minuto)
 * Abra o terminal e execute:
@@ -85,15 +86,18 @@ Você tem duas opções excelentes para apresentar: a **Interface Web React** (q
   1. Deixe o backend rodando em um terminal: `mvp\4-EXECUTAR-API-ESTADO.bat`
   2. Em outro terminal, suba o frontend: `cd frontend; npm run dev` e abra o navegador.
   3. Vá na aba **T05 (Demo / Cenários)**:
-     * Clique em **Normal / Tempo Real**: Mostre na aba T01 que o reator está ESTÁVEL e os sensores estão em valores seguros.
-     * Volte em T05 e clique em **Simular Observação (Alt. 1)**: Mostre que o status vai para ATENÇÃO preventiva sem disparar alarme sonoro nem pânico.
-     * Volte em T05 e clique em **Simular Anomalia (Crítico)**: Mostre que o status vai para CRÍTICO imediatamente, a temperatura salta para 372 °C e na aba T03 surgem os alarmes ativos.
-     * Na aba T01/T03, clique em **Reconhecer Alerta** como Operador e depois em **Resolver Alarme** como Engenheiro. O reator volta para ESTÁVEL.
-     * Vá na aba T04 (Auditoria) e mostre que todos os passos foram registrados com timestamps ISO.
+     * Clique em **Operação Normal**: Mostre na aba T01 que o reator está ESTÁVEL e os sensores estão em valores seguros.
+     * Volte em T05 e clique em **Simular Observação**: Mostre que o status vai para ATENÇÃO preventiva sem disparar alarme sonoro nem pânico.
+     * Clique em **Falha de Sensor**: o status vai para ATENÇÃO. Depois abra **Visão Geral** (ou **Auditoria**): a primeira linha do histórico é o evento `FALHA_SENSOR_DETECTADA` (sensor 2, falha de comunicação, equipe técnica avisada). Falha não abre alarme em **Alarmes**; só leitura fora do limite seguro abre.
+     * Volte em **Operação Normal** para limpar a atenção e clique em **Simular Anomalia (Crítico)**: o status vai para CRÍTICO imediatamente, a temperatura salta para 372 °C e o fluxo cai para 420 m³/h.
+     * Na aba T03 aparecem **2 alarmes** (temperatura e fluxo, um por sensor). Clique em **Validar / Reconhecer** e depois em **Normalizar / Encerrar** em cada um. Ao encerrar, o sensor volta ao ponto normal e, com os dois encerrados, o reator volta para ESTÁVEL.
+     * Vá na aba T04 (Auditoria): o selo **CADEIA ÍNTEGRA** confirma a verificação SHA-256 do arquivo de log, e os passos aparecem com timestamps ISO.
+     * Para mostrar o arquivo, abra `mvp\dados\auditoria.log` (ou use `mvp\3-ABRIR-LOG-AUDITORIA.bat`).
+     * Cuidado na demo: não ligue o Swing e a API ao mesmo tempo (os dois gravam no mesmo log).
 * **Se demonstrar no Swing Desktop:**
   1. Dê dois cliques em `Desktop\MVP-Usina-Nuclear\0-ABRIR-SISTEMA-GRAFICO.vbs`.
   2. Clique em **Iniciar Tempo Real** para ver o reator pulsando.
-  3. Clique em **Simular Observação (Alt. 1)** e depois em **Simular Anomalia (Crítico)**.
+  3. Clique em **Simular Observação (Alt. 1)** e depois em **Simular Anomalia (Crítico)** (nomes do app Swing).
   4. Clique em **Validar Alerta** e **Normalizar Ocorrência**.
   5. Clique em **Abrir Log** para mostrar o arquivo `auditoria.log`.
 

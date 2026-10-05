@@ -39,9 +39,19 @@ public final class AlarmeFacade implements IEventSubscriber {
         processarAvaliacao(medicao, violado);
     }
 
-    public Alarme processarAvaliacao(MedicaoRegistrada medicao, boolean violado) {
+    public synchronized Alarme processarAvaliacao(MedicaoRegistrada medicao, boolean violado) {
         if (!violado) {
             System.out.println("[LIMIAR OK] Medicao dentro da faixa segura.");
+            return null;
+        }
+
+        // Um alarme por ocorrência: enquanto o do mesmo sensor não for resolvido, novas leituras
+        // fora da faixa não abrem alarmes duplicados (evita fila repetida e contagem inflada).
+        long sensorId = medicao.sensorId();
+        boolean jaAberto = alarmes.stream()
+            .anyMatch(a -> !a.isResolvido() && a.getOrigem().sensorId() == sensorId);
+        if (jaAberto) {
+            System.out.println("[ALARME EM ABERTO] Sensor " + sensorId + " ja possui alarme nao resolvido.");
             return null;
         }
 
@@ -71,7 +81,7 @@ public final class AlarmeFacade implements IEventSubscriber {
         return alarme;
     }
 
-    public boolean reconhecerAlarme(String alarmeId, String operador, String justificativa) {
+    public synchronized boolean reconhecerAlarme(String alarmeId, String operador, String justificativa) {
         Optional<Alarme> encontrado = alarmes.stream()
             .filter(a -> a.getId().equalsIgnoreCase(alarmeId) && a.isAtivo())
             .findFirst();
@@ -96,7 +106,7 @@ public final class AlarmeFacade implements IEventSubscriber {
         return false;
     }
 
-    public boolean resolverAlarme(String alarmeId, String responsavel, String solucao) {
+    public synchronized boolean resolverAlarme(String alarmeId, String responsavel, String solucao) {
         Optional<Alarme> encontrado = alarmes.stream()
             .filter(a -> a.getId().equalsIgnoreCase(alarmeId) && !a.isResolvido())
             .findFirst();
@@ -121,21 +131,21 @@ public final class AlarmeFacade implements IEventSubscriber {
         return false;
     }
 
-    public List<Alarme> consultarAlarmes() {
+    public synchronized List<Alarme> consultarAlarmes() {
         return List.copyOf(alarmes);
     }
 
-    public List<Alarme> consultarAlarmesPendentes() {
+    public synchronized List<Alarme> consultarAlarmesPendentes() {
         return alarmes.stream()
             .filter(a -> !a.isResolvido())
             .toList();
     }
 
-    public boolean temAlarmePendente() {
+    public synchronized boolean temAlarmePendente() {
         return alarmes.stream().anyMatch(a -> !a.isResolvido());
     }
 
-    public boolean temAlarmeCriticoAtivo() {
+    public synchronized boolean temAlarmeCriticoAtivo() {
         return alarmes.stream().anyMatch(Alarme::isAtivo);
     }
 }

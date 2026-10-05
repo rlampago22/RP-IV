@@ -173,3 +173,8 @@ export function dispararCenario(cenario) {
   return chamar(`/api/cenarios/${encodeURIComponent(cenario.toLowerCase())}`, { method: 'POST' })
 }
 
+/** T04 — verificação física da cadeia SHA-256: { integra, entradas, ultimoHash }. */
+export function buscarIntegridadeAuditoria() {
+  return chamar('/api/auditoria/integridade')
+}
+

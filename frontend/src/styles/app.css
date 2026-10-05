@@ -55,6 +55,8 @@ a { color: inherit; text-decoration: none; }
   font-size: 12px;
 }
 
+.scada-logo { display: block; flex: none; }
+
 .scada-brand h1 { margin: 0; font-size: 20px; font-weight: 700; }
 .scada-brand small { color: var(--muted); font-size: 12px; }
 
@@ -449,6 +451,7 @@ button.scada-btn:disabled {
   cursor: pointer;
 }
 .scada-scenario:hover { border-color: var(--sky); }
+.scada-scenario-active { border-color: var(--sky); box-shadow: 0 0 0 1px var(--sky) inset; }
 .scada-scenario strong { display: block; margin-bottom: 4px; }
 .scada-scenario span { color: var(--muted); font-size: 12px; font-weight: 500; }
 
@@ -462,6 +465,19 @@ button.scada-btn:disabled {
   font-size: 13px;
   line-height: 1.45;
 }
+
+.scada-note-ok { border-color: rgb(16 185 129 / 35%); color: var(--ok); }
+.scada-note-warn { border-color: rgb(245 158 11 / 40%); color: var(--warn); }
+.scada-note-crit,
+.scada-note-erro { border-color: rgb(239 68 68 / 40%); color: var(--crit); }
+
+.scada-integridade {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.scada-integridade-detalhe { color: var(--muted); font-size: 13px; }
 
 @media (max-width: 900px) {
   .scada-split,

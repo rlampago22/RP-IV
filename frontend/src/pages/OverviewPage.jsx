@@ -94,9 +94,9 @@ export default function OverviewPage() {
               <strong>{contadores.medicoes}</strong>
             </div>
             <div className="scada-metric">
-              <span>ALARMES</span>
-              <strong style={{ color: contadores.alarmes > 0 ? 'var(--crit)' : undefined }}>
-                {contadores.alarmes}
+              <span>ALARMES ABERTOS</span>
+              <strong style={{ color: alarmesNaoResolvidos.length > 0 ? 'var(--crit)' : undefined }}>
+                {alarmesNaoResolvidos.length}
               </strong>
             </div>
             <div className="scada-metric">

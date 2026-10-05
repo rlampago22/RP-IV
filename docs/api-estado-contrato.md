@@ -42,11 +42,14 @@ A migração `mvp/` → `backend/` (Maven/Gradle) é indicada em [`backend-java.
 | `POST` | `/api/tempo-real/pausar` | Desliga a simulação periódica |
 | `POST` | `/api/cenarios/normal` | Pausa tempo-real e aplica seed Normal (`CenariosMedicao` → 6 leituras estáveis por sensor) |
 | `POST` | `/api/cenarios/observacao` | Seed Observação (Normal + temp 328 °C → `ObservacaoRegistrada`) |
-| `POST` | `/api/cenarios/falha` | Simula falha de telemetria no sensor de pressão (`FalhaSensorDetectada`) |
+| `POST` | `/api/cenarios/falha` | Simula falha de telemetria no sensor de pressão (`FalhaSensorDetectada`); o status vai a `ATENCAO` até o sensor voltar a reportar |
 | `POST` | `/api/cenarios/critico` | Anomalia crítica: temp 372 °C + fluxo 420 → `AlarmeEmitido` |
 | `POST` | `/api/demo/anomalia` | Alias do roteiro T03: mesmo efeito de `/api/cenarios/critico` |
 | `POST` | `/api/alarmes/{id}/reconhecer` | Publica `AlarmeReconhecido` para o alarme `{id}` (operador fixo "Operador de Reator (UI Web)") |
-| `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` para o alarme `{id}` (responsável fixo "Engenheiro de Turno (UI Web)") |
+| `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` para o alarme `{id}` (responsável fixo "Engenheiro de Turno (UI Web)") e devolve o sensor do alarme ao ponto normal (nova `MedicaoRegistrada`) |
+| `GET` | `/api/auditoria/integridade` | Recalcula a cadeia SHA-256 de `dados/auditoria.log`: `{"integra":true,"entradas":N,"ultimoHash":"..."}` (503 se a auditoria não estiver configurada) |
+
+Um sensor fora da faixa segura mantém **um único alarme aberto**: novas leituras violadas do mesmo sensor não criam alarmes duplicados até o alarme ser resolvido. `contadores.alarmes` continua sendo o total emitido na sessão; a UI exibe os alarmes abertos a partir de `alarmes[]`.
 
 Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, para o front sempre re-sincronizar após uma ação. CORS liberado (`Access-Control-Allow-Origin: *`) para consumo local do Vite.
 

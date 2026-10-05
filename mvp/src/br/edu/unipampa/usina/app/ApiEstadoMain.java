@@ -25,10 +25,14 @@ public final class ApiEstadoMain {
     private static final int PORTA = 8080;
     private static final long[] SENSOR_IDS = {1L, 2L, 3L, 4L};
 
-    /** Ponto de operação normal de cada sensor — a simulação oscila em torno deles, sem deriva permanente. */
+    /**
+     * Ponto em torno do qual o tempo real simulado oscila, sem deriva permanente. A pressão fica abaixo
+     * de 155 bar (limite da faixa de atenção): oscilar exatamente em 155 gerava observações em quase
+     * metade dos ciclos e, de tempos em tempos, um alarme crítico falso.
+     */
     private static final Map<Long, Double> SETPOINTS = Map.of(
         1L, 310.5,
-        2L, 155.0,
+        2L, 148.0,
         3L, 2.4,
         4L, 1100.0
     );
@@ -55,7 +59,7 @@ public final class ApiEstadoMain {
         reator.receberLeitura(3L, 2.4);
         reator.receberLeitura(4L, 1100.0);
 
-        ApiEstadoHttpServer servidor = new ApiEstadoHttpServer(estado, alarmeFacade, reator, PORTA);
+        ApiEstadoHttpServer servidor = new ApiEstadoHttpServer(estado, alarmeFacade, reator, registro, PORTA);
         servidor.iniciar();
 
         iniciarTempoRealSimulado(reator, estado);

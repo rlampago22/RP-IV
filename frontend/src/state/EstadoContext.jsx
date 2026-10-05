@@ -48,6 +48,11 @@ export function EstadoProvider({ children }) {
   }, [atualizar])
 
   const executarAcao = useCallback(async (acao, fallbackMock) => {
+    // Se um poll estiver em andamento, espera terminar em vez de descartar o clique
+    // (antes o botão falhava com "confira se a API está rodando" mesmo com a API no ar).
+    for (let tentativa = 0; emVooRef.current && tentativa < 60; tentativa++) {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    }
     if (emVooRef.current) return false
     emVooRef.current = true
     try {
@@ -60,7 +65,7 @@ export function EstadoProvider({ children }) {
       if (fallbackMock) {
         setEstado(fallbackMock())
         setOrigemMock(true)
-        setErroApi('')
+        setErroApi(erro?.message || 'API indisponivel')
         return true
       }
       setErroApi(erro?.message || 'Falha na acao')

@@ -136,7 +136,7 @@ export default function SensoresPage() {
       </div>
 
       <div className="scada-card" style={{ marginTop: 16 }}>
-        <h2>Histórico recente (últimas 6 · MedicaoRegistrada)</h2>
+        <h2>Histórico recente (últimas 6 leituras)</h2>
         <div className="scada-table-wrap" style={{ maxHeight: 'none' }}>
           <table className="scada-table">
             <thead>
@@ -163,15 +163,9 @@ export default function SensoresPage() {
           </table>
         </div>
         <div className="scada-note">
-          {origemMock ? (
-            <>Modo offline: histórico do mock local (mesmos valores dos seeds). Suba a API para telemetria real.</>
-          ) : (
-            <>
-              Online: últimas 6 leituras de <code>sensores[].historico</code> no snapshot (
-              <code>MedicaoRegistrada</code> → EventBus). Condições disparam{' '}
-              <code>ReatorFacade.receberLeitura</code> via <code>/api/cenarios/*</code>.
-            </>
-          )}
+          {origemMock
+            ? 'Sem conexão com a API: exibindo histórico simulado localmente.'
+            : 'Últimas 6 leituras de cada sensor, atualizadas automaticamente. As condições Normal e Observação aplicam leituras de referência.'}
         </div>
       </div>
     </section>
