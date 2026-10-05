@@ -87,7 +87,7 @@ Você tem duas opções excelentes para apresentar: a **Interface Web React** (q
   3. Vá na aba **T05 (Demo / Cenários)**:
      * Clique em **Operação Normal**: Mostre na aba T01 que o reator está ESTÁVEL e os sensores estão em valores seguros.
      * Volte em T05 e clique em **Simular Observação**: Mostre que o status vai para ATENÇÃO preventiva sem disparar alarme sonoro nem pânico.
-     * Clique em **Falha de Sensor**: o status vai para ATENÇÃO e a timeline registra a falha de comunicação (alerta à manutenção).
+     * Clique em **Falha de Sensor**: o status vai para ATENÇÃO. Depois abra **Visão Geral** (ou **Auditoria**): a primeira linha do histórico é o evento `FALHA_SENSOR_DETECTADA` (sensor 2, falha de comunicação, equipe técnica avisada). Falha não abre alarme em **Alarmes**; só leitura fora do limite seguro abre.
      * Volte em **Operação Normal** para limpar a atenção e clique em **Simular Anomalia (Crítico)**: o status vai para CRÍTICO imediatamente, a temperatura salta para 372 °C e o fluxo cai para 420 m³/h.
      * Na aba T03 aparecem **2 alarmes** (temperatura e fluxo, um por sensor). Clique em **Validar / Reconhecer** e depois em **Normalizar / Encerrar** em cada um. Ao encerrar, o sensor volta ao ponto normal e, com os dois encerrados, o reator volta para ESTÁVEL.
      * Vá na aba T04 (Auditoria): o selo **CADEIA ÍNTEGRA** confirma a verificação SHA-256 do arquivo de log, e os passos aparecem com timestamps ISO.
