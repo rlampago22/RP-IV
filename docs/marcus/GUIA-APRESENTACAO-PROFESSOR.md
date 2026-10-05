@@ -85,15 +85,18 @@ Você tem duas opções excelentes para apresentar: a **Interface Web React** (q
   1. Deixe o backend rodando em um terminal: `mvp\4-EXECUTAR-API-ESTADO.bat`
   2. Em outro terminal, suba o frontend: `cd frontend; npm run dev` e abra o navegador.
   3. Vá na aba **T05 (Demo / Cenários)**:
-     * Clique em **Normal / Tempo Real**: Mostre na aba T01 que o reator está ESTÁVEL e os sensores estão em valores seguros.
-     * Volte em T05 e clique em **Simular Observação (Alt. 1)**: Mostre que o status vai para ATENÇÃO preventiva sem disparar alarme sonoro nem pânico.
-     * Volte em T05 e clique em **Simular Anomalia (Crítico)**: Mostre que o status vai para CRÍTICO imediatamente, a temperatura salta para 372 °C e na aba T03 surgem os alarmes ativos.
-     * Na aba T01/T03, clique em **Reconhecer Alerta** como Operador e depois em **Resolver Alarme** como Engenheiro. O reator volta para ESTÁVEL.
-     * Vá na aba T04 (Auditoria) e mostre que todos os passos foram registrados com timestamps ISO.
+     * Clique em **Operação Normal**: Mostre na aba T01 que o reator está ESTÁVEL e os sensores estão em valores seguros.
+     * Volte em T05 e clique em **Simular Observação**: Mostre que o status vai para ATENÇÃO preventiva sem disparar alarme sonoro nem pânico.
+     * Clique em **Falha de Sensor**: o status vai para ATENÇÃO e a timeline registra a falha de comunicação (alerta à manutenção).
+     * Volte em **Operação Normal** para limpar a atenção e clique em **Simular Anomalia (Crítico)**: o status vai para CRÍTICO imediatamente, a temperatura salta para 372 °C e o fluxo cai para 420 m³/h.
+     * Na aba T03 aparecem **2 alarmes** (temperatura e fluxo, um por sensor). Clique em **Validar / Reconhecer** e depois em **Normalizar / Encerrar** em cada um. Ao encerrar, o sensor volta ao ponto normal e, com os dois encerrados, o reator volta para ESTÁVEL.
+     * Vá na aba T04 (Auditoria): o selo **CADEIA ÍNTEGRA** confirma a verificação SHA-256 do arquivo de log, e os passos aparecem com timestamps ISO.
+     * Para mostrar o arquivo, abra `mvp\dados\auditoria.log` (ou use `mvp\3-ABRIR-LOG-AUDITORIA.bat`).
+     * Cuidado na demo: não ligue o Swing e a API ao mesmo tempo (os dois gravam no mesmo log).
 * **Se demonstrar no Swing Desktop:**
   1. Dê dois cliques em `Desktop\MVP-Usina-Nuclear\0-ABRIR-SISTEMA-GRAFICO.vbs`.
   2. Clique em **Iniciar Tempo Real** para ver o reator pulsando.
-  3. Clique em **Simular Observação (Alt. 1)** e depois em **Simular Anomalia (Crítico)**.
+  3. Clique em **Simular Observação (Alt. 1)** e depois em **Simular Anomalia (Crítico)** (nomes do app Swing).
   4. Clique em **Validar Alerta** e **Normalizar Ocorrência**.
   5. Clique em **Abrir Log** para mostrar o arquivo `auditoria.log`.
 
