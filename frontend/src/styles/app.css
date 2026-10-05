@@ -467,6 +467,9 @@ button.scada-btn:disabled {
 }
 
 .scada-note-ok { border-color: rgb(16 185 129 / 35%); color: var(--ok); }
+.scada-note-warn { border-color: rgb(245 158 11 / 40%); color: var(--warn); }
+.scada-note-crit,
+.scada-note-erro { border-color: rgb(239 68 68 / 40%); color: var(--crit); }
 
 .scada-integridade {
   display: flex;

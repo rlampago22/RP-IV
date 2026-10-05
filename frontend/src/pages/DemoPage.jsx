@@ -20,6 +20,23 @@ const SCENARIOS = [
   },
 ]
 
+/** Mensagem após aplicar o cenário; o tom segue as cores de status (verde, amarelo/atenção, vermelho). */
+const FEEDBACK = {
+  NORMAL: { tom: 'ok', texto: 'Leituras normais aplicadas. Veja o resultado em Visão Geral.' },
+  OBSERVACAO: {
+    tom: 'warn',
+    texto: 'Observação preventiva registrada: temperatura em faixa de atenção, sem alarme. Veja em Visão Geral e Auditoria.',
+  },
+  FALHA: {
+    tom: 'warn',
+    texto: 'Falha de comunicação registrada no sensor de pressão e equipe técnica avisada. Veja o evento em Visão Geral e Auditoria; a falha não abre alarme.',
+  },
+  CRITICO: {
+    tom: 'crit',
+    texto: 'Anomalia crítica aplicada: alarmes abertos. Veja em Alarmes, Visão Geral e Auditoria.',
+  },
+}
+
 /**
  * T05 — botões do roteiro Marcus (Issue #52).
  * Dispara cenários via /api/cenarios/{key} atualizando o EventBus e refletindo em T01–T04.
@@ -36,10 +53,7 @@ export default function DemoPage() {
     setMensagemFeedback(null)
     const ok = await dispararCenario(item.key)
     if (ok) {
-      setMensagemFeedback({
-        tipo: 'sucesso',
-        texto: `Cenário "${item.title}" aplicado. Confira os efeitos em Visão Geral, Alarmes e Auditoria.`,
-      })
+      setMensagemFeedback({ tipo: FEEDBACK[item.key].tom, texto: FEEDBACK[item.key].texto })
     } else {
       setMensagemFeedback({
         tipo: 'erro',
@@ -74,7 +88,7 @@ export default function DemoPage() {
 
       {mensagemFeedback && (
         <div
-          className={`scada-note ${mensagemFeedback.tipo === 'sucesso' ? 'scada-note-ok' : ''}`}
+          className={`scada-note scada-note-${mensagemFeedback.tipo}`}
           role="status"
           style={{ marginTop: '1rem' }}
         >
