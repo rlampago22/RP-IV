@@ -107,8 +107,8 @@ export default function AlarmesPage() {
         )}
 
         <div className="scada-note">
-          Backend: <code>AvaliadorLimiar</code> (Strategy), <code>AlarmeFactory</code>,{' '}
-          <code>AlarmeFacade</code> + API <code>/api/alarmes/&#123;id&#125;/reconhecer|resolver</code>.
+          Cada ocorrência segue o ciclo: o operador reconhece o alarme e o engenheiro de turno o encerra.
+          Um sensor fora da faixa mantém um único alarme aberto até o encerramento.
         </div>
         {erroApi && <p className="scada-api-error" role="alert">{erroApi}</p>}
       </div>

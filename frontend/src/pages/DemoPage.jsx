@@ -2,21 +2,21 @@ import { useState } from 'react'
 import { useEstado } from '../state/EstadoContext.jsx'
 
 const SCENARIOS = [
-  { key: 'NORMAL', title: 'Normal / Tempo Real', detail: 'Medições na faixa · núcleo ESTÁVEL' },
+  { key: 'NORMAL', title: 'Operação Normal', detail: 'Leituras na faixa ideal · núcleo ESTÁVEL' },
   {
     key: 'OBSERVACAO',
-    title: 'Simular Observação (Alt. 1)',
-    detail: 'OBSERVACAO_REGISTRADA · sem alarme alto',
+    title: 'Simular Observação',
+    detail: 'Temperatura em faixa de atenção · sem alarme',
   },
   {
     key: 'FALHA',
-    title: 'Falha Sensor (Exceção)',
-    detail: 'FALHA_SENSOR_DETECTADA · manutenção',
+    title: 'Falha de Sensor',
+    detail: 'Perda de comunicação · alerta à manutenção · ATENÇÃO',
   },
   {
     key: 'CRITICO',
     title: 'Simular Anomalia (Crítico)',
-    detail: 'Temp 372 · fluxo baixo · ALARME_EMITIDO',
+    detail: 'Temperatura 372 °C · fluxo baixo · alarmes emitidos',
   },
 ]
 
@@ -38,12 +38,12 @@ export default function DemoPage() {
     if (ok) {
       setMensagemFeedback({
         tipo: 'sucesso',
-        texto: `Cenário "${item.title}" disparado com sucesso no EventBus! Verifique T01 (Overview), T03 (Alarmes) e T04 (Auditoria).`,
+        texto: `Cenário "${item.title}" aplicado. Confira os efeitos em Visão Geral, Alarmes e Auditoria.`,
       })
     } else {
       setMensagemFeedback({
         tipo: 'erro',
-        texto: 'Não foi possível disparar o cenário. Confira se a API Java está rodando (mvp/4-EXECUTAR-API-ESTADO.bat).',
+        texto: 'Não foi possível aplicar o cenário: sem resposta da API. Verifique se o serviço está em execução.',
       })
     }
     setDisparando(false)
@@ -83,13 +83,11 @@ export default function DemoPage() {
       )}
 
       <div className="scada-note" role="status" style={{ marginTop: '1rem' }}>
-        Barramento de telemetria:{' '}
+        Telemetria:{' '}
         <strong>
-          {origemMock
-            ? 'Modo Simulado Local (Offline)'
-            : 'Conectado à Usina em Tempo Real (EventBus Online)'}
+          {origemMock ? 'modo simulado local (sem conexão com a API)' : 'conectada à usina em tempo real'}
         </strong>
-        .
+        . Alarmes abertos permanecem até serem reconhecidos e encerrados em Alarmes.
       </div>
     </section>
   )
