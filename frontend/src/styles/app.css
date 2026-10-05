@@ -55,6 +55,8 @@ a { color: inherit; text-decoration: none; }
   font-size: 12px;
 }
 
+.scada-logo { display: block; flex: none; }
+
 .scada-brand h1 { margin: 0; font-size: 20px; font-weight: 700; }
 .scada-brand small { color: var(--muted); font-size: 12px; }
 

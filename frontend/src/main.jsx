@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import './styles/app.css'
+import Logo from './components/Logo.jsx'
 import OverviewPage from './pages/OverviewPage.jsx'
 import SensoresPage from './pages/SensoresPage.jsx'
 import AlarmesPage from './pages/AlarmesPage.jsx'
@@ -37,7 +38,7 @@ function Shell() {
     <div className="scada-shell">
       <header className="scada-top">
         <div className="scada-brand">
-          <div className="scada-dot">RN</div>
+          <Logo />
           <div>
             <h1>Central de Supervisão · Reator-01</h1>
             <small>
