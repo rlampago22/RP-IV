@@ -468,3 +468,237 @@ button.scada-btn:disabled {
   .scada-metrics,
   .scada-scenarios { grid-template-columns: 1fr; }
 }
+
+/* ---- T06 Histórico: filtros de consulta (RF16) ---- */
+
+.scada-filtros { margin-top: 14px; }
+
+.scada-filtro-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.scada-filtro-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.scada-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1 1 180px;
+}
+
+.scada-campo > span,
+.scada-faixa-rotulo {
+  color: var(--dim);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scada-faixa-rotulo small { color: var(--muted); text-transform: none; letter-spacing: 0; }
+
+.scada-faixa { display: flex; flex-direction: column; gap: 5px; }
+.scada-faixa-campos { display: flex; gap: 6px; }
+.scada-faixa-campos input { flex: 1 1 0; min-width: 0; }
+
+.scada-filtros input {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 9px;
+  color: var(--text);
+  font: 12px var(--font);
+}
+
+.scada-filtros input::placeholder { color: var(--dim); }
+
+.scada-filtros input:focus {
+  outline: none;
+  border-color: var(--cyan);
+}
+
+.scada-filtros .scada-actions { margin-top: 14px; }
+
+.scada-linha-clicavel { cursor: pointer; }
+.scada-linha-clicavel:hover td { background: var(--card2); }
+
+.scada-placeholder {
+  background: rgb(168 85 247 / 12%);
+  border: 1px dashed rgb(168 85 247 / 55%);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #e9d5ff;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.scada-placeholder strong { color: var(--purple); }
+
+/* Cabeçalho e rodapé que existem só no papel/PDF */
+.scada-cabecalho-impressao,
+.scada-rodape-impressao { display: none; }
+
+/* ---- Impressão do relatório do dia: tema claro, só o documento ---- */
+@media print {
+  @page { size: A4; margin: 14mm; }
+
+  body { background: #fff !important; }
+  body * { visibility: hidden; }
+
+  /* Um único bloco posicionado: dentro dele, relatório e gráficos empilham em fluxo normal.
+     Posicionar cada um em absolute faria os dois se sobreporem na mesma página. */
+  .scada-impressao,
+  .scada-impressao * { visibility: visible; }
+
+  .scada-impressao {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  .scada-relatorio {
+    margin: 0 !important;
+    padding: 0;
+    background: #fff;
+    border: none;
+    border-radius: 0;
+    color: #111;
+    break-after: auto;
+  }
+
+  .scada-impressao .scada-card {
+    background: #fff;
+    border: none;
+    color: #111;
+    padding: 0;
+    margin-top: 18px !important;
+  }
+
+  .scada-impressao h2 { color: #111; }
+
+  .scada-cabecalho-impressao {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+    border-bottom: 2px solid #111;
+    font-size: 11px;
+    color: #111;
+  }
+
+  .scada-rodape-impressao {
+    display: block;
+    margin-top: 18px;
+    padding-top: 8px;
+    border-top: 1px solid #bbb;
+    font-size: 9px;
+    color: #555;
+  }
+
+  .scada-relatorio h2 {
+    color: #111;
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .scada-relatorio .scada-table-wrap {
+    overflow: visible;
+    max-height: none;
+  }
+
+  .scada-relatorio .scada-table th { color: #444; }
+  .scada-relatorio .scada-table td { color: #111; }
+  .scada-relatorio .scada-table th,
+  .scada-relatorio .scada-table td { border-bottom: 1px solid #ccc; }
+  .scada-relatorio .scada-table tr { break-inside: avoid; }
+
+  .scada-relatorio .scada-pill {
+    background: transparent;
+    color: #111;
+    border: 1px solid #888;
+  }
+
+  .scada-relatorio .scada-placeholder {
+    background: transparent;
+    border: 1px dashed #777;
+    color: #111;
+  }
+
+  .scada-relatorio .scada-placeholder strong { color: #111; }
+  .scada-relatorio .scada-event-note { color: #555; }
+
+  .scada-nao-imprimir { display: none !important; }
+}
+
+/* ---- T06: curvas do histórico ---- */
+.scada-grafico { margin-top: 12px; }
+
+.scada-grafico-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.scada-grafico-escala {
+  color: var(--muted);
+  font: 11px var(--mono);
+}
+
+.scada-grafico-svg {
+  display: block;
+  width: 100%;
+  height: 88px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+@media print {
+  .scada-grafico-svg { background: #fff; border-color: #bbb; }
+  .scada-grafico-escala { color: #444; }
+}
+
+.scada-grafico-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.scada-grafico-instante {
+  color: var(--muted);
+  font: 11px var(--mono);
+}
+
+.scada-grafico-valor {
+  font: 700 12px var(--mono);
+}
+
+.scada-grafico-svg { cursor: crosshair; }
+
+@media print {
+  .scada-grafico-instante { color: #444; }
+}
+
+.scada-opcao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.scada-opcao input { accent-color: var(--cyan); cursor: pointer; }

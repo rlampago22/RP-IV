@@ -30,6 +30,10 @@ Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projet
 | RF07 | Autenticar acesso restrito | Amplia domínio sem mudar arquitetura |
 | RF08 | `RegistroAcesso` | Corrige classe faltante do feedback APS |
 | RNF08 | Segurança granular | Natural ao pacote SegurancaAcesso |
+| RF16 | Consultar histórico operacional (filtros por data e faixa) | Realiza a cláusula "para consulta" do RF02, nunca entregue |
+| RF17 | Exportar histórico consultado em CSV | Completa a consulta; CSV mantém zero dependência externa |
+
+> RF16/RF17 são **proposta** pendente de aprovação do grupo. Fechar **RNF09** (persistência durável de medições e alarmes) é pré-requisito — e hoje é a única divergência entre o checklist de aceite Must e o código.
 
 ---
 
@@ -63,4 +67,5 @@ Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projet
 3. Avaliação de limiar (Strategy) + `Alarme.emitirAlerta` / `registrarEvento`
 4. Consumidor de auditoria
 5. (Should) RegistroAcesso
-6. (Could) Emergencia + ProtocoloEmergencia
+6. (Should) RNF09 persistência durável → RF16 consulta → RF17 exportação
+7. (Could) Emergencia + ProtocoloEmergencia

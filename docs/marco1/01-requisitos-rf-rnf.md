@@ -28,6 +28,21 @@ Escopo refinado a partir do legado APS, com foco no que o sistema de controle di
 | RF07 | Autenticar acesso a área restrita | Validar credencial (crachá/biometria simulada) para áreas classificadas. |
 | RF08 | Registrar acesso | Persistir tentativa/resultado de acesso em `RegistroAcesso` (sucesso ou falha). |
 
+### Consulta e exportação do histórico (MVP Should) — proposta, pendente de aprovação do grupo
+
+| ID | Requisito | Descrição |
+|----|-----------|-----------|
+| RF16 | Consultar histórico operacional | Permitir que o operador filtre o histórico de medições por período e por faixa de valor de cada parâmetro RF-1 (temperatura, pressão, radiação, fluxo de resfriamento), e consulte os alarmes do mesmo período. |
+| RF17 | Exportar histórico consultado | Entregar o resultado da consulta em arquivo CSV, sem dependência externa de biblioteca. |
+
+**Por que Should e não requisito novo isolado:** RF02 (Must) já exige manter o histórico *"para consulta e rastreabilidade"*. A metade "manter" foi entregue; a de **consulta** nunca foi exposta. RF16/RF17 realizam essa cláusula.
+
+**Dependência técnica:** exige fechar **RNF09** (hoje `ReatorRepository` é janela em memória de `CAPACIDADE_PADRAO = 200` medições, ~2,5 min com tempo real ligado, e não sobrevive a reinício). Sem persistência durável, filtro por data não tem sentido.
+
+**Decisão de modelagem registrada:** o histórico consultável é gravado como **snapshot por instante** (os 4 parâmetros em uma linha), e não como uma medição por linha. Motivo: uma `MedicaoRegistrada` pertence a um único sensor, logo filtros combinados ("temperatura entre X e Y **e** pressão entre W e Z") retornariam sempre vazio no modelo por medição.
+
+**Delimitação de escopo:** RF16/RF17 são **exportação de histórico operacional**, não relatório de conformidade regulatória — RF13 permanece **Won't**.
+
 ### Contingência (MVP Could)
 
 | ID | Requisito | Descrição |

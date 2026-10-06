@@ -7,9 +7,12 @@ import br.edu.unipampa.usina.apiestado.ApiEstadoHttpServer;
 import br.edu.unipampa.usina.apiestado.EstadoAgregador;
 import br.edu.unipampa.usina.controlereator.ReatorFacade;
 import br.edu.unipampa.usina.controlereator.Sensor;
+import br.edu.unipampa.usina.historicooperacional.OperadorDeServico;
+import br.edu.unipampa.usina.historicooperacional.RegistroHistorico;
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.file.Files;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -30,7 +33,10 @@ public final class TestesApiAlarmes {
         reator.registrarSensor(new Sensor(1L, "TEMPERATURA", "Celsius", 0.0, 350.0, 20.0, 325.0));
 
         int porta = obterPortaLivre();
-        ApiEstadoHttpServer servidor = new ApiEstadoHttpServer(estado, alarmes, reator, porta);
+        RegistroHistorico historico = new RegistroHistorico(
+            Files.createTempDirectory("rpiv-alarmes").resolve("historico.csv"));
+        ApiEstadoHttpServer servidor =
+            new ApiEstadoHttpServer(estado, alarmes, reator, historico, new OperadorDeServico(), porta);
         servidor.iniciar();
 
         try {

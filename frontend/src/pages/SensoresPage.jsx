@@ -1,4 +1,4 @@
-import { SENSORES_RF1, statusSensor, pctBarra, corTipo } from '../data/sensores.js'
+import { CODIGO_POR_TIPO, SENSORES_RF1, statusSensor, pctBarra, corTipo } from '../data/sensores.js'
 import { useEstado } from '../state/EstadoContext.jsx'
 
 const UNIDADE_EXIBICAO = {
@@ -8,12 +8,6 @@ const UNIDADE_EXIBICAO = {
   'm3/h': 'm³/h',
 }
 
-const CODIGO_POR_TIPO = {
-  TEMPERATURA: 'T-CORE-01',
-  PRESSAO: 'P-PRIM-01',
-  RADIACAO: 'R-CONT-01',
-  FLUXO_RESFRIAMENTO: 'F-COOL-01',
-}
 
 function Sparkline({ values, color }) {
   if (!values?.length) return null
