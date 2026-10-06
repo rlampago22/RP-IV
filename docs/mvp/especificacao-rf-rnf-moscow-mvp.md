@@ -53,6 +53,8 @@ O sistema recebe medições de sensores existentes, mantém histórico operacion
 |---|---|---|
 | RF07 | Autenticar acesso restrito | Validar crachá ou biometria simulada para uma área classificada. |
 | RF08 | Registrar acesso | Persistir o resultado de cada tentativa de acesso. |
+| RF16 | Consultar histórico operacional | Filtrar o histórico por período e por faixa de valor de cada parâmetro RF-1, com os alarmes do mesmo período. Proposta pendente de aprovação; depende de RNF09. |
+| RF17 | Exportar histórico consultado | Entregar o resultado da consulta em CSV, sem biblioteca externa. |
 
 ### Could
 
