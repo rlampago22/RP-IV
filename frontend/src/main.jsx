@@ -7,13 +7,16 @@ import SensoresPage from './pages/SensoresPage.jsx'
 import AlarmesPage from './pages/AlarmesPage.jsx'
 import AuditoriaPage from './pages/AuditoriaPage.jsx'
 import DemoPage from './pages/DemoPage.jsx'
+import HistoricoPage from './pages/HistoricoPage.jsx'
 import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
+import { HistoricoProvider } from './state/HistoricoContext.jsx'
 
 const TABS = [
   { to: '/', end: true, text: 'Visão Geral' },
   { to: '/sensores', text: 'Sensores' },
   { to: '/alarmes', text: 'Alarmes' },
   { to: '/auditoria', text: 'Auditoria' },
+  { to: '/historico', text: 'Histórico' },
   { to: '/demo', text: 'Demo / Cenários' },
 ]
 
@@ -93,6 +96,7 @@ function Shell() {
           <Route path="/sensores" element={<SensoresPage />} />
           <Route path="/alarmes" element={<AlarmesPage />} />
           <Route path="/auditoria" element={<AuditoriaPage />} />
+          <Route path="/historico" element={<HistoricoPage />} />
           <Route path="/demo" element={<DemoPage />} />
         </Routes>
       </main>
@@ -103,9 +107,11 @@ function Shell() {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <EstadoProvider>
-      <BrowserRouter>
-        <Shell />
-      </BrowserRouter>
+      <HistoricoProvider>
+        <BrowserRouter>
+          <Shell />
+        </BrowserRouter>
+      </HistoricoProvider>
     </EstadoProvider>
   </React.StrictMode>
 )
