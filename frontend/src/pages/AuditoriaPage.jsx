@@ -40,11 +40,10 @@ export default function AuditoriaPage() {
             </tbody>
           </table>
         </div>
-        <div className="scada-actions">
-          <button type="button" className="scada-btn scada-btn-ghost">
-            Abrir Log
-          </button>
-        </div>
+        <p className="scada-note">
+          Arquivo físico: <code>mvp/dados/auditoria.log</code> (cadeia de hash SHA-256 encadeada,
+          verificável com <code>mvp/3-ABRIR-LOG-AUDITORIA.bat</code>).
+        </p>
       </div>
     </section>
   )

@@ -2,6 +2,8 @@ package br.edu.unipampa.usina.apiestado;
 
 import br.edu.unipampa.usina.alarmes.AlarmeFacade;
 import br.edu.unipampa.usina.controlereator.ReatorFacade;
+import br.edu.unipampa.usina.segurancaacesso.AcessoFacade;
+import br.edu.unipampa.usina.segurancaacesso.RegistroAcesso;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
@@ -9,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,13 +28,25 @@ public final class ApiEstadoHttpServer {
     private final EstadoAgregador estado;
     private final AlarmeFacade alarmes;
     private final ReatorFacade reator;
+    private final AcessoFacade acesso;
     private final int porta;
     private HttpServer server;
 
     public ApiEstadoHttpServer(EstadoAgregador estado, AlarmeFacade alarmes, ReatorFacade reator, int porta) {
+        this(estado, alarmes, reator, null, porta);
+    }
+
+    public ApiEstadoHttpServer(
+        EstadoAgregador estado,
+        AlarmeFacade alarmes,
+        ReatorFacade reator,
+        AcessoFacade acesso,
+        int porta
+    ) {
         this.estado = estado;
         this.alarmes = alarmes;
         this.reator = reator;
+        this.acesso = acesso;
         this.porta = porta;
     }
 
@@ -43,6 +58,7 @@ public final class ApiEstadoHttpServer {
         server.createContext("/api/cenarios/", this::tratarCenario);
         server.createContext("/api/demo/anomalia", this::tratarAnomaliaDemo);
         server.createContext("/api/alarmes/", this::tratarAcaoAlarme);
+        server.createContext("/api/acesso/", this::tratarAcesso);
         server.setExecutor(null);
         server.start();
         System.out.println("[API ESTADO] Ouvindo em http://localhost:" + porta + "/api/estado");
@@ -146,30 +162,114 @@ public final class ApiEstadoHttpServer {
             return;
         }
 
+        String corpo = lerCorpo(exchange);
         String caminho = exchange.getRequestURI().getPath();
         Matcher reconhecer = ALARME_RECONHECER.matcher(caminho);
         if (reconhecer.matches()) {
-            boolean ok = alarmes.reconhecerAlarme(
-                reconhecer.group(1),
-                "Operador de Reator (UI Web)",
-                "Reconhecido via T01 Overview"
-            );
+            String operador = lerCampoJson(corpo, "operador", "Operador de Reator (UI Web)");
+            String justificativa = lerCampoJson(corpo, "justificativa", "Reconhecido via T01 Overview");
+            boolean ok = alarmes.reconhecerAlarme(reconhecer.group(1), operador, justificativa);
             responder(exchange, ok ? 200 : 404, EstadoJson.escrever(estado.snapshot()));
             return;
         }
 
         Matcher resolver = ALARME_RESOLVER.matcher(caminho);
         if (resolver.matches()) {
-            boolean ok = alarmes.resolverAlarme(
-                resolver.group(1),
-                "Engenheiro de Turno (UI Web)",
-                "Parametros normalizados via T01 Overview"
-            );
+            String responsavel = lerCampoJson(corpo, "operador", "Engenheiro de Turno (UI Web)");
+            if ("Engenheiro de Turno (UI Web)".equals(responsavel)) {
+                responsavel = lerCampoJson(corpo, "responsavel", responsavel);
+            }
+            String solucao = lerCampoJson(corpo, "solucao", "Parametros normalizados via T01 Overview");
+            boolean ok = alarmes.resolverAlarme(resolver.group(1), responsavel, solucao);
             responder(exchange, ok ? 200 : 404, EstadoJson.escrever(estado.snapshot()));
             return;
         }
 
         responder(exchange, 404, "{\"erro\":\"rota nao encontrada\"}");
+    }
+
+    private void tratarAcesso(HttpExchange exchange) throws IOException {
+        String caminho = exchange.getRequestURI().getPath();
+        if (caminho.endsWith("/solicitar")) {
+            if (comCorsEPreflight(exchange, "POST")) {
+                return;
+            }
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
+                return;
+            }
+            if (acesso == null) {
+                responder(exchange, 503, "{\"erro\":\"modulo de acesso indisponivel\"}");
+                return;
+            }
+            String corpo = lerCorpo(exchange);
+            String credencial = lerCampoJson(corpo, "credencial", "");
+            String area = lerCampoJson(corpo, "area", "");
+            RegistroAcesso registro = acesso.solicitarAcesso(credencial, area);
+            responder(exchange, 200, escreverRegistro(registro));
+            return;
+        }
+        if (caminho.endsWith("/registros")) {
+            if (comCorsEPreflight(exchange, "GET")) {
+                return;
+            }
+            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
+                return;
+            }
+            if (acesso == null) {
+                responder(exchange, 503, "{\"erro\":\"modulo de acesso indisponivel\"}");
+                return;
+            }
+            responder(exchange, 200, escreverLista(acesso.listarRegistros()));
+            return;
+        }
+        if (comCorsEPreflight(exchange, "GET")) {
+            return;
+        }
+        responder(exchange, 404, "{\"erro\":\"rota de acesso nao encontrada\"}");
+    }
+
+    private static String escreverRegistro(RegistroAcesso registro) {
+        return "{"
+            + "\"id\":\"" + escapar(registro.getId()) + "\","
+            + "\"credencial\":\"" + escapar(registro.getCredencial()) + "\","
+            + "\"area\":\"" + escapar(registro.getArea()) + "\","
+            + "\"resultado\":\"" + escapar(registro.getResultado()) + "\","
+            + "\"ocorridoEm\":\"" + registro.getOcorridoEm() + "\""
+            + "}";
+    }
+
+    private static String escreverLista(List<RegistroAcesso> registros) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < registros.size(); i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append(escreverRegistro(registros.get(i)));
+        }
+        return sb.append(']').toString();
+    }
+
+    private static String lerCorpo(HttpExchange exchange) throws IOException {
+        return new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+    }
+
+    private static String lerCampoJson(String json, String campo, String padrao) {
+        if (json == null || json.isBlank()) {
+            return padrao;
+        }
+        Pattern pattern = Pattern.compile("\"" + Pattern.quote(campo) + "\"\\s*:\\s*\"([^\"]*)\"");
+        Matcher matcher = pattern.matcher(json);
+        if (matcher.find()) {
+            String valor = matcher.group(1).trim();
+            return valor.isEmpty() ? padrao : valor;
+        }
+        return padrao;
+    }
+
+    private static String escapar(String valor) {
+        return valor == null ? "" : valor.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private boolean comCorsEPreflight(HttpExchange exchange, String metodoPermitido) throws IOException {

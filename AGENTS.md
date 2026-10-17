@@ -14,9 +14,9 @@ Arquitetura **única:** **EDA** (EventBus).
 | `fix/*` | Ajustes estruturais/docs |
 
 **Stack real:**
-- Domínio Java executável: **`mvp/`**
-- UI oficial: **`frontend/`** (React) — visual **Opção A** SCADA escuro
-- API futura: **`backend/`** (vazio/migração)
+- Domínio Java executável: **`mvp/`** (EDA + `/api/estado` + RF08 acesso)
+- UI oficial: **`frontend/`** (React) — login + visual **Opção A** SCADA escuro
+- Auth Must (RF07): **`backend/`** (Spring Boot, porta 8081)
 - `src/` = esqueleto legado — **não** é a demo
 
 Não faça commits na `main`. Não altere repositórios de terceiros.
@@ -37,7 +37,7 @@ Não faça commits na `main`. Não altere repositórios de terceiros.
 2. UI: seguir protótipo `docs/ui/propostas/opcao-a.html` (Opção B descartada).
 3. `docs/marco1/` é rascunho até **05/10/2026**.
 4. Evidência individual em `docs/semanas/`.
-5. Não inventar requisitos fora do MoSCoW.
+5. Seguir o MoSCoW vigente em `docs/marco1/02-priorizacao-moscow.md` (Must expandido RF01–RF08). Expansão de Must só após atualizar esse doc.
 6. Preferir mudanças pequenas; explicar o *porquê*.
 
 ## Estrutura relevante
@@ -49,9 +49,9 @@ docs/DOCUMENTACAO_DE_ENGENHARIA.md
 docs/PLANEJAMENTO_DESENVOLVIMENTO.md
 docs/ui/direcao-opcao-a.md
 docs/implementacao/00-INDICE.md
-mvp/                    # Java Must
-frontend/               # React Opção A
-backend/                # destino API
+mvp/                    # Java Must (EDA + apiestado + acesso)
+frontend/               # React Opção A + login
+backend/                # Auth Spring (RF07)
 ```
 
 ## Restrições

@@ -25,10 +25,11 @@ const SCENARIOS = [
  * Dispara cenários via /api/cenarios/{key} atualizando o EventBus e refletindo em T01–T04.
  */
 export default function DemoPage() {
-  const { dispararCenario, origemMock } = useEstado()
+  const { dispararCenario, origemMock, solicitarAcesso } = useEstado()
   const [scenario, setScenario] = useState('NORMAL')
   const [disparando, setDisparando] = useState(false)
   const [mensagemFeedback, setMensagemFeedback] = useState(null)
+  const [acessoFeedback, setAcessoFeedback] = useState(null)
 
   const handleDisparar = async (item) => {
     setScenario(item.key)
@@ -47,6 +48,22 @@ export default function DemoPage() {
       })
     }
     setDisparando(false)
+  }
+
+  const handleAcesso = async (credencial, area, rotulo) => {
+    setAcessoFeedback(null)
+    const resultado = await solicitarAcesso(credencial, area)
+    if (!resultado) {
+      setAcessoFeedback({
+        tipo: 'erro',
+        texto: 'Falha ao registrar acesso. Confira a API Java (mvp/4-EXECUTAR-API-ESTADO.bat).',
+      })
+      return
+    }
+    setAcessoFeedback({
+      tipo: resultado.resultado === 'SUCESSO' ? 'sucesso' : 'erro',
+      texto: `${rotulo}: ${resultado.resultado} · área ${resultado.area} · crachá ${resultado.credencial}`,
+    })
   }
 
   return (
@@ -79,6 +96,39 @@ export default function DemoPage() {
           style={{ marginTop: '1rem' }}
         >
           {mensagemFeedback.texto}
+        </div>
+      )}
+
+      <p className="scada-kicker" style={{ marginTop: '1.5rem' }}>UC04 · RF07/RF08 — CONTROLE DE ACESSO</p>
+      <h2 className="scada-heading" style={{ fontSize: '1.25rem' }}>Registro de acesso a área restrita</h2>
+      <p className="scada-lead">
+        Credenciais demo: OPER-01 (nível 2), SUP-01 (nível 3), GUARDA-01 (nível 1). Áreas: PERIMETRO, SALA-CONTROLE, CORE-REATOR.
+      </p>
+      <div className="scada-scenarios">
+        <button
+          type="button"
+          className="scada-scenario"
+          onClick={() => handleAcesso('OPER-01', 'SALA-CONTROLE', 'Operador → Sala de Controle')}
+        >
+          <strong>Acesso autorizado</strong>
+          <span>OPER-01 em SALA-CONTROLE → SUCESSO</span>
+        </button>
+        <button
+          type="button"
+          className="scada-scenario"
+          onClick={() => handleAcesso('GUARDA-01', 'CORE-REATOR', 'Guarda → Core')}
+        >
+          <strong>Acesso negado</strong>
+          <span>GUARDA-01 em CORE-REATOR → FALHA</span>
+        </button>
+      </div>
+      {acessoFeedback && (
+        <div
+          className={`scada-note ${acessoFeedback.tipo === 'sucesso' ? 'scada-note-ok' : ''}`}
+          role="status"
+          style={{ marginTop: '1rem' }}
+        >
+          {acessoFeedback.texto}
         </div>
       )}
 

@@ -12,7 +12,7 @@ Regras aplicadas do feedback APS (domínio usina, não militar): fluxo principal
 ![Diagrama UML de casos de uso do núcleo MVP](<../marcus/diagramas/Marcus-UML-MVP/01 - Casos de Uso MVP.png>)
 
 - **System Boundary:** `SistemaControleUsina`
-- UC04 é Should e permanece documentado abaixo, fora do diagrama Must desta entrega
+- UC04 é **Must** (MoSCoW v2 — RF07/RF08); o diagrama Astah exportado ainda destaca o núcleo UC01–UC03 — complementar com esta especificação
 - UCs de evacuação/RH/materiais: backlog Won't
 
 Fonte UML editável: [Marcus-UML-MVP.asta](../marcus/diagramas/Marcus-UML-MVP.asta). A imagem acima foi exportada pelo próprio Astah; não é Mermaid.
@@ -114,7 +114,7 @@ O fluxo termina após registrar, avaliar e auditar a medição. Consultar o hist
 
 ---
 
-## 5. UC04 — Controlar Acesso a Área Restrita (Should)
+## 5. UC04 — Controlar Acesso a Área Restrita (Must — RF07/RF08)
 
 | Campo | Conteúdo |
 |-------|----------|
@@ -145,5 +145,5 @@ O fluxo termina após registrar, avaliar e auditar a medição. Consultar o hist
 
 ## 6. Backlog de UCs (não documentados em detalhe no Marco 1)
 
-- Ativar Protocolo de Contingência (Could) — exige `Emergencia.criarEmergencia` + `ProtocoloEmergencia`
+- Ativar Protocolo de Contingência (Should) — exige `Emergencia.criarEmergencia` + `ProtocoloEmergencia`
 - Rastrear Materiais, Evacuação, RH, Relatórios — Won't

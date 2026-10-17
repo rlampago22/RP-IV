@@ -161,15 +161,36 @@ export function simularAnomalia() {
   return chamar('/api/demo/anomalia', { method: 'POST' })
 }
 
-export function reconhecerAlarme(alarmeId) {
-  return chamar(`/api/alarmes/${encodeURIComponent(alarmeId)}/reconhecer`, { method: 'POST' })
+export function reconhecerAlarme(alarmeId, corpo = {}) {
+  return chamar(`/api/alarmes/${encodeURIComponent(alarmeId)}/reconhecer`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(corpo),
+  })
 }
 
-export function resolverAlarme(alarmeId) {
-  return chamar(`/api/alarmes/${encodeURIComponent(alarmeId)}/resolver`, { method: 'POST' })
+export function resolverAlarme(alarmeId, corpo = {}) {
+  return chamar(`/api/alarmes/${encodeURIComponent(alarmeId)}/resolver`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(corpo),
+  })
 }
 
 export function dispararCenario(cenario) {
   return chamar(`/api/cenarios/${encodeURIComponent(cenario.toLowerCase())}`, { method: 'POST' })
+}
+
+/** UC04 / RF08 — solicita acesso a área restrita no domínio mvp. */
+export function solicitarAcesso(credencial, area) {
+  return chamar('/api/acesso/solicitar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ credencial, area }),
+  })
+}
+
+export function listarAcessos() {
+  return chamar('/api/acesso/registros')
 }
 
