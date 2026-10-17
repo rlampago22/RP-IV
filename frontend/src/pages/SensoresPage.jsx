@@ -1,5 +1,21 @@
 import { SENSORES_RF1, statusSensor, pctBarra, corTipo } from '../data/sensores.js'
 import { useEstado } from '../state/EstadoContext.jsx'
+import {
+  IconThermometer,
+  IconGauge,
+  IconRadiation,
+  IconDroplet,
+  IconActivity,
+  IconClock,
+} from '../components/icons.jsx'
+
+const ICONE_TIPO = {
+  TEMPERATURA: IconThermometer,
+  PRESSAO: IconGauge,
+  RADIACAO: IconRadiation,
+  FLUXO: IconDroplet,
+  FLUXO_RESFRIAMENTO: IconDroplet,
+}
 
 const UNIDADE_EXIBICAO = {
   Celsius: '°C',
@@ -105,38 +121,41 @@ export default function SensoresPage() {
         </button>
       </div>
 
-      <div className="scada-sensors" style={{ marginTop: 16 }}>
+      <div style={{ display: 'grid', gap: 10, marginTop: 16 }}>
         {sensores.map((s) => {
           const st = statusSensor(s)
           const cor = corTipo(s.tipo === 'FLUXO_RESFRIAMENTO' ? 'FLUXO' : s.tipo)
           const pct = pctBarra(s)
+          const Icone = ICONE_TIPO[s.tipo] ?? IconActivity
           return (
-            <div
-              className="scada-sensor"
-              key={s.id}
-              style={{ gridTemplateColumns: '1fr auto auto' }}
-            >
-              <div>
+            <div className="sensor-tile2" key={s.id} style={{ flexWrap: 'wrap' }}>
+              <div className="ring ring-sm" style={{ background: `conic-gradient(${cor} ${pct}%, var(--border) 0)` }}>
+                <Icone size={18} className="ring-icon" style={{ color: 'var(--text)' }} />
+              </div>
+              <div className="meta">
                 <div className="name">
                   {s.id} · {s.tipo}
                 </div>
-                <div className="val" style={{ color: cor, marginTop: 4 }}>
-                  {s.valor.toFixed(2)}{' '}
-                  <small style={{ color: 'var(--dim)', fontWeight: 600 }}>{s.unidade}</small>
+                <div className="value mono" style={{ color: cor }}>
+                  {s.valor.toFixed(2)}
+                  <small>{s.unidade}</small>
+                </div>
+                <div className="scada-bar" style={{ marginTop: 8, maxWidth: 260 }}>
+                  <i style={{ width: `${pct}%`, background: cor }} />
                 </div>
               </div>
               <Sparkline values={s.historico} color={cor} />
               <span className={`scada-pill ${st.cls}`}>{st.label}</span>
-              <div className="scada-bar">
-                <i style={{ width: `${pct}%`, background: cor }} />
-              </div>
             </div>
           )
         })}
       </div>
 
       <div className="scada-card" style={{ marginTop: 16 }}>
-        <h2>Histórico recente (últimas 6 · MedicaoRegistrada)</h2>
+        <h2 className="panel-heading">
+          <IconClock size={13} />
+          Histórico recente (últimas 6 · MedicaoRegistrada)
+        </h2>
         <div className="scada-table-wrap" style={{ maxHeight: 'none' }}>
           <table className="scada-table">
             <thead>

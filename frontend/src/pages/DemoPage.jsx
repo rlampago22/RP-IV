@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useEstado } from '../state/EstadoContext.jsx'
+import { IconPlay, IconLock, IconCheck } from '../components/icons.jsx'
 
 const SCENARIOS = [
   { key: 'NORMAL', title: 'Normal / Tempo Real', detail: 'Medições na faixa · núcleo ESTÁVEL' },
@@ -68,7 +69,10 @@ export default function DemoPage() {
 
   return (
     <section>
-      <p className="scada-kicker">SIMULADOR OPERACIONAL • INJEÇÃO DE CENÁRIOS</p>
+      <p className="scada-kicker" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <IconPlay size={11} />
+        SIMULADOR OPERACIONAL • INJEÇÃO DE CENÁRIOS
+      </p>
       <h1 className="scada-heading">Simulação de Cenários</h1>
       <p className="scada-lead">
         Injeção controlada de condições operacionais para validação de resposta do sistema: Normal, Atenção Preventiva, Falha Instrumental e Anomalia Crítica.
@@ -99,7 +103,10 @@ export default function DemoPage() {
         </div>
       )}
 
-      <p className="scada-kicker" style={{ marginTop: '1.5rem' }}>UC04 · RF07/RF08 — CONTROLE DE ACESSO</p>
+      <p className="scada-kicker" style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <IconLock size={11} />
+        UC04 · RF07/RF08 — CONTROLE DE ACESSO
+      </p>
       <h2 className="scada-heading" style={{ fontSize: '1.25rem' }}>Registro de acesso a área restrita</h2>
       <p className="scada-lead">
         Credenciais demo: OPER-01 (nível 2), SUP-01 (nível 3), GUARDA-01 (nível 1). Áreas: PERIMETRO, SALA-CONTROLE, CORE-REATOR.
@@ -110,7 +117,10 @@ export default function DemoPage() {
           className="scada-scenario"
           onClick={() => handleAcesso('OPER-01', 'SALA-CONTROLE', 'Operador → Sala de Controle')}
         >
-          <strong>Acesso autorizado</strong>
+          <strong style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <IconCheck size={13} style={{ color: 'var(--ok)' }} />
+            Acesso autorizado
+          </strong>
           <span>OPER-01 em SALA-CONTROLE → SUCESSO</span>
         </button>
         <button

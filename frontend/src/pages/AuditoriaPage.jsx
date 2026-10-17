@@ -1,4 +1,5 @@
 import { useEstado } from '../state/EstadoContext.jsx'
+import { IconShield } from '../components/icons.jsx'
 
 export default function AuditoriaPage() {
   const { estado } = useEstado()
@@ -13,6 +14,10 @@ export default function AuditoriaPage() {
       </p>
 
       <div className="scada-card" style={{ marginTop: 16 }}>
+        <h2 className="panel-heading">
+          <IconShield size={13} />
+          Linha do tempo auditável
+        </h2>
         <div className="scada-table-wrap" style={{ maxHeight: 'none' }}>
           <table className="scada-table">
             <thead>

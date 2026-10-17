@@ -10,13 +10,22 @@ import DemoPage from './pages/DemoPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
 import { authApi } from './services/authApi.js'
+import {
+  AtomLogo,
+  IconGrid,
+  IconThermometer,
+  IconBell,
+  IconShield,
+  IconPlay,
+  IconPower,
+} from './components/icons.jsx'
 
 const TABS = [
-  { to: '/', end: true, text: 'Visão Geral' },
-  { to: '/sensores', text: 'Sensores' },
-  { to: '/alarmes', text: 'Alarmes' },
-  { to: '/auditoria', text: 'Auditoria' },
-  { to: '/demo', text: 'Demo / Cenários' },
+  { to: '/', end: true, text: 'Visão Geral', Icon: IconGrid },
+  { to: '/sensores', text: 'Sensores', Icon: IconThermometer },
+  { to: '/alarmes', text: 'Alarmes', Icon: IconBell },
+  { to: '/auditoria', text: 'Auditoria', Icon: IconShield },
+  { to: '/demo', text: 'Demo / Cenários', Icon: IconPlay },
 ]
 
 const BADGE_TEXTO = {
@@ -105,19 +114,37 @@ function Shell({ usuario, onLogout }) {
   const { estado, origemMock, erroApi, reconhecerAlarme } = useEstado()
   const alarmeAtivo = estado.alarmes.find((a) => a.status === 'ATIVO')
 
+  const alarmeAtivoAgora = estado.alarmes.some((a) => a.status === 'ATIVO')
+  const auditoriaOk = (estado.contadores?.auditoria ?? 0) >= 0 && !erroApi
+
   return (
     <div className="scada-shell">
       <header className="scada-top">
         <div className="scada-brand">
-          <div className="scada-dot">RN</div>
+          <div className="brand-mark">
+            <AtomLogo size={26} />
+          </div>
           <div>
             <h1>Central de Supervisão · Reator-01</h1>
-            <small>
-              Opção A — SCADA escuro · EventBus {origemMock ? 'MOCK (API offline)' : 'ONLINE'}
+            <small style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span
+                className={`status-dot ${origemMock ? 'warn' : 'ok'}`}
+                style={{ width: 6, height: 6 }}
+              />
+              EventBus {origemMock ? 'MOCK (API offline)' : 'ONLINE'}
             </small>
           </div>
         </div>
         <div className="scada-top-right">
+          <div className="status-dots">
+            <span
+              className={`status-dot ${estado.status === 'CRITICO' ? 'crit' : estado.status === 'ATENCAO' ? 'warn' : 'ok'}`}
+              title="Núcleo"
+            />
+            <span className={`status-dot ${alarmeAtivoAgora ? 'crit' : 'ok'}`} title="Alarmes" />
+            <span className={`status-dot ${auditoriaOk ? 'ok' : 'warn'}`} title="Auditoria" />
+            <span className="status-dot ok" title="Acesso" />
+          </div>
           <div className="scada-user">
             <strong>{usuario.nome}</strong>
             <span>{usuario.papeis.map((papel) => papel.replaceAll('_', ' ')).join(' · ')}</span>
@@ -129,6 +156,7 @@ function Shell({ usuario, onLogout }) {
             {BADGE_TEXTO[estado.status] ?? estado.status}
           </span>
           <button type="button" className="scada-btn scada-btn-ghost scada-logout" onClick={onLogout}>
+            <IconPower size={13} />
             Sair
           </button>
         </div>
@@ -140,8 +168,9 @@ function Shell({ usuario, onLogout }) {
             key={tab.to}
             to={tab.to}
             end={tab.end}
-            className={({ isActive }) => `scada-tab${isActive ? ' active' : ''}`}
+            className={({ isActive }) => `tab2${isActive ? ' active' : ''}`}
           >
+            <tab.Icon size={15} />
             {tab.text}
           </NavLink>
         ))}
