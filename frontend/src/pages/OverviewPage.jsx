@@ -1,4 +1,5 @@
 import { useEstado } from '../state/EstadoContext.jsx'
+import { interpretarEvento } from '../data/eventos.js'
 import {
   IconThermometer,
   IconGauge,
@@ -36,16 +37,6 @@ const UNIDADE_EXIBICAO = {
 
 const STATUS_TEXTO = { ESTAVEL: 'ESTÁVEL', ATENCAO: 'ATENÇÃO', CRITICO: 'CRÍTICO' }
 const STATUS_CLASSE = { ESTAVEL: '', ATENCAO: 'warn', CRITICO: 'crit' }
-
-const EVENTO_COR = {
-  ALARME_EMITIDO: 'var(--crit)',
-  ALARME_RECONHECIDO: 'var(--warn)',
-  ALARME_RESOLVIDO: 'var(--ok)',
-  FALHA_SENSOR_DETECTADA: 'var(--purple)',
-  ACESSO_REGISTRADO: 'var(--ok)',
-  OBSERVACAO_REGISTRADA: 'var(--sky)',
-  MEDICAO_REGISTRADA: 'var(--cyan)',
-}
 
 function percentualNaFaixa(sensor) {
   const faixa = sensor.limiteMaximo - sensor.limiteMinimo
@@ -184,14 +175,17 @@ export default function OverviewPage() {
                 <p className="scada-lead">Sem eventos ainda.</p>
               ) : (
                 <ul className="timeline2">
-                  {eventos.slice(0, 8).map((evento, indice) => (
-                    <li key={`${evento.ocorridoEm}-${indice}`}>
-                      <span className="dot" style={{ background: EVENTO_COR[evento.tipo] ?? 'var(--dim)' }} />
-                      <div className="time">{formatarHora(evento.ocorridoEm)}</div>
-                      <div className="label">{evento.tipo}</div>
-                      <div className="detail">{evento.resumo}</div>
-                    </li>
-                  ))}
+                  {eventos.slice(0, 8).map((evento, indice) => {
+                    const info = interpretarEvento(evento.tipo, evento.resumo)
+                    return (
+                      <li key={`${evento.ocorridoEm}-${indice}`}>
+                        <span className="dot" style={{ background: info.cor }} />
+                        <div className="time">{formatarHora(evento.ocorridoEm)}</div>
+                        <div className="label">{info.titulo}</div>
+                        <div className="detail">{info.descricao}</div>
+                      </li>
+                    )
+                  })}
                 </ul>
               )}
             </div>

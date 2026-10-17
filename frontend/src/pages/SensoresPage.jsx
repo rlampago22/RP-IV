@@ -17,6 +17,20 @@ const ICONE_TIPO = {
   FLUXO_RESFRIAMENTO: IconDroplet,
 }
 
+const NOME_TIPO = {
+  TEMPERATURA: 'Temperatura',
+  PRESSAO: 'Pressão',
+  RADIACAO: 'Radiação',
+  FLUXO: 'Fluxo de resfriamento',
+  FLUXO_RESFRIAMENTO: 'Fluxo de resfriamento',
+}
+
+const STATUS_FRASE = {
+  crit: 'fora da faixa segura',
+  warn: 'em faixa de atenção',
+  ok: 'dentro da faixa segura',
+}
+
 const UNIDADE_EXIBICAO = {
   Celsius: '°C',
   bar: 'bar',
@@ -127,25 +141,37 @@ export default function SensoresPage() {
           const cor = corTipo(s.tipo === 'FLUXO_RESFRIAMENTO' ? 'FLUXO' : s.tipo)
           const pct = pctBarra(s)
           const Icone = ICONE_TIPO[s.tipo] ?? IconActivity
+          const nome = NOME_TIPO[s.tipo] ?? s.tipo
           return (
-            <div className="sensor-tile2" key={s.id} style={{ flexWrap: 'wrap' }}>
+            <div className="sensor-row" key={s.id}>
               <div className="ring ring-sm" style={{ background: `conic-gradient(${cor} ${pct}%, var(--border) 0)` }}>
                 <Icone size={18} className="ring-icon" style={{ color: 'var(--text)' }} />
               </div>
-              <div className="meta">
-                <div className="name">
-                  {s.id} · {s.tipo}
+
+              <div>
+                <div className="sensor-row-top">
+                  <span className="sensor-row-name">
+                    {nome}
+                    <span className="code">{s.id}</span>
+                  </span>
+                  <span className={`scada-pill ${st.cls}`}>{st.label}</span>
                 </div>
-                <div className="value mono" style={{ color: cor }}>
-                  {s.valor.toFixed(2)}
-                  <small>{s.unidade}</small>
+                <div className="sensor-row-value">
+                  <strong style={{ color: cor }}>{s.valor.toFixed(2)}</strong>
+                  <span className="unit">{s.unidade}</span>
                 </div>
-                <div className="scada-bar" style={{ marginTop: 8, maxWidth: 260 }}>
+                <div className="scada-bar" style={{ marginTop: 10 }}>
                   <i style={{ width: `${pct}%`, background: cor }} />
                 </div>
+                <div className="sensor-row-caption">
+                  Leitura {STATUS_FRASE[st.cls] ?? ''} · faixa segura {s.min}–{s.max} {s.unidade}
+                </div>
               </div>
-              <Sparkline values={s.historico} color={cor} />
-              <span className={`scada-pill ${st.cls}`}>{st.label}</span>
+
+              <div className="sensor-row-trend">
+                <Sparkline values={s.historico} color={cor} />
+                <span>últimas leituras</span>
+              </div>
             </div>
           )
         })}
