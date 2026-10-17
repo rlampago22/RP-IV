@@ -3,28 +3,30 @@
 ## Sistema de Controle de Usina Nuclear
 
 - **Disciplina:** AL0343 — Resolução de Problemas IV
-- **Versão:** 1.0
-- **Data:** 2026-09-14
-- **Status:** linha de base do MVP para validação do grupo
+- **Versão:** 2.0
+- **Data:** 2026-10-05
+- **Status:** linha de base do MVP Must expandido (núcleo + acesso + demo integrada)
 - **Equipe:** Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro e Marcus Querol
 
 ## Finalidade
 
-Este documento reúne em Markdown os requisitos funcionais, os requisitos não funcionais, a priorização MoSCoW e o recorte do MVP. A numeração e as prioridades seguem a linha de base já registrada em `docs/marco1/01-requisitos-rf-rnf.md`, `docs/marco1/02-priorizacao-moscow.md` e `docs/marco1/03-proposta-mvp.md`.
+Este documento reúne em Markdown os requisitos funcionais, os requisitos não funcionais, a priorização MoSCoW e o recorte do MVP. A numeração e as prioridades seguem a linha de base em `docs/marco1/01-requisitos-rf-rnf.md`, `docs/marco1/02-priorizacao-moscow.md` e `docs/marco1/03-proposta-mvp.md`.
 
-O núcleo Must é formado por RF01–RF06 e pelos critérios de qualidade RNF01–RNF05, RNF09 e RNF10. Os critérios verificáveis para a demonstração estão em [`checklist-aceite-must.md`](checklist-aceite-must.md).
+O Must é formado por RF01–RF08 e pelos critérios RNF01–RNF05, RNF08–RNF10, mais a entrega integrada (API HTTP, UI T01–T05, ciclo ACK→resolver). Os critérios verificáveis estão em [`checklist-aceite-must.md`](checklist-aceite-must.md).
 
 ## Escopo do sistema
 
-O sistema recebe medições de sensores existentes, mantém histórico operacional, avalia limites seguros, emite e registra alarmes e conserva uma trilha de auditoria. A instalação ou manutenção de sensores e demais equipamentos físicos não pertence ao software.
+O sistema recebe medições de sensores existentes, mantém histórico operacional, avalia limites seguros, emite e registra alarmes, autentica operadores na Central, registra acessos e conserva uma trilha de auditoria. A instalação ou manutenção de sensores e demais equipamentos físicos não pertence ao software.
 
 ### Dentro do MVP Must
 
 - coleta e histórico de medições do reator;
 - avaliação de limiares configurados;
-- emissão e registro de alarmes;
+- emissão, registro e ciclo de vida de alarmes (reconhecer/resolver);
+- autenticação na Central (RF07) e registro de acesso (RF08);
 - auditoria dos eventos do núcleo;
-- persistência mínima e recuperável;
+- API de estado/cenários e UI React Opção A (T01–T05);
+- persistência mínima e recuperável (auditoria + schema de auth);
 - módulos testáveis por meio de eventos e dados simulados.
 
 ### Fora do escopo do software
@@ -46,15 +48,10 @@ O sistema recebe medições de sensores existentes, mantém histórico operacion
 | RF04 | Emitir alarme | Emitir um alarme quando um limite seguro for violado e notificar Operador e Supervisão Central. |
 | RF05 | Registrar evento de alarme | Persistir tipo, severidade, instante e medição ou sensor de origem do alarme. |
 | RF06 | Auditar eventos | Registrar medições críticas, alarmes e publicações relevantes do barramento de eventos. |
+| RF07 | Autenticar acesso restrito | Validar identidade na Central (login web) e/ou credencial simulada para área classificada. |
+| RF08 | Registrar acesso | Persistir o resultado de cada tentativa de acesso em `RegistroAcesso`. |
 
 ### Should
-
-| ID | Requisito | Descrição |
-|---|---|---|
-| RF07 | Autenticar acesso restrito | Validar crachá ou biometria simulada para uma área classificada. |
-| RF08 | Registrar acesso | Persistir o resultado de cada tentativa de acesso. |
-
-### Could
 
 | ID | Requisito | Descrição |
 |---|---|---|
@@ -80,37 +77,40 @@ O sistema recebe medições de sensores existentes, mantém histórico operacion
 | RNF03 | Integridade | Medições e alarmes devem manter valor, instante e origem rastreáveis. | Consulta ou log relacionando o alarme à medição e ao sensor que o originaram. |
 | RNF04 | Tolerância a falhas | A falha de um módulo deve permanecer isolada do ControleReator. | Injeção de falha em consumidor seguida por nova medição processada pelo núcleo. |
 | RNF05 | Auditabilidade | Eventos relevantes devem ser registrados em ordem de acréscimo, sem alteração dos registros anteriores. | Log antes e depois de novo evento, preservando todas as entradas anteriores. |
-| RNF06 | Manutenibilidade | Estratégias e módulos devem poder mudar com baixo impacto nos demais componentes. | Revisão arquitetural e de código em marcos posteriores. |
+| RNF06 | Manutenibilidade | Estratégias e módulos devem poder mudar com baixo impacto nos demais componentes. | Revisão arquitetural em marcos posteriores (não bloqueia Must). |
 | RNF07 | Escalabilidade | Consumidores devem poder evoluir independentemente. | Avaliação posterior ao núcleo in-process. |
-| RNF08 | Segurança | O módulo de acesso deve permitir políticas específicas por área. | Critério da entrega Should, fora do checklist Must. |
-| RNF09 | Persistência segura do núcleo | Medições e alarmes devem possuir mecanismo documentado de gravação e recuperação. | Reinício ou restauração seguida de consulta aos registros esperados. |
+| RNF08 | Segurança | O módulo de acesso deve permitir políticas por área/papel; sessão autenticada na Central. | Login com papéis + `RegistroAcesso` no checklist Must. |
+| RNF09 | Persistência segura do núcleo | Medições e alarmes devem possuir mecanismo documentado de gravação e recuperação. | Auditoria recuperável; schema de auth persistido. |
 | RNF10 | Testabilidade | O núcleo deve aceitar sensores, medições e eventos simulados de maneira repetível. | Roteiro de demo executável com entradas e resultados esperados explícitos. |
 
 ## Priorização MoSCoW
 
 | Prioridade | Regra no projeto | Tratamento |
 |---|---|---|
-| Must Have | Necessário para demonstrar o fluxo principal e a arquitetura EDA. | Integra o MVP e precisa de aceite pass/fail. |
-| Should Have | Tem valor, mas o núcleo funciona sem ele nesta etapa. | Implementar somente depois de estabilizar o Must. |
-| Could Have | Melhoria opcional, condicionada à capacidade do grupo. | Considerar no Marco 3. |
-| Won't Have | Excluído do MVP da disciplina. | Manter documentado para impedir expansão do escopo. |
+| Must Have | Necessário para o fluxo operacional expandido (EDA + acesso + demo). | Integra o MVP e precisa de aceite pass/fail. |
+| Should Have | Contingência (emergência); o Must já demonstra valor sem ela. | Próximo marco após estabilizar Must expandido. |
+| Could Have | Melhoria opcional, condicionada à capacidade do grupo. | Considerar no Marco 3+. |
+| Won't Have | Excluído do MVP da disciplina. | Manter documentado; mudança de Must exige atualizar `02-priorizacao-moscow.md` primeiro. |
 
 ## Definição do MVP
 
-O MVP é uma aplicação Java modular que demonstra o seguinte fluxo:
+O MVP é uma aplicação modular que demonstra o seguinte fluxo:
 
-1. um simulador representa sensores e envia medições;
-2. `ControleReator` registra cada medição e mantém o histórico;
-3. o núcleo avalia os limiares configurados;
-4. uma violação produz um alarme para Operador e Supervisão Central;
-5. o alarme e os eventos relevantes são persistidos e auditados;
-6. os módulos se comunicam pelo barramento de eventos, sem chamada direta entre produtor e consumidores.
+1. o operador autentica-se na Central (RF07);
+2. um simulador ou cenário via API envia medições;
+3. `ControleReator` registra cada medição e mantém o histórico;
+4. o núcleo avalia os limiares configurados;
+5. uma violação produz um alarme; o operador reconhece/resolve com identidade;
+6. tentativas de acesso a área restrita geram `RegistroAcesso` (RF08);
+7. alarmes e eventos relevantes são auditados;
+8. a UI React consome o snapshot via API de estado;
+9. os módulos de domínio se comunicam pelo barramento de eventos.
 
-O barramento é in-process no MVP acadêmico. Microserviços reais, cluster e infraestrutura física permanecem fora desta versão.
+O barramento é in-process no `mvp/`. Auth web roda no `backend/` (Spring). Microserviços reais, cluster e infraestrutura física permanecem fora desta versão.
 
 ## Aceite do MVP
 
-O MVP Must será aceito quando todos os cenários RF01–RF06 e RNF01–RNF05, RNF09–RNF10 estiverem marcados como `PASS`, com evidência reproduzível. Um resultado `FAIL` deve registrar o comportamento observado e gerar uma correção antes de nova execução.
+O MVP Must será aceito quando todos os cenários RF01–RF08 e RNF01–RNF05, RNF08–RNF10 estiverem marcados como `PASS`, com evidência reproduzível. Um resultado `FAIL` deve registrar o comportamento observado e gerar uma correção antes de nova execução.
 
 Documento de execução: [`checklist-aceite-must.md`](checklist-aceite-must.md).
 
@@ -122,3 +122,4 @@ Documento de execução: [`checklist-aceite-must.md`](checklist-aceite-must.md).
 | MoSCoW | [`../marco1/02-priorizacao-moscow.md`](../marco1/02-priorizacao-moscow.md) |
 | Proposta de MVP | [`../marco1/03-proposta-mvp.md`](../marco1/03-proposta-mvp.md) |
 | Checklist de execução | [`checklist-aceite-must.md`](checklist-aceite-must.md) |
+| Autenticação | [`../backend-autenticacao.md`](../backend-autenticacao.md) |

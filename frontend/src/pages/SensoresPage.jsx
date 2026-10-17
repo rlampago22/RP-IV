@@ -1,5 +1,35 @@
 import { SENSORES_RF1, statusSensor, pctBarra, corTipo } from '../data/sensores.js'
 import { useEstado } from '../state/EstadoContext.jsx'
+import {
+  IconThermometer,
+  IconGauge,
+  IconRadiation,
+  IconDroplet,
+  IconActivity,
+  IconClock,
+} from '../components/icons.jsx'
+
+const ICONE_TIPO = {
+  TEMPERATURA: IconThermometer,
+  PRESSAO: IconGauge,
+  RADIACAO: IconRadiation,
+  FLUXO: IconDroplet,
+  FLUXO_RESFRIAMENTO: IconDroplet,
+}
+
+const NOME_TIPO = {
+  TEMPERATURA: 'Temperatura',
+  PRESSAO: 'Pressão',
+  RADIACAO: 'Radiação',
+  FLUXO: 'Fluxo de resfriamento',
+  FLUXO_RESFRIAMENTO: 'Fluxo de resfriamento',
+}
+
+const STATUS_FRASE = {
+  crit: 'fora da faixa segura',
+  warn: 'em faixa de atenção',
+  ok: 'dentro da faixa segura',
+}
 
 const UNIDADE_EXIBICAO = {
   Celsius: '°C',
@@ -105,30 +135,42 @@ export default function SensoresPage() {
         </button>
       </div>
 
-      <div className="scada-sensors" style={{ marginTop: 16 }}>
+      <div style={{ display: 'grid', gap: 10, marginTop: 16 }}>
         {sensores.map((s) => {
           const st = statusSensor(s)
           const cor = corTipo(s.tipo === 'FLUXO_RESFRIAMENTO' ? 'FLUXO' : s.tipo)
           const pct = pctBarra(s)
+          const Icone = ICONE_TIPO[s.tipo] ?? IconActivity
+          const nome = NOME_TIPO[s.tipo] ?? s.tipo
           return (
-            <div
-              className="scada-sensor"
-              key={s.id}
-              style={{ gridTemplateColumns: '1fr auto auto' }}
-            >
+            <div className="sensor-row" key={s.id}>
+              <div className="ring ring-sm" style={{ background: `conic-gradient(${cor} ${pct}%, var(--border) 0)` }}>
+                <Icone size={18} className="ring-icon" style={{ color: 'var(--text)' }} />
+              </div>
+
               <div>
-                <div className="name">
-                  {s.id} · {s.tipo}
+                <div className="sensor-row-top">
+                  <span className="sensor-row-name">
+                    {nome}
+                    <span className="code">{s.id}</span>
+                  </span>
+                  <span className={`scada-pill ${st.cls}`}>{st.label}</span>
                 </div>
-                <div className="val" style={{ color: cor, marginTop: 4 }}>
-                  {s.valor.toFixed(2)}{' '}
-                  <small style={{ color: 'var(--dim)', fontWeight: 600 }}>{s.unidade}</small>
+                <div className="sensor-row-value">
+                  <strong style={{ color: cor }}>{s.valor.toFixed(2)}</strong>
+                  <span className="unit">{s.unidade}</span>
+                </div>
+                <div className="scada-bar" style={{ marginTop: 10 }}>
+                  <i style={{ width: `${pct}%`, background: cor }} />
+                </div>
+                <div className="sensor-row-caption">
+                  Leitura {STATUS_FRASE[st.cls] ?? ''} · faixa segura {s.min}–{s.max} {s.unidade}
                 </div>
               </div>
-              <Sparkline values={s.historico} color={cor} />
-              <span className={`scada-pill ${st.cls}`}>{st.label}</span>
-              <div className="scada-bar">
-                <i style={{ width: `${pct}%`, background: cor }} />
+
+              <div className="sensor-row-trend">
+                <Sparkline values={s.historico} color={cor} />
+                <span>últimas leituras</span>
               </div>
             </div>
           )
@@ -136,7 +178,10 @@ export default function SensoresPage() {
       </div>
 
       <div className="scada-card" style={{ marginTop: 16 }}>
-        <h2>Histórico recente (últimas 6 · MedicaoRegistrada)</h2>
+        <h2 className="panel-heading">
+          <IconClock size={13} />
+          Histórico recente (últimas 6 · MedicaoRegistrada)
+        </h2>
         <div className="scada-table-wrap" style={{ maxHeight: 'none' }}>
           <table className="scada-table">
             <thead>

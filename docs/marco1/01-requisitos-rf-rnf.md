@@ -2,7 +2,8 @@
 
 **Disciplina:** AL0343 — Resolução de Problemas IV  
 **Sistema:** Controle de Usina Nuclear  
-**Equipe:** Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol
+**Equipe:** Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol  
+**Versão:** 2.0 — Must expandido (acesso no MVP)
 
 ---
 
@@ -10,7 +11,7 @@
 
 Escopo refinado a partir do legado APS, com foco no que o sistema de controle digital realmente faz (sensores físicos e intervenções médicas/estruturais permanecem fora).
 
-### Núcleo operacional (MVP Must)
+### Núcleo operacional + acesso (MVP Must)
 
 | ID | Requisito | Descrição |
 |----|-----------|-----------|
@@ -20,15 +21,10 @@ Escopo refinado a partir do legado APS, com foco no que o sistema de controle di
 | RF04 | Emitir alarme | Quando um limiar for violado, emitir alarme e notificar Operador e Supervisão Central. |
 | RF05 | Registrar evento de alarme | Persistir ocorrência do alarme (tipo, severidade, timestamp, sensor/medição de origem). |
 | RF06 | Auditar eventos | Registrar trilha de eventos relevantes (medições críticas, alarmes, publicações no barramento). |
-
-### Acesso (MVP Should)
-
-| ID | Requisito | Descrição |
-|----|-----------|-----------|
-| RF07 | Autenticar acesso a área restrita | Validar credencial (crachá/biometria simulada) para áreas classificadas. |
+| RF07 | Autenticar acesso restrito | Validar identidade na Central (login web) e/ou credencial simulada (crachá/biometria) para áreas classificadas (UC04). |
 | RF08 | Registrar acesso | Persistir tentativa/resultado de acesso em `RegistroAcesso` (sucesso ou falha). |
 
-### Contingência (MVP Could)
+### Contingência (MVP Should)
 
 | ID | Requisito | Descrição |
 |----|-----------|-----------|
@@ -64,17 +60,18 @@ Alinhados à justificativa da arquitetura EDA mantida.
 | RNF03 | Integridade | Medições e alarmes devem ser precisos e rastreáveis à origem. | Evento como fato; validação no produtor |
 | RNF04 | Tolerância a falhas | Isolar falha de módulo (ex.: auditoria) sem parar ControleReator. | Módulos independentes |
 | RNF05 | Auditabilidade | Histórico append-only de eventos relevantes com adulteração detectável. | Pacote AuditoriaLogs + eventos |
-| RNF06 | Manutenibilidade | Alterar limiares/estratégia de alarme sem reescrever todo o sistema. | Módulos + Strategy (Marco 2) |
+| RNF06 | Manutenibilidade | Alterar limiares/estratégia de alarme sem reescrever todo o sistema. | Módulos + Strategy |
 | RNF07 | Escalabilidade | Possibilidade futura de escalar consumidores independentemente. | Persistência dedicada + bus |
-| RNF08 | Segurança | Políticas de acesso granuláveis por módulo. | Pacote SegurancaAcesso |
-| RNF09 | Persistência segura do núcleo | Medições e alarmes com backup/recuperação simples no MVP. | DB dedicado do módulo reator |
+| RNF08 | Segurança | Políticas de acesso granuláveis por módulo/área; sessão autenticada na Central. | Pacote SegurancaAcesso + auth web |
+| RNF09 | Persistência segura do núcleo | Medições e alarmes com backup/recuperação simples no MVP. | Auditoria + schema de auth |
 | RNF10 | Testabilidade | Módulos testáveis com eventos simulados. | Event bus mockável |
 
-### Situação no MVP atual
+### Situação no MVP expandido
 
-- **Atendidos localmente:** RNF03, RNF05, RNF06 e RNF10.
-- **Parciais:** RNF02 e RNF04 possuem isolamento de exceções por subscriber; RNF09 persiste somente a auditoria.
-- **Planejados:** publicação assíncrona, retenção/fila, redundância e banco para medições/alarmes. Portanto, RNF01, RNF07 e o restante de RNF09 não devem ser apresentados como concluídos.
+- **Must de qualidade:** RNF01–RNF05, RNF08–RNF10 entram no aceite.
+- **Atendidos / demonstráveis:** RNF03, RNF05, RNF08 (login + papéis), RNF10; isolamento básico RNF02/RNF04 por subscriber.
+- **Parciais:** RNF09 (auditoria em arquivo; medições/alarmes ainda em memória no `mvp/`); RNF01 (bus in-process).
+- **Planejados (não Must):** RNF06/RNF07 plenos, banco para medições/alarmes, fila durável.
 
 ---
 
@@ -82,8 +79,8 @@ Alinhados à justificativa da arquitetura EDA mantida.
 
 | Ator | Tipo | Papel |
 |------|------|-------|
-| Operador de Reator | Primário | Monitora medições, recebe alarmes, pode acionar contingência |
-| Supervisão Central | Secundário | Recebe alertas e visão agregada |
+| Operador de Reator | Primário | Autentica-se, monitora medições, recebe e trata alarmes |
+| Supervisão Central | Secundário / Primário (visão) | Recebe alertas e visão agregada; autentica-se na Central |
 | Sensor (sistema externo) | Secundário | Publica leituras (simulado no MVP) |
-| Guarda / Controle de Acesso | Primário (Should) | Solicita entrada em área restrita |
-| Administrador do Sistema | Primário (config) | Configura limiares e parâmetros |
+| Guarda / Controle de Acesso | Primário (Must — UC04) | Solicita entrada em área restrita |
+| Administrador do Sistema | Primário (config) | Configura limiares e parâmetros; papel de admin no login |

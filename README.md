@@ -17,10 +17,11 @@ Sistema de **supervisão nuclear acadêmica** com:
 
 - telemetria contínua dos **4 parâmetros RF-1** (temperatura, pressão, radiação, fluxo);
 - detecção de limiar e ciclo de **alarmes** (emitir → reconhecer → resolver);
+- **autenticação** na Central (RF07) e **registro de acesso** (RF08);
 - **auditoria append-only** com cadeia SHA-256;
 - UI web **Opção A (SCADA escuro)** — DNA do MVP Swing do Marcus, redesenhado em React.
 
-Arquitetura **única:** Orientada a Eventos (**EDA**) — EventBus Java in-process.
+Arquitetura de domínio: Orientada a Eventos (**EDA**) — EventBus Java in-process (`mvp/`). Auth web: Spring em `backend/`.
 
 ---
 
@@ -30,7 +31,7 @@ Arquitetura **única:** Orientada a Eventos (**EDA**) — EventBus Java in-proce
 RP-IV/
 ├── frontend/                 # React + Vite — UI oficial (Opção A)
 ├── mvp/                      # Java EDA executável (demo + Swing legado de fluxo)
-├── backend/                  # Destino da API Java (migração gradual; ver README)
+├── backend/                  # Auth Spring (RF07) + destino de migração gradual
 ├── src/                      # Esqueleto Java legado (não usar para demo — ver src/README)
 ├── docs/                     # Engenharia, plano, UI, semanas
 │   ├── DOCUMENTACAO_DE_ENGENHARIA.md
@@ -45,34 +46,44 @@ RP-IV/
 └── README.md
 ```
 
-**Regra de ouro:** demo Must = `mvp/` (domínio) + `frontend/` (visual). Não inventar segunda arquitetura além de EDA.
+**Regra de ouro:** demo Must expandido = `mvp/` (domínio + `/api/estado`) + `backend/` (auth) + `frontend/` (login + SCADA). Domínio permanece EDA; auth não substitui o EventBus.
 
 ---
 
 ## Como rodar
 
-### Domínio Java (MVP)
+### Como rodar (Must expandido)
 
 ```bat
+REM 1) Auth (porta 8081, H2)
+cd backend
+set APP_BOOTSTRAP_PASSWORD=troque-esta-senha
+mvn spring-boot:run
+
+REM 2) API estado EDA (porta 8080)
 cd mvp
-REM Interface gráfica (fluxo/roteiro)
-0-ABRIR-SISTEMA-GRAFICO.vbs
+4-EXECUTAR-API-ESTADO.bat
 
-REM Testes Must (11/11)
-2-TESTAR-MVP.bat
-```
-
-Detalhes: [`mvp/README.md`](mvp/README.md) · Roteiro: [`mvp/ROTEIRO-APRESENTACAO.md`](mvp/ROTEIRO-APRESENTACAO.md)
-
-### Frontend React (UI oficial)
-
-```bash
+REM 3) UI
 cd frontend
 npm install
 npm run dev
 ```
 
-Protótipo visual Opção A (HTML local): [`docs/ui/propostas/opcao-a.html`](docs/ui/propostas/opcao-a.html)
+Login demo: `operador@usina.local` / `troque-esta-senha`
+
+### Domínio Java (MVP) — testes
+
+```bat
+cd mvp
+REM Interface gráfica Swing (legado de fluxo)
+0-ABRIR-SISTEMA-GRAFICO.vbs
+
+REM Testes Must (núcleo + alarmes HTTP + RF08)
+2-TESTAR-MVP.bat
+```
+
+Detalhes: [`mvp/README.md`](mvp/README.md) · Roteiro: [`mvp/ROTEIRO-APRESENTACAO.md`](mvp/ROTEIRO-APRESENTACAO.md) · Auth: [`backend/README.md`](backend/README.md)
 
 ---
 
@@ -98,18 +109,20 @@ Protótipo visual Opção A (HTML local): [`docs/ui/propostas/opcao-a.html`](doc
 | Camada | Tecnologia | Pasta |
 |--------|------------|-------|
 | Domínio / EventBus | Java (sem libs externas no MVP) | `mvp/` |
+| Auth (RF07) | Spring Boot + sessão | `backend/` |
 | UI oficial | React + Vite | `frontend/` |
 | Idealização | HTML protótipo + Figma | `docs/ui/` |
-| API HTTP (evolução) | Java → `backend/` | em migração |
+| API estado | JDK `apiestado` | `mvp/` |
 
 ---
 
-## MVP (Must) — fluxo da demo
+## MVP (Must expandido) — fluxo da demo
 
 ```text
-T05 Cenário Crítico → EventBus → T01 Overview (núcleo CRÍTICO + banner)
-                              → T03 Alarmes (ACK → Resolver)
-                              → T04 Auditoria (trilha SHA-256)
+Login (RF07) → T05 Cenário Crítico → EventBus → T01 Overview (núcleo CRÍTICO + banner)
+                                            → T03 Alarmes (ACK → Resolver com identidade)
+                                            → T04 Auditoria (trilha SHA-256)
+             → UC04 RegistroAcesso (RF08) quando demonstrar área restrita
 ```
 
 Priorização MoSCoW: [`docs/marco1/02-priorizacao-moscow.md`](docs/marco1/02-priorizacao-moscow.md)

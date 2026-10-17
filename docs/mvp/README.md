@@ -1,17 +1,17 @@
 # MVP
 
-Proposta de MVP do software (Semana 1 — pedido do professor).
+Proposta de MVP do software (Must expandido — núcleo + acesso).
 
-Fonte consolidada (rascunho): [`../marco1/03-proposta-mvp.md`](../marco1/03-proposta-mvp.md).
+Fonte consolidada: [`../marco1/03-proposta-mvp.md`](../marco1/03-proposta-mvp.md).  
+MoSCoW: [`../marco1/02-priorizacao-moscow.md`](../marco1/02-priorizacao-moscow.md).
 
 Documentos da trilha de aceite:
 
 - [`especificacao-rf-rnf-moscow-mvp.md`](especificacao-rf-rnf-moscow-mvp.md) — versão Markdown consolidada;
-- [`checklist-aceite-must.md`](checklist-aceite-must.md) — critérios pass/fail para RF01–RF06 e RNF do núcleo.
+- [`checklist-aceite-must.md`](checklist-aceite-must.md) — critérios pass/fail RF01–RF08 + RNFs.
 
-**Must (núcleo):** medições + histórico + alarmes por limiar + persistência mínima + auditoria  
-**Should:** controle de acesso (`RegistroAcesso`)  
-**Could:** protocolo de contingência  
+**Must:** medições + histórico + alarmes (ciclo ACK/resolver) + auditoria + API/UI + autenticação (RF07) + `RegistroAcesso` (RF08)  
+**Should:** emergência / protocolo de contingência (RF09–RF10)  
 **Won't:** evacuação completa, RH amplo, conformidade ampla, IA preditiva
 
 Ownership: **Álvaro Domingues** (aceite) + revisão do grupo.

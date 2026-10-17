@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import './styles/app.css'
@@ -7,14 +7,25 @@ import SensoresPage from './pages/SensoresPage.jsx'
 import AlarmesPage from './pages/AlarmesPage.jsx'
 import AuditoriaPage from './pages/AuditoriaPage.jsx'
 import DemoPage from './pages/DemoPage.jsx'
+import LoginPage from './pages/LoginPage.jsx'
 import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
+import { authApi } from './services/authApi.js'
+import {
+  AtomLogo,
+  IconGrid,
+  IconThermometer,
+  IconBell,
+  IconShield,
+  IconPlay,
+  IconPower,
+} from './components/icons.jsx'
 
 const TABS = [
-  { to: '/', end: true, text: 'Visão Geral' },
-  { to: '/sensores', text: 'Sensores' },
-  { to: '/alarmes', text: 'Alarmes' },
-  { to: '/auditoria', text: 'Auditoria' },
-  { to: '/demo', text: 'Demo / Cenários' },
+  { to: '/', end: true, text: 'Visão Geral', Icon: IconGrid },
+  { to: '/sensores', text: 'Sensores', Icon: IconThermometer },
+  { to: '/alarmes', text: 'Alarmes', Icon: IconBell },
+  { to: '/auditoria', text: 'Auditoria', Icon: IconShield },
+  { to: '/demo', text: 'Demo / Cenários', Icon: IconPlay },
 ]
 
 const BADGE_TEXTO = {
@@ -29,29 +40,125 @@ const BADGE_CLASSE = {
   CRITICO: ' crit',
 }
 
-function Shell() {
+const PERFIS_DA_CENTRAL = new Set([
+  'OPERADOR_REATOR',
+  'SUPERVISAO_CENTRAL',
+  'ADMINISTRADOR_SISTEMA',
+])
+
+function App() {
+  const [usuario, setUsuario] = useState(undefined)
+
+  useEffect(() => {
+    authApi.me().then(setUsuario).catch(() => setUsuario(null))
+  }, [])
+
+  if (usuario === undefined) {
+    return (
+      <main className="auth-screen">
+        <p className="auth-loading">Verificando sessão segura…</p>
+      </main>
+    )
+  }
+
+  if (usuario === null) {
+    return (
+      <LoginPage
+        onLogin={async (email, senha) => setUsuario(await authApi.login(email, senha))}
+      />
+    )
+  }
+
+  const podeAcessarCentral = usuario.papeis.some((papel) => PERFIS_DA_CENTRAL.has(papel))
+  if (!podeAcessarCentral) {
+    return (
+      <main className="auth-screen">
+        <section className="auth-card">
+          <p className="scada-kicker">Acesso autenticado</p>
+          <h1>Perfil sem acesso à Central</h1>
+          <p>
+            O perfil Guarda / Controle de Acesso é destinado ao UC04 e não possui acesso à
+            supervisão operacional. Use a API de acesso ou autentique-se como Operador.
+          </p>
+          <button
+            type="button"
+            className="scada-btn scada-btn-ghost"
+            onClick={async () => {
+              await authApi.logout()
+              setUsuario(null)
+            }}
+          >
+            Sair
+          </button>
+        </section>
+      </main>
+    )
+  }
+
+  return (
+    <EstadoProvider operadorNome={usuario.nome}>
+      <BrowserRouter>
+        <Shell
+          usuario={usuario}
+          onLogout={async () => {
+            await authApi.logout()
+            setUsuario(null)
+          }}
+        />
+      </BrowserRouter>
+    </EstadoProvider>
+  )
+}
+
+function Shell({ usuario, onLogout }) {
   const { estado, origemMock, erroApi, reconhecerAlarme } = useEstado()
   const alarmeAtivo = estado.alarmes.find((a) => a.status === 'ATIVO')
+
+  const alarmeAtivoAgora = estado.alarmes.some((a) => a.status === 'ATIVO')
+  const auditoriaOk = (estado.contadores?.auditoria ?? 0) >= 0 && !erroApi
 
   return (
     <div className="scada-shell">
       <header className="scada-top">
         <div className="scada-brand">
-          <div className="scada-dot">RN</div>
+          <div className="brand-mark">
+            <AtomLogo size={26} />
+          </div>
           <div>
             <h1>Central de Supervisão · Reator-01</h1>
-            <small>
-              Unidade Geradora 01 • Sistema SCADA Digital • Barramento {origemMock ? 'Simulado' : 'Online'}
+            <small style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span
+                className={`status-dot ${origemMock ? 'warn' : 'ok'}`}
+                style={{ width: 6, height: 6 }}
+              />
+              EventBus {origemMock ? 'MOCK (API offline)' : 'ONLINE'}
             </small>
           </div>
         </div>
         <div className="scada-top-right">
+          <div className="status-dots">
+            <span
+              className={`status-dot ${estado.status === 'CRITICO' ? 'crit' : estado.status === 'ATENCAO' ? 'warn' : 'ok'}`}
+              title="Núcleo"
+            />
+            <span className={`status-dot ${alarmeAtivoAgora ? 'crit' : 'ok'}`} title="Alarmes" />
+            <span className={`status-dot ${auditoriaOk ? 'ok' : 'warn'}`} title="Auditoria" />
+            <span className="status-dot ok" title="Acesso" />
+          </div>
+          <div className="scada-user">
+            <strong>{usuario.nome}</strong>
+            <span>{usuario.papeis.map((papel) => papel.replaceAll('_', ' ')).join(' · ')}</span>
+          </div>
           {origemMock && (
-            <span className="scada-pill warn">MODO SIMULAÇÃO LOCAL</span>
+            <span className="scada-pill warn">MOCK · rode mvp/4-EXECUTAR-API-ESTADO.bat</span>
           )}
           <span className={`scada-badge${BADGE_CLASSE[estado.status] ?? ''}`}>
             {BADGE_TEXTO[estado.status] ?? estado.status}
           </span>
+          <button type="button" className="scada-btn scada-btn-ghost scada-logout" onClick={onLogout}>
+            <IconPower size={13} />
+            Sair
+          </button>
         </div>
       </header>
 
@@ -61,8 +168,9 @@ function Shell() {
             key={tab.to}
             to={tab.to}
             end={tab.end}
-            className={({ isActive }) => `scada-tab${isActive ? ' active' : ''}`}
+            className={({ isActive }) => `tab2${isActive ? ' active' : ''}`}
           >
+            <tab.Icon size={15} />
             {tab.text}
           </NavLink>
         ))}
@@ -102,10 +210,6 @@ function Shell() {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <EstadoProvider>
-      <BrowserRouter>
-        <Shell />
-      </BrowserRouter>
-    </EstadoProvider>
-  </React.StrictMode>
+    <App />
+  </React.StrictMode>,
 )

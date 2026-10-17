@@ -29,6 +29,10 @@ if ($Testar) {
         throw 'A suite Must falhou.'
     }
     & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.TestesApiAlarmes
+    if ($LASTEXITCODE -ne 0) {
+        throw 'A suite de alarmes HTTP falhou.'
+    }
+    & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.TestesAcesso
 } else {
     Write-Host 'Executando demonstração...' -ForegroundColor Cyan
     & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.DemoMvp

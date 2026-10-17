@@ -45,14 +45,17 @@ A migração `mvp/` → `backend/` (Maven/Gradle) é indicada em [`backend-java.
 | `POST` | `/api/cenarios/falha` | Simula falha de telemetria no sensor de pressão (`FalhaSensorDetectada`) |
 | `POST` | `/api/cenarios/critico` | Anomalia crítica: temp 372 °C + fluxo 420 → `AlarmeEmitido` |
 | `POST` | `/api/demo/anomalia` | Alias do roteiro T03: mesmo efeito de `/api/cenarios/critico` |
-| `POST` | `/api/alarmes/{id}/reconhecer` | Publica `AlarmeReconhecido` para o alarme `{id}` (operador fixo "Operador de Reator (UI Web)") |
+| `POST` | `/api/alarmes/{id}/reconhecer` | Publica `AlarmeReconhecido` (corpo JSON opcional: `operador`, `justificativa`; default UI Web) |
+| `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` (corpo JSON opcional: `operador`/`responsavel`, `solucao`) |
+| `POST` | `/api/acesso/solicitar` | UC04/RF08 — corpo `{credencial, area}`; retorna `RegistroAcesso` e publica `ACESSO_REGISTRADO` |
+| `GET` | `/api/acesso/registros` | Lista registros de acesso da sessão |
 | `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` para o alarme `{id}` (responsável fixo "Engenheiro de Turno (UI Web)") |
 
 Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, para o front sempre re-sincronizar após uma ação. CORS liberado (`Access-Control-Allow-Origin: *`) para consumo local do Vite.
 
 `/api/demo/anomalia` é somente um gatilho do roteiro acadêmico. Não representa uma operação disponível ao operador em produção.
 
-> Simplificação assumida: as rotas de ação não recebem corpo (operador/justificativa fixos). Documentado aqui para não ser lido como "hardcode não documentado".
+> Must expandido: a UI autenticada envia `operador` no corpo JSON. Sem corpo, mantém-se o default "Operador de Reator (UI Web)" (compatível com `TestesApiAlarmes`).
 
 ## 4. Contrato JSON (`GET /api/estado`)
 

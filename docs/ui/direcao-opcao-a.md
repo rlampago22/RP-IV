@@ -61,3 +61,18 @@ T05 cenário Crítico → T01 núcleo CRÍTICO + banner → T03 ACK → Resolver
 | T04 Auditoria | Marcus | #47 | #52 (polish) |
 | T05 Demo | Marcus | — | #52 |
 | UX / aceite visual | Álvaro | #43 | #48 |
+
+---
+
+## Atualização v2 (17/10/2026 — Bernardo)
+
+Remodelagem visual completa das 6 telas (Login + T01–T05), mantendo a Opção A (identidade SCADA escura, tokens, EDA/EventBus, PR [#72](https://github.com/rlampago22/RP-IV/pull/72)) — não é uma nova direção, é a mesma direção com execução mais elevada:
+
+- **Logo do projeto:** marca própria em átomo (núcleo + 3 órbitas), substituindo o antigo monograma "RN". Componente `AtomLogo` em [`frontend/src/components/icons.jsx`](../../frontend/src/components/icons.jsx).
+- **Removido do cabeçalho:** o texto "Opção A — SCADA escuro" (jargão interno da equipe, não faz sentido como copy do produto para quem assiste à demo).
+- **Núcleo do reator (T01):** virou um gauge radial (anel de progresso + leitura central) em vez do círculo pulsante simples.
+- **Sensores (T01/T02):** ícone próprio por grandeza (termômetro, manômetro, radiação, gota) com mini-anel de status coloridos por OK/Atenção/Crítico.
+- **Linha do tempo (T01/T04):** feed vertical com ponto colorido por tipo de evento, no lugar da tabela simples em T01 (Auditoria mantém a tabela formal + um cabeçalho com ícone).
+- **Ícones:** conjunto próprio em SVG inline (`frontend/src/components/icons.jsx`), sem dependência de CDN/Google Fonts — importante para a demo não depender de internet na sala de apresentação.
+- **Design system:** tokens CSS existentes (`--bg`, `--card`, `--crit`, etc.) mantidos sem renomear; novas classes utilitárias (`.panel-heading`, `.ring`/`.ring-sm`/`.ring-lg`, `.stat-tile`, `.sensor-tile2`, `.timeline2`, `.action-btn2`, `.tab2`) em [`frontend/src/styles/app.css`](../../frontend/src/styles/app.css).
+- **Zero mudança de lógica:** `EstadoContext`, `authApi`, `estado.js` e toda a integração RF07/RF08 validada no PR #72 continuam iguais — só a camada de apresentação mudou. Re-testado end-to-end (login, cenário crítico, ACK de alarme, acesso UC04, auditoria) sem regressão, e `mvp\2-TESTAR-MVP.bat` + `TestesAcesso` seguem 100% PASS.

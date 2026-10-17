@@ -1,9 +1,10 @@
 # Checklist de aceite do MVP Must
 
 - **Sistema:** Controle de Usina Nuclear
-- **Escopo:** RF01–RF06 e RNF01–RNF05, RNF09–RNF10
+- **Escopo:** RF01–RF08 e RNF01–RNF05, RNF08–RNF10 (Must expandido v2)
 - **Responsável pelo checklist:** Álvaro Domingues
 - **Data da linha de base:** 2026-09-14
+- **Revisão Must expandido:** 2026-10-05
 
 ## Como preencher
 
@@ -102,6 +103,28 @@ Todo `PASS` ou `FAIL` deve apontar uma evidência: saída de terminal, teste aut
 | Resultado | [x] PASS  [ ] FAIL  [ ] N/E |
 | Evidência ou observação | `RegistroAuditoria` persiste em `dados/auditoria.log` com hash encadeado SHA-256 e timestamps ISO. |
 
+### CT-RF07-01 Autenticar acesso (login Central)
+
+| Campo | Critério |
+|---|---|
+| Preparação | Subir `backend/` (auth Spring) e `frontend/`; usuários bootstrap disponíveis. |
+| Ação | Autenticar com credencial válida de Operador (ou Supervisão) na `LoginPage`. |
+| Resultado esperado | Sessão criada; UI libera o painel SCADA; `GET /api/auth/me` retorna usuário e papel. |
+| Condição de PASS | Credencial inválida é rejeitada; credencial válida identifica nome e papel. |
+| Resultado | [x] PASS  [ ] FAIL  [ ] N/E |
+| Evidência ou observação | Smoke end-to-end 17/10/2026: `backend` (H2, :8081) + `mvp/4-EXECUTAR-API-ESTADO.bat` (:8080) + `frontend` (`npm run dev`, :5173) rodando juntos. `POST /api/auth/login` com `operador@usina.local`/`troque-esta-senha` → 200 + `{"nome":"Operador de Reator","papeis":["OPERADOR_REATOR"]}`; `GET /api/auth/me` confirma sessão; senha errada → 401 "Credenciais inválidas." (replicado na `LoginPage` via browser); `POST /api/auth/logout` → 204 e `/api/auth/me` pós-logout → 403. Painel SCADA liberado na UI após login, nome/papel exibidos no topo. |
+
+### CT-RF08-01 Registrar acesso a área restrita
+
+| Campo | Critério |
+|---|---|
+| Preparação | Módulo `AcessoFacade` / `RegistroAcesso` disponível; área e credencial de teste. |
+| Ação | Solicitar acesso autorizado e um acesso negado. |
+| Resultado esperado | Dois registros com resultado SUCESSO e FALHA, instante e área. |
+| Condição de PASS | Ambos persistidos/consultáveis; evento de domínio publicado quando aplicável. |
+| Resultado | [x] PASS  [ ] FAIL  [ ] N/E |
+| Evidência ou observação | `TestesAcesso` + `POST /api/acesso/solicitar` (OPER-01 SUCESSO / GUARDA-01 FALHA). |
+
 ## Requisitos não funcionais do núcleo
 
 | Cenário | RNF | Procedimento de verificação | Condição de PASS | Resultado | Evidência ou observação |
@@ -111,6 +134,7 @@ Todo `PASS` ou `FAIL` deve apontar uma evidência: saída de terminal, teste aut
 | CT-RNF03-01 | RNF03 Integridade | Gerar um alarme a partir de uma medição conhecida e consultar ambos. | Valor, instante, sensor e vínculo entre medição e alarme permanecem completos e coerentes. | [x] PASS [ ] FAIL [ ] N/E | `[OK] RNF-03: A alteracao fisica de 1 caractere no log DEVE ser detectada como FALHA` comprovada na suíte. |
 | CT-RNF04-01 | RNF04 Tolerância a falhas | Fazer um consumidor lançar erro durante o processamento e enviar outra medição. | O erro permanece isolado e `ControleReator` processa a medição seguinte. | [x] PASS [ ] FAIL [ ] N/E | `[OK] CT-RNF04-01: Erro em consumidor nao interrompeu o produtor` validado com subscriber injetado com falha. |
 | CT-RNF05-01 | RNF05 Auditabilidade | Registrar dois eventos, guardar a saída, registrar um terceiro e consultar novamente. | Os dois primeiros continuam iguais e o terceiro aparece ao final. | [x] PASS [ ] FAIL [ ] N/E | `[OK] CT-RNF05-01: Cadeia SHA-256 em memoria e no arquivo fisico integra` no log append-only. |
+| CT-RNF08-01 | RNF08 Segurança | Autenticar com dois papéis distintos e tentar ação restrita. | Papéis diferenciados; política de acesso por área/módulo observável. | [x] PASS [ ] FAIL [ ] N/E | Smoke 17/10/2026: operador autenticado reconheceu alarme crítico via T05→T03, e a trilha de auditoria (T04) registrou `ALARME_RECONHECIDO operador="Operador de Reator" justificativa="Reconhecido via Central autenticada"` — identidade da sessão RF07 propagada à ação restrita. Em paralelo, `AcessoFacade`/`RegistroAcesso` (RF08) registrou `ACESSO_REGISTRADO credencial="OPER-01" area="SALA-CONTROLE" resultado=SUCESSO` para acesso autorizado e `resultado=FALHA` para `GUARDA-01` em `CORE-REATOR` (nível insuficiente), confirmando política de acesso por papel/área observável e auditável. |
 | CT-RNF09-01 | RNF09 Persistência segura | Persistir medições e alarmes, reiniciar o processo ou restaurar a base e consultar o histórico. | Todos os registros esperados são recuperados sem duplicação ou perda. | [x] PASS [ ] FAIL [ ] N/E | `[OK] CT-RNF09-01: Reinicializacao deve recuperar todas as 11 entradas e arquivo integro`. |
 | CT-RNF10-01 | RNF10 Testabilidade | Repetir o mesmo cenário automatizado duas vezes com as mesmas entradas. | As decisões de limiar, a quantidade de alarmes e a sequência lógica dos eventos são iguais nas duas execuções. | [x] PASS [ ] FAIL [ ] N/E | Execução determinística reproduzível 100% via `mvp/2-TESTAR-MVP.bat`. |
 
@@ -118,9 +142,11 @@ Todo `PASS` ou `FAIL` deve apontar uma evidência: saída de terminal, teste aut
 
 | Grupo | PASS | FAIL | N/E | Decisão |
 |---|---:|---:|---:|---|
-| RF01–RF06 | 6 | 0 | 0 | [x] Aceito [ ] Rejeitado |
+| RF01–RF06 (núcleo S4) | 6 | 0 | 0 | [x] Aceito [ ] Rejeitado |
+| RF07–RF08 (acesso) | 2 | 0 | 0 | [x] Aceito [ ] Rejeitado |
 | RNF01–RNF05, RNF09–RNF10 | 7 | 0 | 0 | [x] Aceito [ ] Rejeitado |
-| MVP Must | 13 | 0 | 0 | [x] Aceito [ ] Rejeitado |
+| RNF08 | 1 | 0 | 0 | [x] Aceito [ ] Rejeitado |
+| MVP Must expandido | 16 | 0 | 0 | [x] Aceito [ ] Rejeitado |
 
 ## Registro de falhas
 
@@ -133,4 +159,20 @@ Todo `PASS` ou `FAIL` deve apontar uma evidência: saída de terminal, teste aut
 - RF01–RF06 e RNF01–RNF05, RNF09–RNF10 implementados, integrados e validados com 100% de PASS.
 - Issue #52 resolvida: cenários T05 conectados diretamente ao backend Java (`ApiEstadoHttpServer` -> `EventBus`).
 - Testes automatizados executáveis sem dependências externas via `mvp/2-TESTAR-MVP.bat` e `TestesApiEstado.java`.
+
+## Situação Must expandido (05/10/2026)
+
+- MoSCoW v2 promove RF07–RF08 e RNF08 a Must ([`../marco1/02-priorizacao-moscow.md`](../marco1/02-priorizacao-moscow.md)).
+- Auth web: re-port da branch `alvaro` para `backend/` + `LoginPage` **sem** regressão de `mvp/apiestado`.
+- RF08: `AcessoFacade` + `RegistroAcesso` + `ACESSO_REGISTRADO` + `TestesAcesso` PASS + botões UC04 na T05.
+- Ações de alarme HTTP aceitam JSON com `operador`/`justificativa`/`solucao` (identidade do login no React).
+- CT-RF07 e CT-RNF08: validar com `backend` + `frontend` (login → painel).
+
+## Situação Must expandido — fechamento (17/10/2026)
+
+- Smoke end-to-end executado com os 3 serviços simultâneos (`backend` H2 :8081, `mvp/4-EXECUTAR-API-ESTADO.bat` :8080, `frontend` Vite :5173), roteiro documentado em [`../../README.md`](../../README.md#como-rodar).
+- CT-RF07-01 e CT-RNF08-01 migrados de `N/E` para `PASS` com evidência de login, rejeição de credencial inválida, logout, e identidade da sessão propagada a uma ação restrita (reconhecimento de alarme) e à trilha de auditoria.
+- Suíte `mvp/2-TESTAR-MVP.bat` (`TestesMvp`, 11/11) e `TestesAcesso` (RF08) reexecutadas antes do smoke, sem regressão.
+- Bug de UI corrigido durante o smoke: `clsSeveridade` (`frontend/src/data/alarmes.js`) não reconhecia a severidade real emitida pelo backend (`"CRITICA"`), herdada de um mock antigo (`ALTO`/`MANUT`/`OBS`), fazendo o alarme crítico aparecer com a cor "OK" (verde) no painel de Alarmes. Corrigido para mapear `CRITICA`/`CRITICO`/`MANUTENCAO`/`OBSERVACAO` mantendo compatibilidade com os valores antigos.
+- **Decisão final: Aceito — MVP Must expandido (RF01–RF08 + RNF01–05/08–10) 16/16 PASS, 0 FAIL, 0 N/E.**
 

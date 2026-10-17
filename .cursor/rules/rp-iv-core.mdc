@@ -11,6 +11,7 @@ Antes de editar, considere:
 - Sistema: Controle de Usina Nuclear (EDA)
 - Equipe: Álvaro, Bruno, Bernardo, José Guilherme, Marcus
 - Fonte de contexto: `AGENTS.md`, `README.md`, `docs/plano-semanal-rp4.md`
+- MoSCoW vigente: `docs/marco1/02-priorizacao-moscow.md` (Must expandido: RF01–RF08)
 
 ## Entrega Semana 1 (professor)
 
@@ -18,8 +19,10 @@ RF/RNF, priorização MoSCoW, MVP, diagramas de pacotes e componentes (lógico/f
 
 ## Conduta
 
-- Não inventar escopo fora do MoSCoW
+- Seguir o MoSCoW vigente em `docs/marco1/02-priorizacao-moscow.md`
+- Expansão ou redução de Must só após atualizar esse documento (e espelhos em `docs/mvp/` / `01-requisitos`)
+- Não inventar escopo fora do MoSCoW **vigente** (Should/Could/Won't continuam documentados)
 - Preservar autoria dos membros
 - Explicar o porquê das mudanças
 - Conventional Commits
-- `docs/marco1/` é rascunho até 05/10/2026
+- `docs/marco1/` é rascunho até 05/10/2026; após essa data, tratar como linha de base versionada

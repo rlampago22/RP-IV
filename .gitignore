@@ -33,6 +33,12 @@ build/
 out/
 mvp/**/*.class
 
+# Backend (H2 local, nao versionar banco)
+backend/data/
+
+# Claude Code local (preview/launch config da maquina)
+.claude/
+
 # Logs / temp
 *.log
 *.lock
