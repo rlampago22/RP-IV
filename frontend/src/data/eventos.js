@@ -68,10 +68,13 @@ const PADROES = [
   {
     tipo: 'MEDICAO_REGISTRADA',
     regex: /sensor=(\d+) tipo=(\S+) valor=([\d.,-]+) (\S+) faixa=\[([\d.,-]+), ([\d.,-]+)\]/,
-    montar: ([, sensorId, tipo, valor, unidade]) => ({
-      titulo: 'Medição de rotina',
-      descricao: `${nomeSensor(tipo)} (sensor ${sensorId}): ${valor} ${unidade}, dentro da faixa segura.`,
-    }),
+    montar: ([, sensorId, tipo, valor, unidade, min, max]) => {
+      const dentro = Number(valor) >= Number(min) && Number(valor) <= Number(max)
+      return {
+        titulo: 'Medição de rotina',
+        descricao: `${nomeSensor(tipo)} (sensor ${sensorId}): ${valor} ${unidade}, ${dentro ? 'dentro' : 'fora'} da faixa segura.`,
+      }
+    },
   },
 ]
 
