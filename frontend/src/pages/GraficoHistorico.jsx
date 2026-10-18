@@ -20,6 +20,7 @@
 
 import { useState } from 'react'
 import { SENSORES_RF1 } from '../data/sensores.js'
+import { IconActivity } from '../components/icons.jsx'
 
 const LIMITE_PONTOS = 400
 
@@ -288,7 +289,10 @@ export default function GraficoHistorico({ resultado, imprimirComRelatorio = fal
   if (registros.length < 2) {
     return (
       <div className="scada-card" style={{ marginTop: 14 }}>
-        <h2>Curvas dos parâmetros</h2>
+        <h2 className="panel-heading">
+          <IconActivity size={13} />
+          Curvas dos parâmetros
+        </h2>
         <p className="scada-lead">
           São necessários pelo menos dois registros para desenhar uma curva.
         </p>
@@ -343,7 +347,10 @@ export default function GraficoHistorico({ resultado, imprimirComRelatorio = fal
       style={{ marginTop: 14 }}
     >
       <div className="scada-grafico-cabecalho">
-        <h2 style={{ margin: 0 }}>Curvas dos parâmetros</h2>
+        <h2 className="panel-heading" style={{ margin: 0 }}>
+          <IconActivity size={13} />
+          Curvas dos parâmetros
+        </h2>
         {ativo && (
           <span className="scada-grafico-instante">
             {new Date(ativo.instante).toLocaleString('pt-BR', { hour12: false })} ·{' '}

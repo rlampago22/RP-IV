@@ -75,7 +75,7 @@ export default function RelatorioDiaMock({ saida, onFechar, anexarGraficos, onAn
         passagem de turno, avisos). Nada abaixo vem do sistema: é exemplo para desenhar a tela.
       </div>
 
-      <h2 style={{ marginTop: 14 }}>
+      <h2 className="panel-heading" style={{ marginTop: 14 }}>
         Relatório do dia · {saida.dia} · {saida.operador || 'operador não identificado'}
       </h2>
 
