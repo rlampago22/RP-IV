@@ -133,4 +133,85 @@ note right of RegistroAuditoria
   Cada entrada encadeia o hash anterior.
 end note
 
+package "segurancaacesso" {
+  class AcessoFacade {
+    +solicitarAcesso(credencial: String, area: String): RegistroAcesso
+    +listarRegistros(): List<RegistroAcesso>
+    +credenciaisDemo(): Set<String>
+  }
+
+  class RegistroAcesso {
+    -id: String
+    -credencial: String
+    -area: String
+    -resultado: String
+    -ocorridoEm: Instant
+  }
+
+  class AcessoRegistrado <<record>>
+
+  AcessoFacade "1" o-- "*" RegistroAcesso : histórico em memória
+  AcessoFacade ..> AcessoRegistrado : publica
+  AcessoFacade ..> EventBus
+  AcessoRegistrado ..|> EventoDominio
+}
+
+note right of AcessoFacade
+  RF07 (credencial simulada) + RF08.
+  Corrige a classe `Acesso` do modelo
+  conceitual do PDF — aqui é `RegistroAcesso`,
+  persistido pela facade (RF08).
+end note
+
+package "historicooperacional" {
+  class HistoricoSubscriber {
+    +onEvento(evento: EventoDominio): void
+  }
+
+  class RegistroHistorico {
+    +registrar(snapshot: SnapshotOperacional): void
+    +consultar(): List<SnapshotOperacional>
+    +consultar(filtro: FiltroHistorico, limite: int): ResultadoConsulta
+    +agruparPorDia(filtro: FiltroHistorico, fuso: ZoneId): List<ResumoDia>
+    +exportar(filtro: FiltroHistorico): List<SnapshotOperacional>
+  }
+
+  class SnapshotOperacional <<record>> {
+    +linhaCsv(): String
+    +statusDerivado(): String
+    +temFalhaDeSensor(): boolean
+  }
+
+  class FiltroHistorico <<record>> {
+    +aceita(snapshot: SnapshotOperacional): boolean
+  }
+
+  class OperadorDeServico {
+    +identificar(nome: String, papeis: List<String>, origem: Origem): void
+    +liberar(): void
+    +identificado(): boolean
+  }
+
+  class ResultadoConsulta <<record>>
+  class ResumoDia <<record>>
+
+  HistoricoSubscriber ..|> IEventSubscriber
+  HistoricoSubscriber --> RegistroHistorico
+  HistoricoSubscriber --> OperadorDeServico
+  HistoricoSubscriber ..> SnapshotOperacional : cria
+  RegistroHistorico "1" o-- "*" SnapshotOperacional : persiste (CSV)
+  RegistroHistorico ..> FiltroHistorico : filtra
+  RegistroHistorico ..> ResultadoConsulta : produz
+  RegistroHistorico ..> ResumoDia : produz
+  SnapshotOperacional --> OperadorDeServico : origemOperador
+}
+
+note right of RegistroHistorico
+  RF16/RF17 (Could, PR #71 de Bruno).
+  Consome MedicaoRegistrada, Observacao-
+  Registrada, FalhaSensorDetectada e o
+  ciclo de Alarme pelo EventBus, agregando
+  um snapshot por ciclo operacional.
+end note
+
 @enduml

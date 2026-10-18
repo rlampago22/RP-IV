@@ -4,21 +4,35 @@ skinparam componentStyle uml2
 skinparam shadowing false
 
 package "Frontend React" {
+  component "LoginPage" as Login
   component "T01 Visão Geral" as T01
   component "T02 Sensores" as T02
   component "T03 Alarmes" as T03
   component "T04 Auditoria" as T04
   component "T05 Cenários" as T05
+  component "T06 Histórico" as T06
   component "EstadoContext\n(/api/estado)" as Estado
+  component "authApi" as AuthApi
 
   T01 --> Estado
   T02 --> Estado
   T03 --> Estado
   T04 --> Estado
   T05 ..> Estado : S4 cenários (#52)
+  T06 ..> Estado : /api/historico/*
+  Login --> AuthApi
 }
 
-package "Aplicação Java" {
+package "Auth Web (Spring Boot :8081)" {
+  component "SecurityConfig" as Sec
+  component "BootstrapUsuarios" as Boot
+  component "AuthController" as AuthCtrl
+
+  AuthCtrl --> Sec
+  Boot --> Sec
+}
+
+package "Aplicação Java (mvp :8080)" {
   component "ReatorFacade" as RF <<Facade>>
   component "ReatorRepository" as RR <<Repository>>
   component "AlarmeFacade" as AF <<Facade>>
@@ -27,6 +41,9 @@ package "Aplicação Java" {
   component "EventBus" as Bus
   component "AuditoriaSubscriber" as Aud
   component "RegistroAuditoria" as Reg
+  component "AcessoFacade" as Acesso <<Facade>>
+  component "HistoricoSubscriber" as HistSub
+  component "RegistroHistorico" as HistReg
   component "EstadoAgregador" as EA
   component "ApiEstadoHttpServer" as Http
 
@@ -38,11 +55,16 @@ package "Aplicação Java" {
   AF --> Bus : publica ciclo do alarme
   Bus --> Aud : todos os eventos
   Aud --> Reg : anexa entrada + SHA-256
+  Bus --> HistSub : todos os eventos (ciclo)
+  HistSub --> HistReg : registra snapshot
   Bus --> EA : assinarTodos
   Http --> EA
+  Http --> Acesso : solicitarAcesso (RF07/RF08)
+  Http --> HistReg : consultar/exportar (RF16/RF17)
 }
 
 Estado --> Http : polling / ações
+AuthApi --> AuthCtrl : login / me (RF07 Central)
 Http ..> RF : via EventBus (leituras)
 Http ..> AF : reconhecer/resolver
 
@@ -54,6 +76,13 @@ end note
 note bottom of Estado
   T01–T04 consomem /api/estado (Bruno #44).
   T05 cenários demo ainda polish S4 (#52).
+  T06 é proposta Could (RF16/RF17, PR #71).
+end note
+
+note bottom of Acesso
+  RNF08: autorização por papel/área (crachá
+  simulado). Login web (RF07) é validado
+  à parte, no backend Spring.
 end note
 
 @enduml
