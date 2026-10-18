@@ -58,6 +58,13 @@ O sistema recebe medições de sensores existentes, mantém histórico operacion
 | RF09 | Criar emergência | Permitir que um operador autorizado registre uma emergência. |
 | RF10 | Ativar protocolo de contingência | Associar e acionar um protocolo em uma emergência ativa. |
 
+### Could
+
+| ID | Requisito | Descrição |
+|---|---|---|
+| RF16 | Consultar histórico operacional | Filtrar o histórico por período e por faixa de valor de cada parâmetro RF-1, com os alarmes do mesmo período. Implementado por Bruno (PR #71); proposta pendente de aprovação do grupo, depende de RNF09. |
+| RF17 | Exportar histórico consultado | Entregar o resultado da consulta em CSV, sem biblioteca externa. Mesma proposta do PR #71. |
+
 ### Won't nesta disciplina
 
 | ID | Requisito | Motivo |
