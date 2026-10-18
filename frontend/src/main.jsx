@@ -8,7 +8,9 @@ import AlarmesPage from './pages/AlarmesPage.jsx'
 import AuditoriaPage from './pages/AuditoriaPage.jsx'
 import DemoPage from './pages/DemoPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
+import HistoricoPage from './pages/HistoricoPage.jsx'
 import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
+import { HistoricoProvider } from './state/HistoricoContext.jsx'
 import { authApi } from './services/authApi.js'
 import {
   AtomLogo,
@@ -16,6 +18,7 @@ import {
   IconThermometer,
   IconBell,
   IconShield,
+  IconClock,
   IconPlay,
   IconPower,
 } from './components/icons.jsx'
@@ -25,6 +28,7 @@ const TABS = [
   { to: '/sensores', text: 'Sensores', Icon: IconThermometer },
   { to: '/alarmes', text: 'Alarmes', Icon: IconBell },
   { to: '/auditoria', text: 'Auditoria', Icon: IconShield },
+  { to: '/historico', text: 'Histórico', Icon: IconClock },
   { to: '/demo', text: 'Demo / Cenários', Icon: IconPlay },
 ]
 
@@ -97,15 +101,17 @@ function App() {
 
   return (
     <EstadoProvider operadorNome={usuario.nome}>
-      <BrowserRouter>
-        <Shell
-          usuario={usuario}
-          onLogout={async () => {
-            await authApi.logout()
-            setUsuario(null)
-          }}
-        />
-      </BrowserRouter>
+      <HistoricoProvider>
+        <BrowserRouter>
+          <Shell
+            usuario={usuario}
+            onLogout={async () => {
+              await authApi.logout()
+              setUsuario(null)
+            }}
+          />
+        </BrowserRouter>
+      </HistoricoProvider>
     </EstadoProvider>
   )
 }
@@ -201,6 +207,7 @@ function Shell({ usuario, onLogout }) {
           <Route path="/sensores" element={<SensoresPage />} />
           <Route path="/alarmes" element={<AlarmesPage />} />
           <Route path="/auditoria" element={<AuditoriaPage />} />
+          <Route path="/historico" element={<HistoricoPage />} />
           <Route path="/demo" element={<DemoPage />} />
         </Routes>
       </main>

@@ -48,6 +48,7 @@ backend/data/
 /tmp/
 mvp/dados/*.log
 mvp/dados/*.txt
+mvp/dados/*.csv
 
 # OS
 .DS_Store
