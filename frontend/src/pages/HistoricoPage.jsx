@@ -3,6 +3,14 @@ import { CODIGO_POR_ID, CODIGO_POR_TIPO } from '../data/sensores.js'
 import { useHistorico } from '../state/HistoricoContext.jsx'
 import GraficoHistorico from './GraficoHistorico.jsx'
 import RelatorioDiaMock from './RelatorioDiaMock.jsx'
+import {
+  IconClock,
+  IconUser,
+  IconActivity,
+  IconAlertTriangle,
+  IconGrid,
+  IconCheck,
+} from '../components/icons.jsx'
 
 const CLASSE_STATUS = { ESTAVEL: 'ok', ATENCAO: 'warn', CRITICO: 'crit' }
 const TEXTO_STATUS = { ESTAVEL: 'ESTÁVEL', ATENCAO: 'ATENÇÃO', CRITICO: 'CRÍTICO' }
@@ -95,7 +103,10 @@ export default function HistoricoPage() {
               pesquisarSaidas()
             }}
           >
-            <h2>Período e operador</h2>
+            <h2 className="panel-heading">
+              <IconClock size={13} />
+              Período e operador
+            </h2>
             <div className="scada-filtro-linha">
               <label className="scada-campo">
                 <span>Data inicial</span>
@@ -142,7 +153,8 @@ export default function HistoricoPage() {
 
           {saidas && (
             <div className="scada-card" style={{ marginTop: 14 }}>
-              <h2>
+              <h2 className="panel-heading">
+                <IconGrid size={13} />
                 {saidas.total === 0
                   ? 'Nenhuma saída de operação no período'
                   : `${saidas.total} saída(s) · dia no fuso ${saidas.fusoHorario}`}
@@ -215,6 +227,41 @@ export default function HistoricoPage() {
             {hora(selecionada.primeiroRegistro)} – {hora(selecionada.ultimoRegistro)}
           </p>
 
+          <div className="scada-nao-imprimir" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
+            <div className="stat-tile">
+              <IconUser size={16} />
+              <div>
+                <div className="num" style={{ fontSize: 15 }}>
+                  {selecionada.operador || '—'}
+                </div>
+                <div className="lbl">
+                  {ORIGEM_ROTULO[selecionada.origemOperador] ?? selecionada.origemOperador}
+                </div>
+              </div>
+            </div>
+            <div className="stat-tile">
+              <IconActivity size={16} />
+              <div>
+                <div className="num">{selecionada.ciclos}</div>
+                <div className="lbl">ciclos</div>
+              </div>
+            </div>
+            <div className="stat-tile">
+              <IconAlertTriangle size={16} style={{ color: selecionada.ciclosComAlarme > 0 ? 'var(--crit)' : undefined }} />
+              <div>
+                <div className="num">{selecionada.ciclosComAlarme}</div>
+                <div className="lbl">em alarme</div>
+              </div>
+            </div>
+            <div className="stat-tile">
+              <IconCheck size={16} style={{ color: `var(--${CLASSE_STATUS[selecionada.piorStatus] ?? 'ok'})` }} />
+              <div>
+                <div className="num">{TEXTO_STATUS[selecionada.piorStatus] ?? selecionada.piorStatus}</div>
+                <div className="lbl">pior status</div>
+              </div>
+            </div>
+          </div>
+
           <div className="scada-actions scada-nao-imprimir" style={{ marginBottom: 14 }}>
             <button type="button" className="scada-btn" onClick={voltarParaSaidas}>
               ← Voltar às saídas
@@ -253,7 +300,10 @@ export default function HistoricoPage() {
               pesquisarDetalhe()
             }}
           >
-            <h2>Faixas dos parâmetros RF-1</h2>
+            <h2 className="panel-heading">
+              <IconActivity size={13} />
+              Faixas dos parâmetros RF-1
+            </h2>
             <div className="scada-filtro-grade">
               {FAIXAS.map(({ campo, rotulo, unidade, passo }) => (
                 <div className="scada-faixa" key={campo}>
@@ -310,7 +360,8 @@ export default function HistoricoPage() {
 
           {detalhe && (
             <div className="scada-card" style={{ marginTop: 14 }}>
-              <h2>
+              <h2 className="panel-heading">
+                <IconGrid size={13} />
                 {detalhe.total === 0
                   ? 'Nenhum registro nas faixas informadas'
                   : `${detalhe.total} registro(s) · exibindo ${detalhe.retornados}`}
