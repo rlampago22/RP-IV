@@ -41,23 +41,66 @@ O frontend envia o cookie de sessão com `credentials: 'include'` e não armazen
 
 ## Segundo fator: biometria do celular (RNF08)
 
-Marco 2. Atende ao RNF de Segurança do PDF da APS ("autenticação multifator") com o padrão **WebAuthn / passkey**: o celular confirma com digital ou rosto e assina um desafio; o servidor só confere a assinatura com a chave pública cadastrada. A biometria nunca sai do aparelho (relevante pela LGPD, que trata biometria como dado sensível).
+Marco 2. Base documental (PDF da APS): RNF de **Segurança** pede "autenticação multifator" (Must Have); o **UC02** tem como pré-condição o "funcionário **previamente cadastrado** com dados biométricos"; o item **4.2.7** coloca o **Administrador do Sistema** como responsável pela autenticação biométrica. Implementado com o padrão **WebAuthn / passkey**: o celular confirma com digital ou rosto e assina um desafio; o servidor só confere a assinatura com a chave pública cadastrada. A biometria nunca sai do aparelho (relevante pela LGPD, que trata biometria como dado sensível).
 
-Fluxo de login de quem tem aparelho cadastrado:
+### Regra
 
-1. `POST /api/auth/login` com e-mail e senha corretos **não abre a sessão**: responde `{"etapa":"BIOMETRIA","opcoes":{...}}`, onde `opcoes` vai direto para `navigator.credentials.get` (no front, `startAuthentication` de `@simplewebauthn/browser`).
-2. O navegador mostra um QR code; o celular (Bluetooth do PC ligado) confirma com a biometria. O Windows Hello do próprio computador também é aceito.
-3. `POST /api/auth/login/biometria` com a resposta do navegador. Assinatura válida → sessão aberta (id de sessão trocado) e `registro_autenticacao` com `metodo = SENHA_BIOMETRIA`. Inválida ou expirada (2 min) → 401 e `FALHA_BIOMETRIA`; o desafio vale uma tentativa só, depois é preciso digitar a senha de novo.
+- **Ninguém entra na Central só com a senha.** Senha certa leva sempre a uma segunda etapa.
+- **O funcionário não se cadastra sozinho.** O cadastro do celular exige um **código de ativação** emitido pelo Administrador do Sistema: uso único, válido por 24 h, guardado só como hash (BCrypt); gerar outro invalida o anterior.
+- **Celular perdido:** o Administrador revoga a biometria do funcionário e gera um código novo. O próprio funcionário não pode remover o seu único aparelho (só adicionar um reserva).
+- **Primeiro Administrador:** enquanto nenhum Administrador tiver biometria, cada inicialização do backend emite um código para ele e o escreve no log do servidor (`[PRIMEIRO ACESSO] ... Codigo de ativacao de admin@usina.local: XXXX-XXXX`). É a ativação feita na instalação do sistema.
 
-Quem não tem aparelho cadastrado continua entrando só com senha. O cadastro fica na aba **Segurança** da Central.
+### Fluxo
 
-Persistência: `credencial_biometrica` (migration `V2`) guarda `credential_id`, `user_handle` aleatório, chave pública COSE e contador de assinaturas, tudo em base64url. Verificação feita pela biblioteca `com.yubico:webauthn-server-core`, exigindo `userVerification = required`.
+| Situação após a senha | Resposta de `POST /api/auth/login` | Próximo passo |
+|---|---|---|
+| Tem celular cadastrado | `{"etapa":"BIOMETRIA","opcoes":{...}}` | Confirmar no celular → `POST /api/auth/login/biometria` |
+| Não tem celular | `{"etapa":"PRIMEIRO_ACESSO"}` | Código → `POST /api/auth/primeiro-acesso/opcoes`; cadastro → `POST /api/auth/primeiro-acesso/concluir` |
 
-Configuração (`application.yml`): `APP_WEBAUTHN_RP_ID` (padrão `localhost`, vale para qualquer porta local), `APP_WEBAUTHN_ORIGENS` (padrão = `APP_CORS_ORIGIN`) e `APP_WEBAUTHN_PREFERIR_CELULAR` (padrão `true`: o navegador já abre o QR code).
+- Confirmar no celular: o desafio vale 2 minutos e **uma tentativa**; errou ou expirou, volta para a senha (`FALHA_BIOMETRIA`).
+- Primeiro acesso: 10 minutos e até **5 códigos errados** (`CODIGO_INVALIDO`); depois volta para a senha. O código só é consumido se a biometria for gravada (mesma transação).
+- Sessão aberta → id de sessão trocado (evita fixação de sessão).
 
-Limites conhecidos: o WebAuthn garante que o usuário foi verificado no aparelho, mas o celular pode aceitar o PIN de desbloqueio no lugar da digital; e fora de `localhost` a página precisa estar em HTTPS.
+### Endpoints
 
-Teste automatizado: `backend/src/test/.../LoginBiometriaTest.java` (`mvn test`).
+| Método e rota | Uso | Quem |
+|---|---|---|
+| `POST /api/auth/login/biometria` | Assinatura do celular (resposta do `navigator.credentials.get`) | Etapa BIOMETRIA pendente |
+| `POST /api/auth/primeiro-acesso/opcoes` | `{codigo}` → desafio de cadastro do celular | Etapa PRIMEIRO_ACESSO pendente |
+| `POST /api/auth/primeiro-acesso/concluir` | `{apelido, credencial}` → grava a biometria e abre a sessão | Etapa PRIMEIRO_ACESSO pendente |
+| `GET /api/auth/biometria` | Aparelhos do usuário | Autenticado |
+| `POST /api/auth/biometria/cadastro/opcoes` e `/cadastro` | Adicionar aparelho reserva | Autenticado |
+| `POST /api/auth/biometria/{id}/remover` | Remover aparelho (nunca o único: 409) | Autenticado |
+| `GET /api/admin/usuarios` | Funcionários, aparelhos e código vigente | Administrador |
+| `POST /api/admin/usuarios/{id}/codigo-ativacao` | Emite código (o texto só aparece nesta resposta) | Administrador |
+| `POST /api/admin/usuarios/{id}/biometria/revogar` | Revoga todos os aparelhos do funcionário | Administrador |
+
+### Trilha (`registro_autenticacao`)
+
+`resultado` × `metodo`: `SUCESSO`/`SENHA_BIOMETRIA` (login normal), `SUCESSO`/`PRIMEIRO_ACESSO`, `BIOMETRIA_CADASTRADA`, `FALHA_BIOMETRIA`, `CODIGO_INVALIDO`, `CODIGO_EMITIDO`/`ADMINISTRADOR` e `BIOMETRIA_REVOGADA`/`ADMINISTRADOR` (nesses dois, `email_informado` é o Administrador que agiu e `id_usuario` é o funcionário).
+
+### Persistência e configuração
+
+- `credencial_biometrica` (migration `V2`): `credential_id`, `user_handle` aleatório, chave pública COSE e contador de assinaturas, em base64url. Verificação pela biblioteca `com.yubico:webauthn-server-core`, exigindo `userVerification = required`.
+- `codigo_ativacao` (migration `V3`): hash, quem emitiu (nulo = instalação), validade, situação (`ATIVO`, `USADO`, `SUBSTITUIDO`).
+- `application.yml`: `APP_BIOMETRIA_OBRIGATORIA` (padrão `true`; `false` só para desenvolver sem celular — a senha volta a bastar), `APP_WEBAUTHN_RP_ID` (padrão `localhost`, vale para qualquer porta local), `APP_WEBAUTHN_ORIGENS` (padrão = `APP_CORS_ORIGIN`) e `APP_WEBAUTHN_PREFERIR_CELULAR` (padrão `true`: o navegador já abre o QR code).
+
+### Roteiro de demonstração
+
+1. Ligar o backend e copiar do log o código do Administrador (`[PRIMEIRO ACESSO]`).
+2. Entrar como `admin@usina.local` → "Cadastre seu celular" → código + digital → Central.
+3. Aba **Segurança** → "Gerar código" para o Operador → anotar o código.
+4. Sair → entrar como `operador@usina.local` → código + digital → Central.
+5. Sair → entrar de novo → "Confirme no celular" → digital → Central.
+6. Celular perdido: Administrador → "Revogar biometria" do Operador → o Operador volta ao primeiro acesso.
+
+Plano B sem Bluetooth: na janela do navegador, escolher o Windows Hello do notebook (mesmo fluxo).
+
+### Limites conhecidos
+
+O WebAuthn garante que o usuário foi verificado no aparelho, mas o celular pode aceitar o PIN de desbloqueio no lugar da digital. Fora de `localhost`, a página precisa estar em HTTPS. O código do primeiro Administrador aparece no log do servidor, que portanto deve ter acesso restrito.
+
+Testes: `backend/src/test/.../LoginBiometriaTest.java` (`mvn test`, 12 casos).
 
 ## Contas locais e redefinição
 

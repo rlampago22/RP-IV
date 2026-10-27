@@ -39,7 +39,7 @@ Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projet
 |----|------|---------------|
 | RF09 | `Emergencia.criarEmergencia` | Feedback APS + domínio de contingência |
 | RF10 | `ProtocoloEmergencia` | Classe faltante crítica no feedback APS |
-| RNF08 (2º fator) | Login em dois fatores: senha + biometria do celular (passkey / WebAuthn) | PDF APS: RNF Segurança pede "autenticação multifator", UC02 usa biometria e 4.2.10 exige dois fatores. Marco 2, trilha Marcus — ver [`../backend-autenticacao.md`](../backend-autenticacao.md#segundo-fator-biometria-do-celular-rnf08) |
+| RNF08 (2º fator) | Login em dois fatores **obrigatório**: senha + biometria do celular (passkey / WebAuthn), com cadastro prévio autorizado pelo Administrador (código de ativação) | PDF APS: RNF Segurança pede "autenticação multifator" (Must), UC02 exige funcionário "previamente cadastrado" com biometria, 4.2.7 atribui a gestão ao Administrador e 4.2.10 exige dois fatores. Marco 2, trilha Marcus — ver [`../backend-autenticacao.md`](../backend-autenticacao.md#segundo-fator-biometria-do-celular-rnf08) |
 
 ---
 
