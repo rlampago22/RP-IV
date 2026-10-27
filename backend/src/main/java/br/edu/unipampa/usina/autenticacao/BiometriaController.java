@@ -75,8 +75,12 @@ public class BiometriaController {
     @PostMapping("/{id}/remover")
     public ResponseEntity<?> remover(@PathVariable Long id, Authentication authentication) {
         String email = authentication.getName();
-        if (!biometria.remover(email, id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensagem", "Biometria não encontrada."));
+        try {
+            if (!biometria.remover(email, id)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensagem", "Biometria não encontrada."));
+            }
+        } catch (BiometriaService.BiometriaRecusadaException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("mensagem", ex.getMessage()));
         }
         registros.save(new RegistroAutenticacao(usuarios.findByEmailIgnoreCase(email).orElseThrow(), email, "BIOMETRIA_REMOVIDA"));
         return ResponseEntity.noContent().build();

@@ -42,6 +42,7 @@ public class BiometriaService {
     private final CredencialBiometricaRepository credenciais;
     private final UsuarioRepository usuarios;
     private final boolean preferirCelular;
+    private final boolean obrigatoria;
     private final SecureRandom aleatorio = new SecureRandom();
 
     public BiometriaService(RepositorioCredenciaisWebAuthn repositorio, CredencialBiometricaRepository credenciais,
@@ -49,11 +50,13 @@ public class BiometriaService {
                             @Value("${app.webauthn.rp-id}") String rpId,
                             @Value("${app.webauthn.rp-nome}") String rpNome,
                             @Value("${app.webauthn.origens}") List<String> origens,
-                            @Value("${app.webauthn.preferir-celular}") boolean preferirCelular) {
+                            @Value("${app.webauthn.preferir-celular}") boolean preferirCelular,
+                            @Value("${app.webauthn.obrigatoria}") boolean obrigatoria) {
         this.repositorio = repositorio;
         this.credenciais = credenciais;
         this.usuarios = usuarios;
         this.preferirCelular = preferirCelular;
+        this.obrigatoria = obrigatoria;
         this.relyingParty = RelyingParty.builder()
             .identity(RelyingPartyIdentity.builder().id(rpId).name(rpNome).build())
             .credentialRepository(repositorio)
@@ -127,19 +130,38 @@ public class BiometriaService {
         }
     }
 
+    /** Política de RNF08: true = ninguém entra na Central sem a biometria do celular. */
+    public boolean isObrigatoria() { return obrigatoria; }
+
+    public boolean possuiBiometria(String email) {
+        return credenciais.existsByUsuarioEmailIgnoreCase(email);
+    }
+
     public List<CredencialBiometrica> listar(String email) {
         return credenciais.findByUsuarioEmailIgnoreCaseOrderByCriadoEmAsc(email);
     }
 
+    /** Remove um aparelho do próprio usuário. Com a biometria obrigatória, o último aparelho só sai pelo Administrador. */
     @Transactional
     public boolean remover(String email, Long id) {
-        return credenciais.findById(id)
+        CredencialBiometrica alvo = credenciais.findById(id)
             .filter(credencial -> credencial.getUsuario().getEmail().equalsIgnoreCase(email))
-            .map(credencial -> {
-                credenciais.delete(credencial);
-                return true;
-            })
-            .orElse(false);
+            .orElse(null);
+        if (alvo == null) return false;
+        if (obrigatoria && listar(email).size() <= 1) {
+            throw new BiometriaRecusadaException(
+                "Este é o seu único aparelho. Se perdeu o celular, peça ao Administrador para revogar e gerar um novo código.");
+        }
+        credenciais.delete(alvo);
+        return true;
+    }
+
+    /** Celular perdido ou trocado: o Administrador revoga todos os aparelhos do funcionário. */
+    @Transactional
+    public int revogarTodas(String email) {
+        List<CredencialBiometrica> todas = listar(email);
+        credenciais.deleteAll(todas);
+        return todas.size();
     }
 
     private ByteArray novoUserHandle() {

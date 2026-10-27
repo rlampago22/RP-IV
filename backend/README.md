@@ -29,7 +29,7 @@ Para PostgreSQL: `$env:SPRING_PROFILES_ACTIVE = "postgres"` e variáveis em [`.e
 
 Endpoints: `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`, `GET /api/central/status`.
 
-Segundo fator por biometria do celular (RNF08, passkey/WebAuthn): `POST /api/auth/login/biometria` e `/api/auth/biometria/**`. Fluxo e configuração em [`../docs/backend-autenticacao.md`](../docs/backend-autenticacao.md#segundo-fator-biometria-do-celular-rnf08). Testes: `mvn test`.
+Segundo fator **obrigatório** por biometria do celular (RNF08, passkey/WebAuthn), com cadastro autorizado por código de ativação do Administrador: `/api/auth/login/biometria`, `/api/auth/primeiro-acesso/**`, `/api/auth/biometria/**` e `/api/admin/usuarios/**`. Na primeira inicialização, o código do `admin@usina.local` aparece no log (`[PRIMEIRO ACESSO]`). Para desenvolver sem celular: `APP_BIOMETRIA_OBRIGATORIA=false`. Fluxo e configuração em [`../docs/backend-autenticacao.md`](../docs/backend-autenticacao.md#segundo-fator-biometria-do-celular-rnf08). Testes: `mvn test`.
 
 Contrato: [`../docs/backend-autenticacao.md`](../docs/backend-autenticacao.md).
 

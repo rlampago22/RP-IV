@@ -31,3 +31,6 @@ app:
     origens: ${APP_WEBAUTHN_ORIGENS:${app.cors-origin}}
     # true = o navegador ja abre o QR code para confirmar no celular.
     preferir-celular: ${APP_WEBAUTHN_PREFERIR_CELULAR:true}
+    # true = ninguem entra na Central sem a biometria (RNF Seguranca do PDF: autenticacao multifator).
+    # false so para desenvolvimento sem celular; ai o login volta a aceitar so a senha.
+    obrigatoria: ${APP_BIOMETRIA_OBRIGATORIA:true}
