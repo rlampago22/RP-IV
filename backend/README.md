@@ -1,28 +1,34 @@
-# backend/ — API Java (destino)
+# backend/ — API Java e autenticação (RF07)
 
-Pasta reservada no monorepo (**backend/** + **frontend/**).
+API Spring Boot da Central de Supervisão. Entrega autenticação web baseada em sessão e migrations Flyway. O perfil local padrão é **H2** (sem PostgreSQL). Telemetria/alarmes continuam no stub `mvp/apiestado` (porta 8080).
 
-## Estado atual
+## Papéis implementados
 
-| Fonte | Papel |
-|-------|--------|
-| [`../mvp/`](../mvp/) | **Canônico** — domínio EDA executável + testes Must + Swing legado |
-| [`../src/`](../src/) | Esqueleto Java antigo (não usar na demo) |
-| **esta pasta** | Destino da migração + API HTTP para o React |
+Os códigos são fiéis aos atores formais de [`../docs/marco1/01-requisitos-rf-rnf.md`](../docs/marco1/01-requisitos-rf-rnf.md):
 
-## Direção
+- `OPERADOR_REATOR`
+- `SUPERVISAO_CENTRAL`
+- `GUARDA_ACESSO` — controle físico do UC04, separado do login da Central
+- `ADMINISTRADOR_SISTEMA`
 
-1. Mover/consolidar pacotes de `mvp/src/...` para `backend/src/...` (Maven/Gradle quando o grupo fechar).
-2. Expor estado derivado do EventBus (JSON/HTTP) consumido por `frontend/`.
-3. Manter regra EDA: domínio sem acoplar UI.
+## Executar (demo Must expandido)
 
-Detalhes: [`../docs/backend-java.md`](../docs/backend-java.md)
+Java 21+ e Maven 3.9+.
 
-## Por enquanto
-
-Não há servidor HTTP aqui. Para rodar o núcleo:
-
-```bat
-cd ..\mvp
-2-TESTAR-MVP.bat
+```powershell
+cd backend
+$env:APP_BOOTSTRAP_PASSWORD = "troque-esta-senha"
+mvn spring-boot:run
 ```
+
+Perfil padrão: `h2` → `jdbc:h2:file:./data/usina`. Porta **8081**.
+
+Contas bootstrap: `admin@usina.local`, `operador@usina.local`, `supervisao@usina.local`, `guarda@usina.local` — senha = `APP_BOOTSTRAP_PASSWORD` (ou `troque-esta-senha`).
+
+Para PostgreSQL: `$env:SPRING_PROFILES_ACTIVE = "postgres"` e variáveis em [`.env.example`](.env.example).
+
+Endpoints: `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`, `GET /api/central/status`.
+
+Contrato: [`../docs/backend-autenticacao.md`](../docs/backend-autenticacao.md).
+
+**Registro de acesso físico (RF08 / UC04)** vive no domínio `mvp/` (`POST /api/acesso/solicitar`), não nesta API Spring.

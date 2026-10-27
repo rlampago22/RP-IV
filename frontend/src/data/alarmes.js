@@ -35,10 +35,13 @@ export function clsSeveridade(sev) {
   switch (sev) {
     case 'ALTO':
     case 'CRITICA': // severidade enviada pela API (AlarmeFacade)
+    case 'CRITICO':
       return 'crit'
     case 'MANUT':
+    case 'MANUTENCAO':
       return 'warn'
     case 'OBS':
+    case 'OBSERVACAO':
       return 'purple'
     default:
       return 'ok'

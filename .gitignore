@@ -33,6 +33,12 @@ build/
 out/
 mvp/**/*.class
 
+# Backend (H2 local, nao versionar banco)
+backend/data/
+
+# Claude Code local (preview/launch config da maquina)
+.claude/
+
 # Logs / temp
 *.log
 *.lock
@@ -42,6 +48,7 @@ mvp/**/*.class
 /tmp/
 mvp/dados/*.log
 mvp/dados/*.txt
+mvp/dados/*.csv
 
 # OS
 .DS_Store

@@ -7,7 +7,7 @@ Não duplica o conteúdo — só organiza links.
 **Sistema:** Central de Supervisão — Usina Nuclear  
 **Arquitetura:** EDA (EventBus in-process)  
 **UI oficial:** Opção A — SCADA escuro ([`ui/direcao-opcao-a.md`](ui/direcao-opcao-a.md))  
-**Marco 1:** 05/10/2026 — **MVP Must completo** ([`marco1/PACOTE-ENTREGA-MARCO1.md`](marco1/PACOTE-ENTREGA-MARCO1.md) · auditoria [`semanas/2026-09-22/AUDITORIA-PDF-MARCO1.md`](semanas/2026-09-22/AUDITORIA-PDF-MARCO1.md))
+**Marco 1:** 05/10/2026 — **MVP Must expandido** (RF01–RF08 + auth + API/UI) ([`marco1/PACOTE-ENTREGA-MARCO1.md`](marco1/PACOTE-ENTREGA-MARCO1.md) · auditoria [`semanas/2026-09-22/AUDITORIA-PDF-MARCO1.md`](semanas/2026-09-22/AUDITORIA-PDF-MARCO1.md))
 
 ---
 
@@ -29,7 +29,7 @@ Não duplica o conteúdo — só organiza links.
 | Proposta | [`marco1/03-proposta-mvp.md`](marco1/03-proposta-mvp.md) |
 | Fluxo demo (roteiro) | [`../mvp/ROTEIRO-APRESENTACAO.md`](../mvp/ROTEIRO-APRESENTACAO.md) |
 
-**Must:** medições RF-1 + limiar/alarme + auditoria SHA-256 + UI supervisão (web Opção A).
+**Must:** medições RF-1 + limiar/alarme + auditoria SHA-256 + auth (RF07) + RegistroAcesso (RF08) + UI supervisão (login + web Opção A).
 
 ---
 

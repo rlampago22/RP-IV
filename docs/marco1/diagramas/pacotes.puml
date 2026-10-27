@@ -38,38 +38,86 @@ package "Aplicação Java (mvp/src)" {
     [EntradaAuditoria]
   }
 
+  package "segurancaacesso" as Acesso {
+    [AcessoFacade]
+    [RegistroAcesso]
+  }
+
+  package "historicooperacional" as Historico {
+    [HistoricoSubscriber]
+    [RegistroHistorico]
+    [SnapshotOperacional]
+  }
+
   package "apiestado" as ApiEstado {
     [EstadoAgregador]
     [ApiEstadoHttpServer]
   }
 }
 
+package "Auth Web (backend/, Spring Boot :8081)" as AuthBackend {
+  [SecurityConfig]
+  [BootstrapUsuarios]
+  [AuthController]
+}
+
 package "Interface React (frontend/src)" as Frontend {
+  [LoginPage]
   [T01 Visão Geral]
   [T02 Sensores]
   [T03 Alarmes]
   [T04 Auditoria]
   [T05 Cenários]
   [EstadoContext]
+  [authApi]
 }
 
 App --> ControleReator : instancia e coordena
 App --> Alarmes : instancia e coordena
 App --> InfraEventos : cria EventBus
 App --> Auditoria : configura registro
+App --> Acesso : instancia e coordena
+App --> Historico : instancia e coordena
 App --> ApiEstado : sobe stub HTTP
 ControleReator ..> InfraEventos : publica eventos
 ControleReator ..> ControleReator : ReatorRepository histórico
 Alarmes ..> InfraEventos : consome/publica
 Auditoria ..> InfraEventos : consome todos
+Acesso ..> InfraEventos : publica AcessoRegistrado (RF08)
+Historico ..> InfraEventos : consome todos (ciclo operacional)
 ApiEstado ..> InfraEventos : consome (assinarTodos)
-Frontend --> ApiEstado : GET /api/estado
+ApiEstado ..> Acesso : encaminha solicitação de acesso
+ApiEstado ..> Historico : consulta/exporta (RF16/RF17)
+Frontend --> ApiEstado : GET /api/estado + ações
+Frontend --> AuthBackend : authApi (login/me) RF07
+LoginPage --> AuthBackend
 
 note bottom of Auditoria
   Persistência atual: arquivo append-only
   dados/auditoria.log com cadeia SHA-256.
   Medições e alarmes ficam em memória.
 end note
+
+note bottom of Acesso
+  RF07 (credencial simulada) + RF08.
+  Login web (RF07 Central) é validado
+  à parte, no backend Spring (RNF08).
+end note
+
+note bottom of Historico
+  RF16/RF17 (Could, PR #71 de Bruno).
+  Persiste snapshots em CSV, filtra por
+  período/faixa e exporta a consulta.
+end note
+
+package "T06 Histórico (frontend/src)" as T06Historico {
+  [HistoricoPage]
+  [GraficoHistorico]
+  [RelatorioDiaMock]
+}
+
+Frontend --> T06Historico
+T06Historico --> ApiEstado : GET /api/historico/*
 
 note bottom of InfraEventos
   EventBus síncrono e no mesmo processo.

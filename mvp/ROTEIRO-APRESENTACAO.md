@@ -68,7 +68,17 @@
 
 > “Após a manobra corretiva, o engenheiro encerra a ocorrência: o sistema publica `ALARME_RESOLVIDO`, restabelece os sensores para faixas seguras e o núcleo retorna ao estado verde `ESTÁVEL`.”
 
-### Roteiro curto na UI Web (T05 → T01 → T03)
+### Roteiro curto na UI Web (login → T05 → T01 → T03 → UC04)
+
+1. Suba o auth: `cd backend` e `mvn spring-boot:run` (perfil H2 padrão, porta **8081**). Contas bootstrap: `operador@usina.local` / senha `troque-esta-senha` (ou `APP_BOOTSTRAP_PASSWORD`).
+2. Suba a API de estado: `mvp/4-EXECUTAR-API-ESTADO.bat` (porta **8080**).
+3. Suba o React: `cd frontend; npm run dev`.
+4. Faça **login** (RF07). O painel mostra o nome do operador autenticado.
+5. Em **Demo / Cenários**, clique em **Simular Anomalia (Crítico)**.
+6. Em **Alarmes**, **Validar / Reconhecer** e **Normalizar / Encerrar** — a identidade do login é enviada no corpo JSON.
+7. Ainda na Demo, use **Acesso autorizado** / **Acesso negado** (RF08 / UC04) para gerar `RegistroAcesso` + evento `ACESSO_REGISTRADO` na auditoria.
+
+### Roteiro legado Swing (opcional)
 
 1. Deixe a API rodando com `mvp/4-EXECUTAR-API-ESTADO.bat` e o React com `cd frontend; npm run dev`.
 2. Em **Demo / Cenários**, clique em **Simular Anomalia (Crítico)**. O T05 envia `POST /api/demo/anomalia`; a API registra temperatura de 372 °C, a Strategy detecta a violação e publica `AlarmeEmitido`.
