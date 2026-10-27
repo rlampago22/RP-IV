@@ -24,3 +24,10 @@ app:
   cors-origin: ${APP_CORS_ORIGIN:http://localhost:5173}
   bootstrap-password: ${APP_BOOTSTRAP_PASSWORD:troque-esta-senha}
   reset-bootstrap-passwords: ${APP_RESET_BOOTSTRAP_PASSWORDS:false}
+  webauthn:
+    # RP ID = dominio onde a passkey vale; "localhost" serve para qualquer porta local.
+    rp-id: ${APP_WEBAUTHN_RP_ID:localhost}
+    rp-nome: ${APP_WEBAUTHN_RP_NOME:Central de Supervisao - Usina}
+    origens: ${APP_WEBAUTHN_ORIGENS:${app.cors-origin}}
+    # true = o navegador ja abre o QR code para confirmar no celular.
+    preferir-celular: ${APP_WEBAUTHN_PREFERIR_CELULAR:true}

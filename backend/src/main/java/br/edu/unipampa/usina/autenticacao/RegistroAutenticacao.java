@@ -26,6 +26,10 @@ public class RegistroAutenticacao {
     @Column(nullable = false)
     private String resultado;
 
+    /** {@code SENHA} ou {@code SENHA_BIOMETRIA} (segundo fator por passkey). */
+    @Column(nullable = false)
+    private String metodo = "SENHA";
+
     @Column(name = "registrado_em", nullable = false)
     private Instant registradoEm = Instant.now();
 
@@ -35,5 +39,10 @@ public class RegistroAutenticacao {
         this.usuario = usuario;
         this.emailInformado = emailInformado;
         this.resultado = resultado;
+    }
+
+    public RegistroAutenticacao(Usuario usuario, String emailInformado, String resultado, String metodo) {
+        this(usuario, emailInformado, resultado);
+        this.metodo = metodo;
     }
 }
