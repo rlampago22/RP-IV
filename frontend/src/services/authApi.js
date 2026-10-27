@@ -17,4 +17,10 @@ export const authApi = {
   me: () => request('/api/auth/me'),
   logout: () => request('/api/auth/logout', { method: 'POST' }),
   centralStatus: () => request('/api/central/status'),
+  // RNF08 — segundo fator: login devolve { etapa: 'BIOMETRIA', opcoes } quando há passkey cadastrada.
+  confirmarBiometria: (credencial) => request('/api/auth/login/biometria', { method: 'POST', body: JSON.stringify(credencial) }),
+  listarBiometrias: () => request('/api/auth/biometria'),
+  opcoesCadastroBiometria: () => request('/api/auth/biometria/cadastro/opcoes', { method: 'POST' }),
+  cadastrarBiometria: (apelido, credencial) => request('/api/auth/biometria/cadastro', { method: 'POST', body: JSON.stringify({ apelido, credencial }) }),
+  removerBiometria: (id) => request(`/api/auth/biometria/${id}/remover`, { method: 'POST' }),
 }
