@@ -37,7 +37,7 @@ class AtivacaoAdministradorInicial {
 
     @EventListener(ApplicationReadyEvent.class)
     void emitirCodigoSeNecessario() {
-        if (!biometria.isObrigatoria()) return;
+        if (!biometria.isAcoesCriticasProtegidas()) return;
         var administradores = usuarios.findAll().stream()
             .filter(u -> u.isAtivo() && u.getPapeis().stream().map(Papel::getCodigo).anyMatch("ADMINISTRADOR_SISTEMA"::equals))
             .toList();

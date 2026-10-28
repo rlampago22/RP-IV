@@ -29,7 +29,7 @@ Para PostgreSQL: `$env:SPRING_PROFILES_ACTIVE = "postgres"` e variáveis em [`.e
 
 Endpoints: `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`, `GET /api/central/status`.
 
-Segundo fator **obrigatório** por biometria do celular (RNF08, passkey/WebAuthn), com cadastro autorizado por código de ativação do Administrador: `/api/auth/login/biometria`, `/api/auth/primeiro-acesso/**`, `/api/auth/biometria/**` e `/api/admin/usuarios/**`. Na primeira inicialização, o código do `admin@usina.local` aparece no log (`[PRIMEIRO ACESSO]`). Para desenvolver sem celular: `APP_BIOMETRIA_OBRIGATORIA=false`. Fluxo e configuração em [`../docs/backend-autenticacao.md`](../docs/backend-autenticacao.md#segundo-fator-biometria-do-celular-rnf08). Testes: `mvn test`.
+Segundo fator por digital (RNF08, passkey/WebAuthn) nas **ações críticas**; o login continua com senha. Cadastro da digital só com código de ativação do Administrador: `/api/auth/biometria/**` e `/api/admin/usuarios/**`. Na primeira inicialização, o código do `admin@usina.local` aparece no log (`[PRIMEIRO ACESSO]`). Para desenvolver sem leitor de digital: `APP_BIOMETRIA_ACOES_CRITICAS=false`. Regra, endpoints e roteiro em [`../docs/backend-autenticacao.md`](../docs/backend-autenticacao.md#segundo-fator-digital-nas-ações-críticas-rnf08). Testes: `mvn test`.
 
 Contrato: [`../docs/backend-autenticacao.md`](../docs/backend-autenticacao.md).
 

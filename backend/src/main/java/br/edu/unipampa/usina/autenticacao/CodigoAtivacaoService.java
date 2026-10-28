@@ -51,6 +51,12 @@ public class CodigoAtivacaoService {
             .filter(CodigoAtivacao::valeAgora);
     }
 
+    /** Bloqueio após tentativas erradas: o código vigente deixa de valer. */
+    @Transactional
+    public void invalidarVigente(Usuario usuario) {
+        codigos.findByUsuarioIdAndSituacao(usuario.getId(), CodigoAtivacao.ATIVO).forEach(CodigoAtivacao::marcarSubstituido);
+    }
+
     /** Consome o código e grava a biometria na mesma transação: se a biometria falhar, o código continua valendo. */
     @Transactional
     public CredencialBiometrica ativar(Long codigoId, String email, String requisicaoJson, String respostaJson, String apelido) {

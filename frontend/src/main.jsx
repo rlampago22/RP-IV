@@ -71,14 +71,7 @@ function App() {
   if (usuario === null) {
     return (
       <LoginPage
-        onLogin={async (email, senha) => {
-          const resposta = await authApi.login(email, senha)
-          if (resposta.etapa) return resposta
-          setUsuario(resposta)
-          return null
-        }}
-        onConfirmarBiometria={async (credencial) => setUsuario(await authApi.confirmarBiometria(credencial))}
-        onPrimeiroAcesso={async (apelido, credencial) => setUsuario(await authApi.primeiroAcessoConcluir(apelido, credencial))}
+        onLogin={async (email, senha) => setUsuario(await authApi.login(email, senha))}
       />
     )
   }

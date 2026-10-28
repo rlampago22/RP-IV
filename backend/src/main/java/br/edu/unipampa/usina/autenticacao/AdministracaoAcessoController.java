@@ -1,5 +1,6 @@
 package br.edu.unipampa.usina.autenticacao;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -26,13 +27,16 @@ public class AdministracaoAcessoController {
     private final BiometriaService biometria;
     private final CodigoAtivacaoService codigos;
     private final RegistroAutenticacaoRepository registros;
+    private final ConfirmacaoBiometrica confirmacao;
 
     public AdministracaoAcessoController(UsuarioRepository usuarios, BiometriaService biometria,
-                                         CodigoAtivacaoService codigos, RegistroAutenticacaoRepository registros) {
+                                         CodigoAtivacaoService codigos, RegistroAutenticacaoRepository registros,
+                                         ConfirmacaoBiometrica confirmacao) {
         this.usuarios = usuarios;
         this.biometria = biometria;
         this.codigos = codigos;
         this.registros = registros;
+        this.confirmacao = confirmacao;
     }
 
     @GetMapping
@@ -48,7 +52,8 @@ public class AdministracaoAcessoController {
     }
 
     @PostMapping("/{id}/codigo-ativacao")
-    public ResponseEntity<?> emitirCodigo(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<?> emitirCodigo(@PathVariable Long id, Authentication authentication, HttpServletRequest request) {
+        confirmacao.exigir(request); // ação crítica: digital do Administrador
         Usuario alvo = usuarios.findById(id).orElse(null);
         if (alvo == null) return naoEncontrado();
         Usuario administrador = usuarios.findByEmailIgnoreCase(authentication.getName()).orElseThrow();
@@ -57,9 +62,10 @@ public class AdministracaoAcessoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(emitido);
     }
 
-    /** Celular perdido ou trocado: tira todos os aparelhos; no próximo login o funcionário precisa de um código novo. */
+    /** Celular/leitor perdido ou trocado: tira todas as digitais; para cadastrar de novo, o funcionário precisa de um código novo. */
     @PostMapping("/{id}/biometria/revogar")
-    public ResponseEntity<?> revogarBiometria(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<?> revogarBiometria(@PathVariable Long id, Authentication authentication, HttpServletRequest request) {
+        confirmacao.exigir(request); // ação crítica: digital do Administrador
         Usuario alvo = usuarios.findById(id).orElse(null);
         if (alvo == null) return naoEncontrado();
         int removidos = biometria.revogarTodas(alvo.getEmail());

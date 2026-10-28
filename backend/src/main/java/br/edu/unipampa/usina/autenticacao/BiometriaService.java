@@ -42,7 +42,7 @@ public class BiometriaService {
     private final CredencialBiometricaRepository credenciais;
     private final UsuarioRepository usuarios;
     private final boolean preferirCelular;
-    private final boolean obrigatoria;
+    private final boolean acoesCriticasProtegidas;
     private final SecureRandom aleatorio = new SecureRandom();
 
     public BiometriaService(RepositorioCredenciaisWebAuthn repositorio, CredencialBiometricaRepository credenciais,
@@ -51,12 +51,12 @@ public class BiometriaService {
                             @Value("${app.webauthn.rp-nome}") String rpNome,
                             @Value("${app.webauthn.origens}") List<String> origens,
                             @Value("${app.webauthn.preferir-celular}") boolean preferirCelular,
-                            @Value("${app.webauthn.obrigatoria}") boolean obrigatoria) {
+                            @Value("${app.biometria.acoes-criticas}") boolean acoesCriticasProtegidas) {
         this.repositorio = repositorio;
         this.credenciais = credenciais;
         this.usuarios = usuarios;
         this.preferirCelular = preferirCelular;
-        this.obrigatoria = obrigatoria;
+        this.acoesCriticasProtegidas = acoesCriticasProtegidas;
         this.relyingParty = RelyingParty.builder()
             .identity(RelyingPartyIdentity.builder().id(rpId).name(rpNome).build())
             .credentialRepository(repositorio)
@@ -130,8 +130,8 @@ public class BiometriaService {
         }
     }
 
-    /** Política de RNF08: true = ninguém entra na Central sem a biometria do celular. */
-    public boolean isObrigatoria() { return obrigatoria; }
+    /** Política de RNF08: true = ações críticas exigem a digital ({@link ConfirmacaoBiometrica}). */
+    public boolean isAcoesCriticasProtegidas() { return acoesCriticasProtegidas; }
 
     public boolean possuiBiometria(String email) {
         return credenciais.existsByUsuarioEmailIgnoreCase(email);
@@ -141,19 +141,15 @@ public class BiometriaService {
         return credenciais.findByUsuarioEmailIgnoreCaseOrderByCriadoEmAsc(email);
     }
 
-    /** Remove um aparelho do próprio usuário. Com a biometria obrigatória, o último aparelho só sai pelo Administrador. */
     @Transactional
     public boolean remover(String email, Long id) {
-        CredencialBiometrica alvo = credenciais.findById(id)
+        return credenciais.findById(id)
             .filter(credencial -> credencial.getUsuario().getEmail().equalsIgnoreCase(email))
-            .orElse(null);
-        if (alvo == null) return false;
-        if (obrigatoria && listar(email).size() <= 1) {
-            throw new BiometriaRecusadaException(
-                "Este é o seu único aparelho. Se perdeu o celular, peça ao Administrador para revogar e gerar um novo código.");
-        }
-        credenciais.delete(alvo);
-        return true;
+            .map(credencial -> {
+                credenciais.delete(credencial);
+                return true;
+            })
+            .orElse(false);
     }
 
     /** Celular perdido ou trocado: o Administrador revoga todos os aparelhos do funcionário. */
@@ -172,7 +168,7 @@ public class BiometriaService {
 
     private static String apelidoValido(String apelido) {
         String limpo = apelido == null ? "" : apelido.trim();
-        if (limpo.isEmpty()) return "Celular";
+        if (limpo.isEmpty()) return "Leitor de digital";
         return limpo.length() > 80 ? limpo.substring(0, 80) : limpo;
     }
 

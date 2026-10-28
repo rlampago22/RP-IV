@@ -29,8 +29,10 @@ app:
     rp-id: ${APP_WEBAUTHN_RP_ID:localhost}
     rp-nome: ${APP_WEBAUTHN_RP_NOME:Central de Supervisao - Usina}
     origens: ${APP_WEBAUTHN_ORIGENS:${app.cors-origin}}
-    # true = o navegador ja abre o QR code para confirmar no celular.
-    preferir-celular: ${APP_WEBAUTHN_PREFERIR_CELULAR:true}
-    # true = ninguem entra na Central sem a biometria (RNF Seguranca do PDF: autenticacao multifator).
-    # false so para desenvolvimento sem celular; ai o login volta a aceitar so a senha.
-    obrigatoria: ${APP_BIOMETRIA_OBRIGATORIA:true}
+    # true = o navegador ja abre o QR code do celular; false (padrao) = oferece primeiro o leitor do
+    # proprio computador (Windows Hello), sem QR code.
+    preferir-celular: ${APP_WEBAUTHN_PREFERIR_CELULAR:false}
+  biometria:
+    # true = acoes criticas (administracao de acessos e, quando existir, protocolo de contingencia)
+    # exigem a digital alem da senha (RNF Seguranca e 4.2.10 do PDF). false so para desenvolvimento.
+    acoes-criticas: ${APP_BIOMETRIA_ACOES_CRITICAS:true}

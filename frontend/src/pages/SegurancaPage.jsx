@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { startRegistration } from '@simplewebauthn/browser'
 import { authApi } from '../services/authApi.js'
+import { executarAcaoCritica } from '../services/acaoCritica.js'
 import { IconLock, IconShield } from '../components/icons.jsx'
 
 function formatarData(iso) {
@@ -16,7 +17,7 @@ function Aviso({ aviso }) {
   )
 }
 
-/** RNF08 — login em dois fatores obrigatório: senha + biometria do celular (passkey / WebAuthn). */
+/** RNF08 — digital como segundo fator das ações críticas; cadastro prévio pelo Administrador (UC02). */
 export default function SegurancaPage({ usuario }) {
   const administrador = usuario.papeis.includes('ADMINISTRADOR_SISTEMA')
 
@@ -25,29 +26,31 @@ export default function SegurancaPage({ usuario }) {
       <p className="scada-kicker">RNF08 · AUTENTICAÇÃO EM DOIS FATORES</p>
       <h1 className="scada-heading">Segurança do acesso</h1>
       <p className="scada-lead">
-        Para entrar na Central são exigidos dois fatores: a senha e a confirmação no celular com
-        digital ou rosto (passkey / WebAuthn). A biometria nunca sai do aparelho: a Central guarda só
-        uma chave pública e confere a assinatura que o celular devolve. O cadastro do celular só é
-        feito com um código de ativação entregue pelo Administrador do Sistema.
+        O login da Central usa a senha. As <strong>ações críticas</strong> pedem também a sua digital
+        (leitor do computador ou celular): administrar acessos, remover uma digital e, quando existir,
+        ativar o protocolo de contingência. Depois de confirmar, você tem 5 minutos para outras ações
+        críticas sem confirmar de novo. A digital nunca sai do aparelho: a Central guarda só uma chave
+        pública. O cadastro exige um código de ativação entregue pelo Administrador do Sistema.
       </p>
-      <MeusAparelhos />
+      <MinhaDigital administrador={administrador} />
       {administrador && <AdministracaoAcessos usuarioAtual={usuario} />}
     </section>
   )
 }
 
-function MeusAparelhos() {
+function MinhaDigital({ administrador }) {
   // null = carregando
-  const [aparelhos, setAparelhos] = useState(null)
-  const [apelido, setApelido] = useState('Celular reserva')
+  const [digitais, setDigitais] = useState(null)
+  const [codigo, setCodigo] = useState('')
+  const [apelido, setApelido] = useState('Leitor do notebook')
   const [ocupado, setOcupado] = useState(false)
   const [aviso, setAviso] = useState(null)
 
   async function carregar() {
     try {
-      setAparelhos(await authApi.listarBiometrias())
+      setDigitais(await authApi.listarBiometrias())
     } catch (error) {
-      setAparelhos([])
+      setDigitais([])
       setAviso({ tipo: 'erro', texto: error.message })
     }
   }
@@ -56,19 +59,21 @@ function MeusAparelhos() {
     carregar()
   }, [])
 
-  async function adicionar() {
+  async function cadastrar(event) {
+    event.preventDefault()
     setOcupado(true)
     setAviso(null)
     try {
-      const opcoes = await authApi.opcoesCadastroBiometria()
+      const opcoes = await authApi.opcoesCadastroBiometria(codigo)
       let credencial
       try {
         credencial = await startRegistration({ optionsJSON: opcoes })
       } catch {
-        throw new Error('Cadastro cancelado ou não concluído no aparelho.')
+        throw new Error('Cadastro cancelado ou não concluído no leitor. O código continua valendo: tente de novo.')
       }
       await authApi.cadastrarBiometria(apelido, credencial)
-      setAviso({ tipo: 'ok', texto: 'Aparelho adicionado. Ele também pode confirmar o seu login.' })
+      setCodigo('')
+      setAviso({ tipo: 'ok', texto: 'Digital cadastrada. Ela será pedida nas ações críticas.' })
       await carregar()
     } catch (error) {
       setAviso({ tipo: 'erro', texto: error.message })
@@ -77,12 +82,12 @@ function MeusAparelhos() {
     }
   }
 
-  async function remover(aparelho) {
-    if (!window.confirm(`Remover "${aparelho.apelido}"? Ele deixa de servir para confirmar o login.`)) return
+  async function remover(digital) {
+    if (!window.confirm(`Remover "${digital.apelido}"? Ele deixa de servir para confirmar ações críticas.`)) return
     setOcupado(true)
     setAviso(null)
     try {
-      await authApi.removerBiometria(aparelho.id)
+      await executarAcaoCritica(() => authApi.removerBiometria(digital.id))
       await carregar()
     } catch (error) {
       setAviso({ tipo: 'erro', texto: error.message })
@@ -91,41 +96,52 @@ function MeusAparelhos() {
     }
   }
 
-  const unico = aparelhos?.length === 1
-
   return (
     <div className="scada-card" style={{ marginTop: 16 }}>
-      <h2 className="panel-heading">
-        <IconLock size={13} />
-        Meus aparelhos
-      </h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+        <h2 className="panel-heading" style={{ margin: 0 }}>
+          <IconLock size={13} />
+          Minha digital
+        </h2>
+        {digitais !== null && (
+          <span className={`scada-pill ${digitais.length > 0 ? 'ok' : 'warn'}`}>
+            {digitais.length > 0 ? 'CADASTRADA' : 'NÃO CADASTRADA'}
+          </span>
+        )}
+      </div>
 
-      {aparelhos === null && <p className="scada-lead">Carregando…</p>}
-      {aparelhos !== null && aparelhos.length > 0 && (
+      {digitais === null && <p className="scada-lead">Carregando…</p>}
+      {digitais !== null && digitais.length === 0 && (
+        <p className="scada-lead" style={{ marginTop: 0 }}>
+          Você ainda não tem digital cadastrada, então não consegue fazer ações críticas. Peça o código de
+          ativação ao Administrador do Sistema e cadastre abaixo.
+          {administrador && (
+            <>
+              {' '}<strong>Primeiro Administrador do sistema?</strong> O código está no terminal do servidor
+              (janela "Login (backend 8081)"), na linha <code>[PRIMEIRO ACESSO]</code>.
+            </>
+          )}
+        </p>
+      )}
+      {digitais !== null && digitais.length > 0 && (
         <div className="scada-table-wrap" style={{ maxHeight: 'none' }}>
           <table className="scada-table">
             <thead>
               <tr>
-                <th>Aparelho</th>
+                <th>Leitor</th>
                 <th>Cadastrado em</th>
                 <th>Último uso</th>
                 <th />
               </tr>
             </thead>
             <tbody>
-              {aparelhos.map((aparelho) => (
-                <tr key={aparelho.id}>
-                  <td className="ev">{aparelho.apelido}</td>
-                  <td>{formatarData(aparelho.criadoEm)}</td>
-                  <td>{formatarData(aparelho.ultimoUsoEm)}</td>
+              {digitais.map((digital) => (
+                <tr key={digital.id}>
+                  <td className="ev">{digital.apelido}</td>
+                  <td>{formatarData(digital.criadoEm)}</td>
+                  <td>{formatarData(digital.ultimoUsoEm)}</td>
                   <td style={{ textAlign: 'right' }}>
-                    <button
-                      type="button"
-                      className="scada-btn scada-btn-ghost"
-                      disabled={ocupado || unico}
-                      title={unico ? 'Único aparelho: se perdeu o celular, peça ao Administrador para revogar.' : undefined}
-                      onClick={() => remover(aparelho)}
-                    >
+                    <button type="button" className="scada-btn scada-btn-ghost" disabled={ocupado} onClick={() => remover(digital)}>
                       Remover
                     </button>
                   </td>
@@ -136,15 +152,26 @@ function MeusAparelhos() {
         </div>
       )}
 
-      <div className="auth-form" style={{ marginTop: 16, maxWidth: 420 }}>
+      <form className="auth-form" style={{ marginTop: 16, maxWidth: 420 }} onSubmit={cadastrar}>
         <label>
-          Adicionar outro aparelho (reserva)
+          Código de ativação (entregue pelo Administrador)
+          <input
+            value={codigo}
+            onChange={(event) => setCodigo(event.target.value.toUpperCase())}
+            placeholder="XXXX-XXXX"
+            autoComplete="one-time-code"
+            maxLength={9}
+            required
+          />
+        </label>
+        <label>
+          Nome do leitor
           <input value={apelido} maxLength={80} onChange={(event) => setApelido(event.target.value)} />
         </label>
-        <button type="button" className="scada-btn scada-btn-ghost" disabled={ocupado} onClick={adicionar}>
-          {ocupado ? 'Aguardando o aparelho…' : 'Adicionar aparelho'}
+        <button type="submit" className="scada-btn" disabled={ocupado}>
+          {ocupado ? 'Aguardando o leitor…' : digitais?.length ? 'Cadastrar outro leitor' : 'Cadastrar digital'}
         </button>
-      </div>
+      </form>
       <Aviso aviso={aviso} />
     </div>
   )
@@ -174,7 +201,8 @@ function AdministracaoAcessos({ usuarioAtual }) {
     setOcupado(true)
     setAviso(null)
     try {
-      setCodigoGerado({ ...(await authApi.emitirCodigoAtivacao(alvo.id)), nome: alvo.nome })
+      const emitido = await executarAcaoCritica(() => authApi.emitirCodigoAtivacao(alvo.id))
+      setCodigoGerado({ ...emitido, nome: alvo.nome })
       await carregar()
     } catch (error) {
       setAviso({ tipo: 'erro', texto: error.message })
@@ -184,16 +212,15 @@ function AdministracaoAcessos({ usuarioAtual }) {
   }
 
   async function revogar(alvo) {
-    const proprio = alvo.email === usuarioAtual.email
-    const texto = proprio
-      ? 'Revogar a sua própria biometria? Você só voltará a entrar com um código novo (gerado na próxima inicialização do servidor ou por outro Administrador).'
-      : `Revogar a biometria de ${alvo.nome}? Use quando o celular foi perdido ou trocado. No próximo login será preciso um código novo.`
+    const texto = alvo.email === usuarioAtual.email
+      ? 'Revogar a sua própria digital? Para cadastrar de novo você vai precisar de um código (gerado na próxima inicialização do servidor ou por outro Administrador).'
+      : `Revogar a digital de ${alvo.nome}? Use quando o leitor ou o celular foi perdido ou trocado.`
     if (!window.confirm(texto)) return
     setOcupado(true)
     setAviso(null)
     try {
-      await authApi.revogarBiometriaDe(alvo.id)
-      setAviso({ tipo: 'ok', texto: `Biometria de ${alvo.nome} revogada. Gere um código novo para ele cadastrar outro celular.` })
+      await executarAcaoCritica(() => authApi.revogarBiometriaDe(alvo.id))
+      setAviso({ tipo: 'ok', texto: `Digital de ${alvo.nome} revogada. Gere um código novo para ele cadastrar outra.` })
       await carregar()
     } catch (error) {
       setAviso({ tipo: 'erro', texto: error.message })
@@ -209,8 +236,9 @@ function AdministracaoAcessos({ usuarioAtual }) {
         Administração de acessos (Administrador do Sistema)
       </h2>
       <p className="scada-lead" style={{ marginTop: 0 }}>
-        Cadastro prévio (UC02): gere o código de ativação e entregue pessoalmente ao funcionário. Ele vale
-        por 24 horas e uma única vez; gerar outro invalida o anterior.
+        Cadastro prévio (UC02): gere o código de ativação e entregue pessoalmente ao funcionário. Ele vale por
+        24 horas e uma única vez; gerar outro invalida o anterior. Gerar código e revogar são ações críticas e
+        pedem a sua digital.
       </p>
 
       {codigoGerado && (
@@ -230,7 +258,7 @@ function AdministracaoAcessos({ usuarioAtual }) {
               <tr>
                 <th>Funcionário</th>
                 <th>Perfil</th>
-                <th>Biometria</th>
+                <th>Digital</th>
                 <th>Código de ativação</th>
                 <th />
               </tr>
@@ -246,7 +274,7 @@ function AdministracaoAcessos({ usuarioAtual }) {
                   <td>{alvo.papeis.map((papel) => papel.replaceAll('_', ' ')).join(' · ')}</td>
                   <td>
                     <span className={`scada-pill ${alvo.aparelhos > 0 ? 'ok' : 'warn'}`}>
-                      {alvo.aparelhos > 0 ? `ATIVA · ${alvo.aparelhos} aparelho${alvo.aparelhos > 1 ? 's' : ''}` : 'NÃO CADASTRADA'}
+                      {alvo.aparelhos > 0 ? 'CADASTRADA' : 'NÃO CADASTRADA'}
                     </span>
                   </td>
                   <td>{alvo.codigoValidoAte ? `válido até ${formatarData(alvo.codigoValidoAte)}` : '—'}</td>
@@ -260,7 +288,7 @@ function AdministracaoAcessos({ usuarioAtual }) {
                       disabled={ocupado || alvo.aparelhos === 0}
                       onClick={() => revogar(alvo)}
                     >
-                      Revogar biometria
+                      Revogar digital
                     </button>
                   </td>
                 </tr>
