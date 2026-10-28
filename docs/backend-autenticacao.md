@@ -31,76 +31,76 @@ RF08 (`RegistroAcesso` / UC04 físico) está implementado no domínio `mvp/` (`P
 | `GET /api/auth/me` | Retorna identidade e papéis da sessão | Autenticado |
 | `POST /api/auth/logout` | Encerra a sessão | Autenticado |
 | `GET /api/central/status` | Verifica acesso à Central | Operador, Supervisão ou Administrador |
-| `POST /api/auth/login/biometria` | 2ª etapa do login: assinatura do celular (ver abaixo) | Público, exige 1ª etapa na mesma sessão |
-| `GET /api/auth/biometria` | Lista os aparelhos cadastrados do usuário | Autenticado |
-| `POST /api/auth/biometria/cadastro/opcoes` | Gera o desafio para cadastrar um celular | Autenticado |
-| `POST /api/auth/biometria/cadastro` | Conclui o cadastro (`{apelido, credencial}`) | Autenticado |
-| `POST /api/auth/biometria/{id}/remover` | Remove um aparelho do usuário | Autenticado |
+| `/api/auth/biometria/**` e `/api/admin/usuarios/**` | Digital como 2º fator das ações críticas (ver abaixo) | Autenticado; administração só Administrador |
 
 O frontend envia o cookie de sessão com `credentials: 'include'` e não armazena senha ou token no navegador.
 
-## Segundo fator: biometria do celular (RNF08)
+## Segundo fator: digital nas ações críticas (RNF08)
 
-Marco 2. Base documental (PDF da APS): RNF de **Segurança** pede "autenticação multifator" (Must Have); o **UC02** tem como pré-condição o "funcionário **previamente cadastrado** com dados biométricos"; o item **4.2.7** coloca o **Administrador do Sistema** como responsável pela autenticação biométrica. Implementado com o padrão **WebAuthn / passkey**: o celular confirma com digital ou rosto e assina um desafio; o servidor só confere a assinatura com a chave pública cadastrada. A biometria nunca sai do aparelho (relevante pela LGPD, que trata biometria como dado sensível).
+Marco 2. O que o PDF da APS pede e como foi atendido:
+
+| No documento | O que diz | No sistema |
+|---|---|---|
+| RNF de **Segurança** (Must) | "autenticação multifator" | Senha (1º fator) + digital (2º fator) |
+| **4.2.10** Ativar Protocolos de Contingência | "requer autenticação de **dois fatores** para evitar ativação acidental" | A digital é pedida nas **ações críticas**, não em todo login |
+| **UC02** Controle de Acesso / **1.3** | biometria e crachá para **entrar nas áreas restritas**; funcionário "**previamente cadastrado**" | Cadastro da digital só com **código de ativação** do Administrador |
+| **4.2.7** | Administrador e Segurança Patrimonial gerenciam a autenticação | Painel do Administrador: gerar código e revogar digital |
+
+A biometria do UC02 é a da **porta** (acesso físico, nosso UC04 no `mvp/`); o login web não exige digital. Padrão usado: **WebAuthn / passkey**. O leitor pode ser o do próprio computador (Windows Hello: encostar o dedo, sem QR code) ou o celular. A digital nunca sai do aparelho: o servidor só confere a assinatura com a chave pública cadastrada (relevante pela LGPD, que trata biometria como dado sensível).
 
 ### Regra
 
-- **Ninguém entra na Central só com a senha.** Senha certa leva sempre a uma segunda etapa.
-- **O funcionário não se cadastra sozinho.** O cadastro do celular exige um **código de ativação** emitido pelo Administrador do Sistema: uso único, válido por 24 h, guardado só como hash (BCrypt); gerar outro invalida o anterior.
-- **Celular perdido:** o Administrador revoga a biometria do funcionário e gera um código novo. O próprio funcionário não pode remover o seu único aparelho (só adicionar um reserva).
-- **Primeiro Administrador:** enquanto nenhum Administrador tiver biometria, cada inicialização do backend emite um código para ele e o escreve no log do servidor (`[PRIMEIRO ACESSO] ... Codigo de ativacao de admin@usina.local: XXXX-XXXX`). É a ativação feita na instalação do sistema.
+- **Login da Central:** e-mail e senha, como antes.
+- **Ações críticas** exigem a digital: hoje, gerar código de ativação, revogar digital e remover a própria digital; quando existir, **ativar protocolo de contingência** (RF09/RF10). Confirmada a digital, a sessão fica liberada para ações críticas por **5 minutos**.
+- **Cadastro da digital:** só com o código de ativação emitido pelo Administrador (uso único, 24 h, guardado só como hash BCrypt; gerar outro invalida o anterior; 5 códigos errados bloqueiam o código vigente).
+- **Leitor perdido:** o Administrador revoga a digital e gera um código novo.
+- **Primeiro Administrador:** enquanto nenhum Administrador tiver digital, cada inicialização do backend emite um código para ele e o escreve no log (`[PRIMEIRO ACESSO] ... Codigo de ativacao de admin@usina.local: XXXX-XXXX`). É a ativação na instalação do sistema.
 
-### Fluxo
+### Como uma ação crítica exige a digital
 
-| Situação após a senha | Resposta de `POST /api/auth/login` | Próximo passo |
-|---|---|---|
-| Tem celular cadastrado | `{"etapa":"BIOMETRIA","opcoes":{...}}` | Confirmar no celular → `POST /api/auth/login/biometria` |
-| Não tem celular | `{"etapa":"PRIMEIRO_ACESSO"}` | Código → `POST /api/auth/primeiro-acesso/opcoes`; cadastro → `POST /api/auth/primeiro-acesso/concluir` |
+Backend: chamar `confirmacao.exigir(request)` (bean `ConfirmacaoBiometrica`) na primeira linha do endpoint. Sem confirmação recente, a resposta é **428** com `{"exigeBiometria": true}`.
 
-- Confirmar no celular: o desafio vale 2 minutos e **uma tentativa**; errou ou expirou, volta para a senha (`FALHA_BIOMETRIA`).
-- Primeiro acesso: 10 minutos e até **5 códigos errados** (`CODIGO_INVALIDO`); depois volta para a senha. O código só é consumido se a biometria for gravada (mesma transação).
-- Sessão aberta → id de sessão trocado (evita fixação de sessão).
+Frontend: envolver a chamada em `executarAcaoCritica(() => api.minhaAcao())` (`frontend/src/services/acaoCritica.js`). Ao receber 428, ele pede a digital, confirma e repete a ação.
+
+O protocolo de contingência, quando for implementado no backend, deve seguir esse padrão. Se ficar no `mvp/` (API 8080, sem login), ele precisa antes passar a validar a sessão do backend.
 
 ### Endpoints
 
 | Método e rota | Uso | Quem |
 |---|---|---|
-| `POST /api/auth/login/biometria` | Assinatura do celular (resposta do `navigator.credentials.get`) | Etapa BIOMETRIA pendente |
-| `POST /api/auth/primeiro-acesso/opcoes` | `{codigo}` → desafio de cadastro do celular | Etapa PRIMEIRO_ACESSO pendente |
-| `POST /api/auth/primeiro-acesso/concluir` | `{apelido, credencial}` → grava a biometria e abre a sessão | Etapa PRIMEIRO_ACESSO pendente |
-| `GET /api/auth/biometria` | Aparelhos do usuário | Autenticado |
-| `POST /api/auth/biometria/cadastro/opcoes` e `/cadastro` | Adicionar aparelho reserva | Autenticado |
-| `POST /api/auth/biometria/{id}/remover` | Remover aparelho (nunca o único: 409) | Autenticado |
-| `GET /api/admin/usuarios` | Funcionários, aparelhos e código vigente | Administrador |
-| `POST /api/admin/usuarios/{id}/codigo-ativacao` | Emite código (o texto só aparece nesta resposta) | Administrador |
-| `POST /api/admin/usuarios/{id}/biometria/revogar` | Revoga todos os aparelhos do funcionário | Administrador |
+| `GET /api/auth/biometria` | Digitais do usuário | Autenticado |
+| `POST /api/auth/biometria/cadastro/opcoes` | `{codigo}` → desafio para o leitor | Autenticado |
+| `POST /api/auth/biometria/cadastro` | `{apelido, credencial}` → grava a digital e consome o código | Autenticado |
+| `POST /api/auth/biometria/confirmacao/opcoes` | Desafio da confirmação (2 min, uma tentativa); 409 se não tem digital | Autenticado |
+| `POST /api/auth/biometria/confirmacao` | Assinatura do leitor → libera ações críticas por 5 min | Autenticado |
+| `POST /api/auth/biometria/{id}/remover` | Remove uma digital própria (ação crítica) | Autenticado |
+| `GET /api/admin/usuarios` | Funcionários, digital e código vigente | Administrador |
+| `POST /api/admin/usuarios/{id}/codigo-ativacao` | Emite código (ação crítica; o texto só aparece nesta resposta) | Administrador |
+| `POST /api/admin/usuarios/{id}/biometria/revogar` | Revoga as digitais do funcionário (ação crítica) | Administrador |
 
 ### Trilha (`registro_autenticacao`)
 
-`resultado` × `metodo`: `SUCESSO`/`SENHA_BIOMETRIA` (login normal), `SUCESSO`/`PRIMEIRO_ACESSO`, `BIOMETRIA_CADASTRADA`, `FALHA_BIOMETRIA`, `CODIGO_INVALIDO`, `CODIGO_EMITIDO`/`ADMINISTRADOR` e `BIOMETRIA_REVOGADA`/`ADMINISTRADOR` (nesses dois, `email_informado` é o Administrador que agiu e `id_usuario` é o funcionário).
+`resultado` / `metodo`: `SUCESSO`/`SENHA` (login), `BIOMETRIA_CONFIRMADA`/`ACAO_CRITICA`, `FALHA_BIOMETRIA`, `BIOMETRIA_CADASTRADA`/`CODIGO_ATIVACAO`, `CODIGO_INVALIDO`, `CODIGO_EMITIDO`/`ADMINISTRADOR` e `BIOMETRIA_REVOGADA`/`ADMINISTRADOR` (nesses dois, `email_informado` é o Administrador que agiu e `id_usuario` é o funcionário).
 
 ### Persistência e configuração
 
 - `credencial_biometrica` (migration `V2`): `credential_id`, `user_handle` aleatório, chave pública COSE e contador de assinaturas, em base64url. Verificação pela biblioteca `com.yubico:webauthn-server-core`, exigindo `userVerification = required`.
 - `codigo_ativacao` (migration `V3`): hash, quem emitiu (nulo = instalação), validade, situação (`ATIVO`, `USADO`, `SUBSTITUIDO`).
-- `application.yml`: `APP_BIOMETRIA_OBRIGATORIA` (padrão `true`; `false` só para desenvolver sem celular — a senha volta a bastar), `APP_WEBAUTHN_RP_ID` (padrão `localhost`, vale para qualquer porta local), `APP_WEBAUTHN_ORIGENS` (padrão = `APP_CORS_ORIGIN`) e `APP_WEBAUTHN_PREFERIR_CELULAR` (padrão `true`: o navegador já abre o QR code).
+- `application.yml`: `APP_BIOMETRIA_ACOES_CRITICAS` (padrão `true`; `false` só para desenvolver sem leitor de digital), `APP_WEBAUTHN_PREFERIR_CELULAR` (padrão `false`: o navegador oferece primeiro o leitor do computador; `true` abre direto o QR code do celular), `APP_WEBAUTHN_RP_ID` (padrão `localhost`) e `APP_WEBAUTHN_ORIGENS` (padrão = `APP_CORS_ORIGIN`).
 
 ### Roteiro de demonstração
 
-1. Ligar o backend e copiar do log o código do Administrador (`[PRIMEIRO ACESSO]`).
-2. Entrar como `admin@usina.local` → "Cadastre seu celular" → código + digital → Central.
-3. Aba **Segurança** → "Gerar código" para o Operador → anotar o código.
-4. Sair → entrar como `operador@usina.local` → código + digital → Central.
-5. Sair → entrar de novo → "Confirme no celular" → digital → Central.
-6. Celular perdido: Administrador → "Revogar biometria" do Operador → o Operador volta ao primeiro acesso.
-
-Plano B sem Bluetooth: na janela do navegador, escolher o Windows Hello do notebook (mesmo fluxo).
+1. Ligar o backend e copiar do terminal "Login (backend 8081)" o código da linha `[PRIMEIRO ACESSO]`.
+2. Entrar como `admin@usina.local` (só senha) → aba **Segurança** → colar o código → **Cadastrar digital** → encostar o dedo.
+3. "Gerar código" na linha do Operador → o navegador pede a digital → o código aparece. Gerar outro em seguida não pede de novo (janela de 5 min).
+4. Sair → entrar como `operador@usina.local` (só senha) → Segurança → código → **Cadastrar digital**.
+5. Leitor perdido: Administrador → "Revogar digital" do Operador (pede a digital se a janela venceu).
 
 ### Limites conhecidos
 
-O WebAuthn garante que o usuário foi verificado no aparelho, mas o celular pode aceitar o PIN de desbloqueio no lugar da digital. Fora de `localhost`, a página precisa estar em HTTPS. O código do primeiro Administrador aparece no log do servidor, que portanto deve ter acesso restrito.
+O WebAuthn garante que o usuário foi verificado no aparelho, mas o leitor pode aceitar o PIN no lugar da digital (Windows Hello e celular permitem). Fora de `localhost`, a página precisa estar em HTTPS. O código do primeiro Administrador aparece no log do servidor, que deve ter acesso restrito. Uma aprovação por notificação no celular (como gov.br/Microsoft Authenticator) exigiria um aplicativo móvel e servidor público em HTTPS: fora do escopo do Marco 2.
 
-Testes: `backend/src/test/.../LoginBiometriaTest.java` (`mvn test`, 12 casos).
+Testes: `backend/src/test/.../LoginBiometriaTest.java` (`mvn test`, 16 casos).
 
 ## Contas locais e redefinição
 
