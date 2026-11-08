@@ -19,7 +19,7 @@ Mapa da pasta `docs/` — hub de engenharia, planejamento, UI e entregas semanai
 |-------|----------|
 | [`marco1/`](marco1/) | Artefatos do Marco 1 (requisitos, MVP, EDA, UCs, classes, sequências, diagramas) |
 | [`mvp/`](mvp/) | Spec consolidada + checklist de aceite Must |
-| [`ui/`](ui/) | Idealização, Opção A, protótipos HTML, Figma |
+| [`ui/`](ui/) | Idealização Opção A, protótipos HTML (Figma fora de escopo) |
 | [`implementacao/`](implementacao/) | Rastreabilidade implementação × requisitos |
 | [`analise/`](analise/) | Notas de análise / lacunas doc × código |
 | [`semanas/`](semanas/) | Relatórios individuais + RESUMO-MERGE |

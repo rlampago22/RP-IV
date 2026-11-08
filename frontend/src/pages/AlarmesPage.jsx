@@ -1,5 +1,6 @@
 import { clsSeveridade } from '../data/alarmes.js'
 import { useEstado } from '../state/EstadoContext.jsx'
+import { IconBell, IconCheck, IconClock } from '../components/icons.jsx'
 
 function formatarHora(iso) {
   if (!iso) return '—'
@@ -11,22 +12,24 @@ function formatarHora(iso) {
 }
 
 export default function AlarmesPage() {
-  const { estado, reconhecerAlarme, resolverAlarme } = useEstado()
+  const { estado, erroApi, reconhecerAlarme, resolverAlarme } = useEstado()
   const alarmes = estado.alarmes ?? []
   const pendentes = alarmes.filter((a) => a.status !== 'RESOLVIDO')
   const resolvidos = alarmes.filter((a) => a.status === 'RESOLVIDO')
 
   return (
     <section>
-      <p className="scada-kicker">T03 · UC01 / RF-2</p>
-      <h1 className="scada-heading">Alarmes</h1>
+      <p className="scada-kicker">SISTEMA DE SEGURANÇA E PROTEÇÃO RADIOLÓGICA</p>
+      <h1 className="scada-heading">Gestão de Alarmes</h1>
       <p className="scada-lead">
-        Emitido → Reconhecido → Resolvido. Consome <code>/api/estado</code> via EstadoContext;
-        back GoF/Strategy em <code>mvp/.../alarmes/</code>.
+        Painel central de ocorrências com protocolo formal de reconhecimento operacional e encerramento de alertas.
       </p>
 
       <div className="scada-card" style={{ marginTop: 16 }}>
-        <h2>Gestão de alarmes & notificações</h2>
+        <h2 className="panel-heading">
+          <IconBell size={13} />
+          Gestão de alarmes & notificações
+        </h2>
 
         {pendentes.length === 0 ? (
           <div
@@ -55,17 +58,22 @@ export default function AlarmesPage() {
                 <div className="scada-actions" style={{ marginTop: 0 }}>
                   <button
                     type="button"
-                    className="scada-btn scada-btn-amber"
+                    className="action-btn2"
+                    style={{ background: '#b45309', flex: 'none' }}
                     disabled={a.status !== 'ATIVO'}
                     onClick={() => reconhecerAlarme(a.id)}
                   >
+                    <IconCheck size={13} />
                     Validar / Reconhecer
                   </button>
                   <button
                     type="button"
-                    className="scada-btn scada-btn-green"
+                    className="action-btn2"
+                    style={{ background: '#059669', flex: 'none' }}
+                    disabled={a.status !== 'RECONHECIDO'}
                     onClick={() => resolverAlarme(a.id)}
                   >
+                    <IconCheck size={13} />
                     Normalizar / Encerrar
                   </button>
                 </div>
@@ -76,7 +84,10 @@ export default function AlarmesPage() {
 
         {resolvidos.length > 0 && (
           <>
-            <h2 style={{ marginTop: 16 }}>Encerrados nesta sessão</h2>
+            <h2 className="panel-heading" style={{ marginTop: 16 }}>
+              <IconClock size={13} />
+              Encerrados nesta sessão
+            </h2>
             <div className="scada-table-wrap" style={{ maxHeight: 160 }}>
               <table className="scada-table">
                 <thead>
@@ -110,6 +121,7 @@ export default function AlarmesPage() {
           Backend: <code>AvaliadorLimiar</code> (Strategy), <code>AlarmeFactory</code>,{' '}
           <code>AlarmeFacade</code> + API <code>/api/alarmes/&#123;id&#125;/reconhecer|resolver</code>.
         </div>
+        {erroApi && <p className="scada-api-error" role="alert">{erroApi}</p>}
       </div>
     </section>
   )

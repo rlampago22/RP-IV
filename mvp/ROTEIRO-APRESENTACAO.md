@@ -68,6 +68,34 @@
 
 > “Após a manobra corretiva, o engenheiro encerra a ocorrência: o sistema publica `ALARME_RESOLVIDO`, restabelece os sensores para faixas seguras e o núcleo retorna ao estado verde `ESTÁVEL`.”
 
+### Roteiro curto na UI Web (login → T05 → T01 → T03 → UC04)
+
+1. Suba o auth: `cd backend` e `mvn spring-boot:run` (perfil H2 padrão, porta **8081**). Contas bootstrap: `operador@usina.local` / senha `troque-esta-senha` (ou `APP_BOOTSTRAP_PASSWORD`).
+2. Suba a API de estado: `mvp/4-EXECUTAR-API-ESTADO.bat` (porta **8080**).
+3. Suba o React: `cd frontend; npm run dev`.
+4. Faça **login** (RF07). O painel mostra o nome do operador autenticado.
+5. Em **Demo / Cenários**, clique em **Simular Anomalia (Crítico)**.
+6. Em **Alarmes**, **Validar / Reconhecer** e **Normalizar / Encerrar** — a identidade do login é enviada no corpo JSON.
+7. Ainda na Demo, use **Acesso autorizado** / **Acesso negado** (RF08 / UC04) para gerar `RegistroAcesso` + evento `ACESSO_REGISTRADO` na auditoria.
+
+### Roteiro legado Swing (opcional)
+
+1. Deixe a API rodando com `mvp/4-EXECUTAR-API-ESTADO.bat` e o React com `cd frontend; npm run dev`.
+2. Em **Demo / Cenários**, clique em **Simular Anomalia (Crítico)**. O T05 envia `POST /api/demo/anomalia`; a API registra temperatura de 372 °C, a Strategy detecta a violação e publica `AlarmeEmitido`.
+3. O polling de `/api/estado` atualiza o status para `CRÍTICO` e mostra o banner. Abra **Alarmes** e clique em **Validar / Reconhecer**. A T03 envia `POST /api/alarmes/{id}/reconhecer`; o status fica `RECONHECIDO` (em tratamento) e a timeline registra `ALARME_RECONHECIDO`.
+4. Clique em **Normalizar / Encerrar**. A T03 envia `POST /api/alarmes/{id}/resolver`; o alarme passa a `RESOLVIDO`, a timeline registra `ALARME_RESOLVIDO` e o status volta a `ESTÁVEL`.
+
+### Padrões GoF no código Java (`mvp/`)
+
+| Padrão | Arquivo | Aplicação |
+|--------|---------|-----------|
+| Facade | `mvp/src/br/edu/unipampa/usina/controlereator/ReatorFacade.java` | Entrada do caso de uso de medição; publica `MedicaoRegistrada` sem acoplar o produtor à avaliação do alarme. |
+| Strategy | `mvp/src/br/edu/unipampa/usina/alarmes/AvaliadorLimiar.java` e `AvaliadorFaixaSegura.java` | Regra intercambiável para verificar violação dos limites seguros. |
+| Factory | `mvp/src/br/edu/unipampa/usina/alarmes/AlarmeFactory.java` | Centraliza a criação da entidade `Alarme` a partir da medição crítica. |
+| Observer / Pub-Sub | `mvp/src/br/edu/unipampa/usina/infraestruturaeventos/EventBus.java` e `mvp/src/br/edu/unipampa/usina/alarmes/AlarmeFacade.java` | A Facade assina `MedicaoRegistrada`; o barramento distribui os fatos sem chamada direta do produtor para o consumidor. |
+
+**Fala GoF (20 segundos):** “A `ReatorFacade` simplifica a entrada do caso de uso. A Strategy avalia a faixa segura, a Factory cria o alarme e o Observer distribui os eventos pelo `EventBus`. Assim, o produtor da medição não precisa conhecer diretamente quem avalia, notifica ou audita.”
+
 ---
 
 ## 7. Auditoria Persistente SHA-256 e Continuidade Multi-Sessão (40 segundos)

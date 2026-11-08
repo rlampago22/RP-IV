@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AtomLogo, IconAlertTriangle } from '../components/icons.jsx'
 
 export default function LoginPage({ onLogin }) {
   const [email, setEmail] = useState('')
@@ -22,7 +23,9 @@ export default function LoginPage({ onLogin }) {
   return (
     <main className="auth-screen">
       <section className="auth-card" aria-labelledby="login-title">
-        <div className="scada-dot">RN</div>
+        <div className="brand-mark">
+          <AtomLogo size={26} />
+        </div>
         <p className="scada-kicker">Acesso restrito</p>
         <h1 id="login-title">Central de Supervisão</h1>
         <p>Identifique-se para acessar os dados operacionais do Reator-01.</p>
@@ -35,7 +38,12 @@ export default function LoginPage({ onLogin }) {
             Senha
             <input type="password" autoComplete="current-password" value={senha} onChange={(event) => setSenha(event.target.value)} required />
           </label>
-          {erro ? <p className="auth-error" role="alert">{erro}</p> : null}
+          {erro ? (
+            <p className="auth-error" role="alert" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <IconAlertTriangle size={14} />
+              {erro}
+            </p>
+          ) : null}
           <button className="scada-btn" type="submit" disabled={enviando}>{enviando ? 'Autenticando…' : 'Entrar no sistema'}</button>
         </form>
       </section>

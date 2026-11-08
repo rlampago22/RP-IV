@@ -19,7 +19,9 @@ Não foi criado o papel de Engenheiro de Segurança: ele aparece no roteiro como
 
 `papel` e `usuario` compõem uma relação N:N por `usuario_papel`. Senhas são armazenadas exclusivamente em `senha_hash` com BCrypt. `registro_autenticacao` registra sucesso ou falha de login; é distinto de `registro_acesso`, que permanece no modelo do UC04.
 
-As migrations estão em [`../backend/src/main/resources/db/migration/`](../backend/src/main/resources/db/migration/). O perfil local padrão usa PostgreSQL; H2 persistente continua disponível pelo perfil `h2` para desenvolvimento isolado. A modelagem e as migrations não dependem do banco escolhido.
+As migrations estão em [`../backend/src/main/resources/db/migration/`](../backend/src/main/resources/db/migration/). O perfil local padrão é **H2** (`spring.profiles.default=h2`); PostgreSQL fica no perfil `postgres`. A modelagem e as migrations não dependem do banco escolhido.
+
+RF08 (`RegistroAcesso` / UC04 físico) está implementado no domínio `mvp/` (`POST /api/acesso/solicitar`), separado desta API de login.
 
 ## Contrato HTTP inicial
 

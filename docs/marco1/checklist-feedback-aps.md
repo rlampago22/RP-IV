@@ -63,6 +63,9 @@ Legenda: **Feito** = endereçado nos docs do Marco 1 | **Backlog** = documentado
 | Componentes lógicos | `diagramas/componentes-logicos.puml` + PNG | Feito |
 | Componentes físicos | `diagramas/componentes-fisicos.puml` + PNG | Feito |
 | UCs / sequências | `docs/marcus/diagramas/Marcus-UML-MVP.asta` + PNGs | Feito |
-| Classes / ER | docs 06–08 + PNGs UML | Feito |
+| Classes / ER | docs 06–08 + PNGs UML + `diagramas/er-nucleo-mvp.puml` | Feito (puml restaurado 22/09) |
 | Núcleo Java funcional | `mvp/src/br/edu/unipampa/usina/...` | Feito |
-| PDF consolidado | `ENTREGA-MARCO1.pdf` regenerado com os diagramas | Feito |
+| API estado + UI Opção A | `mvp/apiestado` + `frontend/` | Feito (T05 integração = S4 #52) |
+| PDF consolidado | `ENTREGA-MARCO1.pdf` regenerado com os diagramas | Regenerar após S4 |
+| Pacote entrega M1 | `PACOTE-ENTREGA-MARCO1.md` | Feito (auditoria 22/09) |
+| Matriz PDF APS × RP4 | `matriz-pdf-aps-vs-rp4.md` | Feito |

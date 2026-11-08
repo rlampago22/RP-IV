@@ -4,18 +4,28 @@ import {
   buscarEstado,
   iniciarTempoReal,
   pausarTempoReal,
+  aplicarCenarioNormal,
+  aplicarCenarioObservacao,
+  estadoMockNormal,
+  estadoMockObservacao,
+  simularAnomalia,
   reconhecerAlarme,
   resolverAlarme,
+  dispararCenario,
+  solicitarAcesso,
 } from '../api/estado.js'
 
 const POLL_MS = 3000
 
 const EstadoContext = createContext(null)
 
-export function EstadoProvider({ children }) {
+export function EstadoProvider({ children, operadorNome = 'Operador de Reator (UI Web)' }) {
   const [estado, setEstado] = useState(ESTADO_MOCK)
   const [origemMock, setOrigemMock] = useState(true)
+  const [erroApi, setErroApi] = useState('')
   const emVooRef = useRef(false)
+  const operadorRef = useRef(operadorNome)
+  operadorRef.current = operadorNome
 
   const atualizar = useCallback(async () => {
     if (emVooRef.current) return
@@ -24,9 +34,11 @@ export function EstadoProvider({ children }) {
       const dados = await buscarEstado()
       setEstado(dados)
       setOrigemMock(false)
-    } catch {
-      // API Java (mvp/4-EXECUTAR-API-ESTADO.bat) indisponível — mantém T01 usável com o mock documentado.
+      setErroApi('')
+    } catch (erro) {
+      // API Java (mvp/4-EXECUTAR-API-ESTADO.bat) indisponível — mantém T01/T02 usável com o mock documentado.
       setOrigemMock(true)
+      setErroApi(erro?.message || 'API indisponivel')
     } finally {
       emVooRef.current = false
     }
@@ -38,23 +50,63 @@ export function EstadoProvider({ children }) {
     return () => clearInterval(intervalo)
   }, [atualizar])
 
-  const executarAcao = useCallback(async (acao) => {
+  const executarAcao = useCallback(async (acao, fallbackMock) => {
+    if (emVooRef.current) return false
+    emVooRef.current = true
     try {
       const dados = await acao()
       setEstado(dados)
       setOrigemMock(false)
-    } catch {
-      // Sem backend: ação vira no-op silencioso (mock não tem ciclo de vida de alarme real).
+      setErroApi('')
+      return true
+    } catch (erro) {
+      if (fallbackMock) {
+        setEstado(fallbackMock())
+        setOrigemMock(true)
+        setErroApi('')
+        return true
+      }
+      setErroApi(erro?.message || 'Falha na acao')
+      return false
+    } finally {
+      emVooRef.current = false
     }
   }, [])
 
   const valor = {
     estado,
     origemMock,
+    erroApi,
     iniciarTempoReal: () => executarAcao(iniciarTempoReal),
     pausarTempoReal: () => executarAcao(pausarTempoReal),
-    reconhecerAlarme: (alarmeId) => executarAcao(() => reconhecerAlarme(alarmeId)),
-    resolverAlarme: (alarmeId) => executarAcao(() => resolverAlarme(alarmeId)),
+    aplicarCenarioNormal: () => executarAcao(aplicarCenarioNormal, estadoMockNormal),
+    aplicarCenarioObservacao: () => executarAcao(aplicarCenarioObservacao, estadoMockObservacao),
+    simularAnomalia: () => executarAcao(simularAnomalia),
+    reconhecerAlarme: (alarmeId) =>
+      executarAcao(() =>
+        reconhecerAlarme(alarmeId, {
+          operador: operadorRef.current,
+          justificativa: 'Reconhecido via Central autenticada',
+        }),
+      ),
+    resolverAlarme: (alarmeId) =>
+      executarAcao(() =>
+        resolverAlarme(alarmeId, {
+          operador: operadorRef.current,
+          solucao: 'Parametros normalizados via Central autenticada',
+        }),
+      ),
+    dispararCenario: (cenario) => executarAcao(() => dispararCenario(cenario)),
+    solicitarAcesso: async (credencial, area) => {
+      try {
+        const resultado = await solicitarAcesso(credencial, area)
+        setErroApi('')
+        return resultado
+      } catch (erro) {
+        setErroApi(erro?.message || 'Falha no registro de acesso')
+        return null
+      }
+    },
   }
 
   return <EstadoContext.Provider value={valor}>{children}</EstadoContext.Provider>

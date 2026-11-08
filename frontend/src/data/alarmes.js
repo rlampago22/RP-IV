@@ -34,10 +34,14 @@ export const ALARMES_INICIAIS = [
 export function clsSeveridade(sev) {
   switch (sev) {
     case 'ALTO':
+    case 'CRITICA':
+    case 'CRITICO':
       return 'crit'
     case 'MANUT':
+    case 'MANUTENCAO':
       return 'warn'
     case 'OBS':
+    case 'OBSERVACAO':
       return 'purple'
     default:
       return 'ok'

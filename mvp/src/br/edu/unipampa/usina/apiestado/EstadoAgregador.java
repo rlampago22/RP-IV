@@ -29,8 +29,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class EstadoAgregador implements IEventSubscriber {
     private static final int LIMITE_TIMELINE = 20;
+    private static final int LIMITE_HISTORICO = 6;
 
     private final Map<Long, SensorEstado> sensores = new ConcurrentHashMap<>();
+    private final Map<Long, Deque<Double>> historicos = new ConcurrentHashMap<>();
     private final Map<String, AlarmeEstado> alarmes = new LinkedHashMap<>();
     private final Set<Long> sensoresEmAtencao = new HashSet<>();
     private final Deque<EventoEstado> timeline = new ArrayDeque<>();
@@ -51,6 +53,11 @@ public final class EstadoAgregador implements IEventSubscriber {
         if (evento instanceof MedicaoRegistrada medicao) {
             totalMedicoes.incrementAndGet();
             sensoresEmAtencao.remove(medicao.sensorId());
+            Deque<Double> hist = historicos.computeIfAbsent(medicao.sensorId(), id -> new ArrayDeque<>());
+            hist.addLast(medicao.valor());
+            while (hist.size() > LIMITE_HISTORICO) {
+                hist.removeFirst();
+            }
             sensores.put(medicao.sensorId(), new SensorEstado(
                 medicao.sensorId(),
                 medicao.tipoSensor(),
@@ -58,7 +65,8 @@ public final class EstadoAgregador implements IEventSubscriber {
                 medicao.valor(),
                 medicao.limiteMinimo(),
                 medicao.limiteMaximo(),
-                medicao.ocorridoEm()
+                medicao.ocorridoEm(),
+                List.copyOf(hist)
             ));
         } else if (evento instanceof ObservacaoRegistrada observacao) {
             sensoresEmAtencao.add(observacao.sensorId());

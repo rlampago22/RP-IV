@@ -77,9 +77,9 @@ Fluxo demonstrável:
 
 Fonte UML: [diagramas/componentes-logicos-mvp.puml](diagramas/componentes-logicos-mvp.puml). O `EventBus` implementado é síncrono e executado no mesmo processo Java.
 
-- **Marco 1:** documentação e esqueleto Java
-- **Marco 2:** fluxo Must funcional, GoF e auditoria persistente
-- **Marco 3:** interface React T01–T05, integração HTTP e preparação da demonstração
+- **Marco 1 (05/10):** **MVP Must completo** — Java EDA (RF01–RF06 + GoF + auditoria), API HTTP de estado (`/api/estado`), UI React Opção A T01–T05, artefatos e demo
+- **Marco 2:** Should (ex.: acesso) e endurecimento além do núcleo
+- **Marco 3:** Could (emergência) e demonstração final ampliada
 
 ---
 
@@ -101,7 +101,7 @@ Fonte: [diagramas/componentes-logicos.puml](diagramas/componentes-logicos.puml)
 
 ![Diagrama de componentes lógicos](diagramas/componentes-logicos-mvp.png)
 
-Componentes com Facade, Observer/Pub-Sub, Strategy e Factory, além do estado compartilhado das telas T01–T05. A integração HTTP entre React e Java está marcada como futura.
+Componentes com Facade, Observer/Pub-Sub, Strategy e Factory. O frontend consome o stub HTTP `ApiEstado` (`GET /api/estado`); medições/alarmes em memória; auditoria em arquivo SHA-256.
 
 ### 4.4 Componentes físicos (executável)
 
