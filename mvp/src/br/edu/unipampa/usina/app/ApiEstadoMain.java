@@ -10,6 +10,10 @@ import br.edu.unipampa.usina.auditorialogs.AuditoriaSubscriber;
 import br.edu.unipampa.usina.auditorialogs.RegistroAuditoria;
 import br.edu.unipampa.usina.controlereator.ReatorFacade;
 import br.edu.unipampa.usina.controlereator.Sensor;
+import br.edu.unipampa.usina.segurancaacesso.AcessoFacade;
+import br.edu.unipampa.usina.historicooperacional.HistoricoSubscriber;
+import br.edu.unipampa.usina.historicooperacional.OperadorDeServico;
+import br.edu.unipampa.usina.historicooperacional.RegistroHistorico;
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
 
 import java.io.IOException;
@@ -40,8 +44,13 @@ public final class ApiEstadoMain {
         RegistroAuditoria registro = new RegistroAuditoria(Path.of("dados", "auditoria.log"));
         new AuditoriaSubscriber(eventBus, registro);
 
+        RegistroHistorico historico = new RegistroHistorico(Path.of("dados", "historico-operacional.csv"));
+        OperadorDeServico operadorDeServico = new OperadorDeServico();
+        new HistoricoSubscriber(eventBus, historico, operadorDeServico);
+
         AlarmeFacade alarmeFacade = new AlarmeFacade(eventBus, new AvaliadorFaixaSegura(), new AlarmeFactory());
         ReatorFacade reator = new ReatorFacade(eventBus);
+        AcessoFacade acesso = new AcessoFacade(eventBus);
         EstadoAgregador estado = new EstadoAgregador(eventBus);
 
         reator.registrarSensor(new Sensor(1L, "TEMPERATURA", "Celsius", 0.0, 350.0, 20.0, 325.0));
@@ -55,7 +64,8 @@ public final class ApiEstadoMain {
         reator.receberLeitura(3L, 2.4);
         reator.receberLeitura(4L, 1100.0);
 
-        ApiEstadoHttpServer servidor = new ApiEstadoHttpServer(estado, alarmeFacade, reator, PORTA);
+        ApiEstadoHttpServer servidor =
+            new ApiEstadoHttpServer(estado, alarmeFacade, reator, acesso, historico, operadorDeServico, PORTA);
         servidor.iniciar();
 
         iniciarTempoRealSimulado(reator, estado);

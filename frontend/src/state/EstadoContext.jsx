@@ -12,17 +12,20 @@ import {
   reconhecerAlarme,
   resolverAlarme,
   dispararCenario,
+  solicitarAcesso,
 } from '../api/estado.js'
 
 const POLL_MS = 3000
 
 const EstadoContext = createContext(null)
 
-export function EstadoProvider({ children }) {
+export function EstadoProvider({ children, operadorNome = 'Operador de Reator (UI Web)' }) {
   const [estado, setEstado] = useState(ESTADO_MOCK)
   const [origemMock, setOrigemMock] = useState(true)
   const [erroApi, setErroApi] = useState('')
   const emVooRef = useRef(false)
+  const operadorRef = useRef(operadorNome)
+  operadorRef.current = operadorNome
 
   const atualizar = useCallback(async () => {
     if (emVooRef.current) return
@@ -79,9 +82,31 @@ export function EstadoProvider({ children }) {
     aplicarCenarioNormal: () => executarAcao(aplicarCenarioNormal, estadoMockNormal),
     aplicarCenarioObservacao: () => executarAcao(aplicarCenarioObservacao, estadoMockObservacao),
     simularAnomalia: () => executarAcao(simularAnomalia),
-    reconhecerAlarme: (alarmeId) => executarAcao(() => reconhecerAlarme(alarmeId)),
-    resolverAlarme: (alarmeId) => executarAcao(() => resolverAlarme(alarmeId)),
+    reconhecerAlarme: (alarmeId) =>
+      executarAcao(() =>
+        reconhecerAlarme(alarmeId, {
+          operador: operadorRef.current,
+          justificativa: 'Reconhecido via Central autenticada',
+        }),
+      ),
+    resolverAlarme: (alarmeId) =>
+      executarAcao(() =>
+        resolverAlarme(alarmeId, {
+          operador: operadorRef.current,
+          solucao: 'Parametros normalizados via Central autenticada',
+        }),
+      ),
     dispararCenario: (cenario) => executarAcao(() => dispararCenario(cenario)),
+    solicitarAcesso: async (credencial, area) => {
+      try {
+        const resultado = await solicitarAcesso(credencial, area)
+        setErroApi('')
+        return resultado
+      } catch (erro) {
+        setErroApi(erro?.message || 'Falha no registro de acesso')
+        return null
+      }
+    },
   }
 
   return <EstadoContext.Provider value={valor}>{children}</EstadoContext.Provider>
