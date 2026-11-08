@@ -14,10 +14,48 @@ import {
   dispararCenario,
   solicitarAcesso,
 } from '../api/estado.js'
+import { EstadoObservavel } from './EstadoObservavel.js'
 
-const POLL_MS = 3000
+const LEITURA_MS = 3000
+
+/**
+ * Sujeito observável único da aplicação (Observer V1 — front-end, pedido do
+ * professor em 04/11/2026). Vive fora do componente de propósito: é "o
+ * objeto observado" da UI, não um estado de uma tela específica — cada
+ * <EstadoProvider> apenas se assina nele.
+ *
+ * V1: quem publica aqui é a leitura periódica da API logo abaixo
+ * (`produzirLeituras`), porque o back-end ainda não empurra eventos. A
+ * notificação aos observadores (`update()`) só acontece quando o dado
+ * muda de verdade — ver EstadoObservavel.publicar(). Quando a V2 (push real
+ * via SSE, trilha do Bruno) estiver pronta, só este produtor muda: o
+ * contrato assinar()/update() que as telas usam permanece o mesmo.
+ */
+const estadoObservavel = new EstadoObservavel()
 
 const EstadoContext = createContext(null)
+
+let produtorIniciado = false
+let assinantesAtivos = 0
+
+function produzirLeituras(aoFalhar) {
+  let emVoo = false
+  const ler = async () => {
+    if (emVoo) return
+    emVoo = true
+    try {
+      const dados = await buscarEstado()
+      estadoObservavel.publicar(dados)
+      aoFalhar(null)
+    } catch (erro) {
+      aoFalhar(erro?.message || 'API indisponivel')
+    } finally {
+      emVoo = false
+    }
+  }
+  ler()
+  return setInterval(ler, LEITURA_MS)
+}
 
 export function EstadoProvider({ children, operadorNome = 'Operador de Reator (UI Web)' }) {
   const [estado, setEstado] = useState(ESTADO_MOCK)
@@ -27,41 +65,54 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
   const operadorRef = useRef(operadorNome)
   operadorRef.current = operadorNome
 
-  const atualizar = useCallback(async () => {
-    if (emVooRef.current) return
-    emVooRef.current = true
-    try {
-      const dados = await buscarEstado()
-      setEstado(dados)
-      setOrigemMock(false)
-      setErroApi('')
-    } catch (erro) {
-      // API Java (mvp/4-EXECUTAR-API-ESTADO.bat) indisponível — mantém T01/T02 usável com o mock documentado.
-      setOrigemMock(true)
-      setErroApi(erro?.message || 'API indisponivel')
-    } finally {
-      emVooRef.current = false
+  useEffect(() => {
+    // Esta tela se registra como observadora do sujeito — update() só roda
+    // quando o dado publicado muda, nunca em timer próprio desta tela.
+    const observador = {
+      update(novoEstado) {
+        setEstado(novoEstado)
+        setOrigemMock(false)
+        setErroApi('')
+      },
+    }
+    const cancelarAssinatura = estadoObservavel.assinar(observador)
+
+    assinantesAtivos += 1
+    let intervaloProdutor = null
+    if (!produtorIniciado) {
+      produtorIniciado = true
+      intervaloProdutor = produzirLeituras((mensagemErro) => {
+        if (mensagemErro) {
+          setOrigemMock(true)
+          setErroApi(mensagemErro)
+        }
+      })
+    }
+
+    return () => {
+      cancelarAssinatura()
+      assinantesAtivos -= 1
+      if (assinantesAtivos <= 0 && intervaloProdutor) {
+        clearInterval(intervaloProdutor)
+        produtorIniciado = false
+      }
     }
   }, [])
-
-  useEffect(() => {
-    atualizar()
-    const intervalo = setInterval(atualizar, POLL_MS)
-    return () => clearInterval(intervalo)
-  }, [atualizar])
 
   const executarAcao = useCallback(async (acao, fallbackMock) => {
     if (emVooRef.current) return false
     emVooRef.current = true
     try {
       const dados = await acao()
-      setEstado(dados)
+      // Ação do operador também passa pelo sujeito único — mesma garantia de
+      // "só notifica quem mudou" vale para resultado de ação quanto para leitura.
+      estadoObservavel.publicar(dados)
       setOrigemMock(false)
       setErroApi('')
       return true
     } catch (erro) {
       if (fallbackMock) {
-        setEstado(fallbackMock())
+        estadoObservavel.publicar(fallbackMock())
         setOrigemMock(true)
         setErroApi('')
         return true
