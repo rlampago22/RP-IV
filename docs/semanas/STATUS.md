@@ -71,7 +71,7 @@ híbrida explícita (EDA + camadas/MVC).
 
 | Aluno | Issue | Tarefa | Branch |
 |-------|-------|--------|--------|
-| Álvaro | [#77](https://github.com/rlampago22/RP-IV/issues/77) | Spec 2FA + arquitetura híbrida | `alvaro` — **diverge de `desenvolvimento`, merge dá conflito** (login/auth próprio); resolver manualmente |
+| Álvaro | [#77](https://github.com/rlampago22/RP-IV/issues/77) | Spec 2FA + arquitetura híbrida | `alvaro` — conflito de merge resolvido (commit `5776419`, auth/visual da `desenvolvimento` prevaleceu) |
 | Bruno | [#78](https://github.com/rlampago22/RP-IV/issues/78) | Observer V2 — push real (SSE) | `bruno` — atualizada com `desenvolvimento` |
 | Bernardo | [#79](https://github.com/rlampago22/RP-IV/issues/79) | Observer V1 — front-end | `bernardo` — **feito**, commit `0b20fbe`, falta PR |
 | José | [#80](https://github.com/rlampago22/RP-IV/issues/80) | Alarmes consumindo o push + GoF | `jose` — atualizada com `desenvolvimento` |
