@@ -48,6 +48,8 @@ Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projet
 |----|------|---------------|
 | — | `HistoricoSubstituicao` | Só se manutenção entrar no escopo |
 | — | Polish de persistência DB além de auditoria + auth | Evolução pós-demo |
+| RF16 | Consultar histórico operacional (filtros por data e faixa) | Realiza a cláusula "para consulta" do RF02, nunca entregue — implementado por Bruno (PR #71), proposta pendente de aprovação do grupo para promover a Should |
+| RF17 | Exportar histórico consultado em CSV | Completa a consulta; CSV mantém zero dependência externa — mesma proposta do PR #71 |
 
 ---
 
@@ -73,3 +75,4 @@ Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projet
 5. API de estado + UI T01–T05 + ciclo ACK/resolver
 6. Autenticação (RF07) + `RegistroAcesso` (RF08) + RNF08
 7. (Should) Emergencia + ProtocoloEmergencia
+8. (Could, proposta) RF16 consulta → RF17 exportação do histórico (PR #71, pendente de aprovação)

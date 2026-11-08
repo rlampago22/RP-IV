@@ -30,9 +30,17 @@ if ($Testar) {
     }
     & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.TestesApiAlarmes
     if ($LASTEXITCODE -ne 0) {
-        throw 'A suite de alarmes HTTP falhou.'
+        throw 'A suite de alarmes via HTTP falhou.'
     }
     & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.TestesAcesso
+    if ($LASTEXITCODE -ne 0) {
+        throw 'A suite de acesso (RF08) falhou.'
+    }
+    & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.TestesHistorico
+    if ($LASTEXITCODE -ne 0) {
+        throw 'A suite do historico operacional falhou.'
+    }
+    & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.TestesApiHistorico
 } else {
     Write-Host 'Executando demonstração...' -ForegroundColor Cyan
     & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.DemoMvp
