@@ -1,5 +1,4 @@
 # Revisão do MVP gerado no Antigravity
-
 ## Fontes comparadas
 
 - PDF legado: `docs/legado-aps/APS-RPIV-ATUALIZADO-Diagrama-Implantacao.pdf` (69 páginas);
@@ -40,4 +39,3 @@ O MVP é coerente como demonstração acadêmica EDA in-process: produtor, barra
 ## Próximo incremento técnico
 
 Criar uma API Java de estado/cenários entre `mvp/` e `frontend/`. O React já compartilha estado internamente, então a troca futura consiste em substituir o reducer demonstrativo por chamadas HTTP e dados derivados dos eventos reais.
-

@@ -4,6 +4,7 @@ import br.edu.unipampa.usina.alarmes.AlarmeFacade;
 import br.edu.unipampa.usina.alarmes.AlarmeFactory;
 import br.edu.unipampa.usina.alarmes.AvaliadorFaixaSegura;
 import br.edu.unipampa.usina.apiestado.ApiEstadoHttpServer;
+import br.edu.unipampa.usina.apiestado.EncaminhadorEventosSpring;
 import br.edu.unipampa.usina.apiestado.EstadoAgregador;
 import br.edu.unipampa.usina.apiestado.SensorEstado;
 import br.edu.unipampa.usina.auditorialogs.AuditoriaSubscriber;
@@ -52,6 +53,10 @@ public final class ApiEstadoMain {
         ReatorFacade reator = new ReatorFacade(eventBus);
         AcessoFacade acesso = new AcessoFacade(eventBus);
         EstadoAgregador estado = new EstadoAgregador(eventBus);
+
+        // Depois do EstadoAgregador de propósito: o EventBus chama os assinantes globais na
+        // ordem de inscrição, então o snapshot encaminhado já inclui o evento que o disparou.
+        new EncaminhadorEventosSpring(eventBus, estado);
 
         reator.registrarSensor(new Sensor(1L, "TEMPERATURA", "Celsius", 0.0, 350.0, 20.0, 325.0));
         reator.registrarSensor(new Sensor(2L, "PRESSAO", "bar", 0.0, 160.0, 10.0, 155.0));

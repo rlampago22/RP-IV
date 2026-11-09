@@ -62,6 +62,23 @@ Slides: cada um prepara **individualmente**. Checkout único: `desenvolvimento`.
 
 ---
 
+## Marco 2 — 09/11 (OPEN · feedback do professor 04/11)
+
+Diagnóstico completo + divisão em [`../marco2/00-feedback-professor-04-11.md`](../marco2/00-feedback-professor-04-11.md).
+Pedido: padrão Observer (front parava de fazer polling), duas versões
+(V1 front-end / V2 push real), expandir o MVP (2FA por celular), arquitetura
+híbrida explícita (EDA + camadas/MVC).
+
+| Aluno | Issue | Tarefa | Branch |
+|-------|-------|--------|--------|
+| Álvaro | [#77](https://github.com/rlampago22/RP-IV/issues/77) | Spec 2FA + arquitetura híbrida | `alvaro` — conflito de merge resolvido (commit `5776419`, auth/visual da `desenvolvimento` prevaleceu) |
+| Bruno | [#78](https://github.com/rlampago22/RP-IV/issues/78) | Observer V2 — push real (SSE) | `bruno` — atualizada com `desenvolvimento` |
+| Bernardo | [#79](https://github.com/rlampago22/RP-IV/issues/79) | Observer V1 — front-end | `bernardo` — **feito**, commit `0b20fbe`, falta PR |
+| José | [#80](https://github.com/rlampago22/RP-IV/issues/80) | Alarmes consumindo o push + GoF | `jose` — atualizada com `desenvolvimento` |
+| Marcus | [#81](https://github.com/rlampago22/RP-IV/issues/81) | Auditoria 2FA + roteiro de demo | `marcus` — já em dia com `desenvolvimento` |
+
+---
+
 ## Como rodar (MVP completo)
 
 ```bat

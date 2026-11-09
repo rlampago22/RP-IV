@@ -148,6 +148,19 @@ Todo `PASS` ou `FAIL` deve apontar uma evidência: saída de terminal, teste aut
 | RNF08 | 1 | 0 | 0 | [x] Aceito [ ] Rejeitado |
 | MVP Must expandido | 16 | 0 | 0 | [x] Aceito [ ] Rejeitado |
 
+## Execução local S3 — 2026-09-21 (Álvaro Domingues, branch `alvaro`)
+
+| Grupo | PASS | FAIL | N/E | Decisão |
+|---|---:|---:|---:|---|
+| RF01–RF06 | ver suíte | 0 | 0 | [x] Aceito |
+| RNF01–RNF05, RNF09–RNF10 | ver suíte | 0 | 0 | [x] Aceito |
+| MVP Must | 11 verificações | 0 | 0 | [x] Aceito |
+
+Evidência: suíte integrada concluída com `[SUCESSO] 11 verificacoes de requisitos Must
+(RF01-RF06 / RNF01-RNF10) passaram com 100% de exito!`. O JDK está em
+`C:\Program Files\Java\jdk-27\bin`; se `java` não for reconhecido em uma janela já aberta,
+feche e reabra o terminal para carregar o `PATH` atualizado.
+
 ## Registro de falhas
 
 | Cenário | Comportamento observado | Correção responsável | Issue ou commit | Reexecução |
