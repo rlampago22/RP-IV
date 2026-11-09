@@ -1,5 +1,4 @@
 # Diagramas UML do Marcus
-
 Fonte oficial desta trilha: [`Marcus-UML-MVP.asta`](Marcus-UML-MVP.asta).
 
 O projeto contém três diagramas UML nativos do Astah:
@@ -17,4 +16,3 @@ Os diagramas refletem o código executável atual:
 - `AlarmeFacade` avalia limiar, cria/registra o alarme e publica `AlarmeEmitido`;
 - `AuditoriaSubscriber` consome os eventos e chama `RegistroAuditoria.registrar`;
 - Operador e Supervisão Central aparecem explicitamente como destinatários do alarme.
-

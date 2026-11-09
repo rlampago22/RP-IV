@@ -5,7 +5,7 @@
 
 Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projeto, com MVP expandido (núcleo + acesso + demo integrada) recuperável a partir do Marco 1.
 
-**Versão:** 2.0 — Must expandido (RF07–RF08 + RNF08 + entrega integrada API/UI)
+**Versão:** 2.1 — Must expandido (RF07–RF08 + RF18 + RNF08 + entrega integrada API/UI)
 
 ---
 
@@ -21,6 +21,7 @@ Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projet
 | RF06 | Auditar eventos | RNF05 + consumidor independente no bus |
 | RF07 | Autenticar acesso restrito | Identidade na Central (login web) e credencial simulada (UC04) |
 | RF08 | `RegistroAcesso` | Persistir tentativa/resultado de acesso; corrige classe APS |
+| RF18 | 2FA por celular | Feedback do professor de 04/11/2026: após a senha, confirmar solicitação ou código no celular vinculado antes de criar a sessão |
 | RNF01–RNF05, RNF08–RNF10 | Qualidade do núcleo + segurança de acesso | Sustentam EDA e pacote SegurancaAcesso |
 
 **Entrega integrada Must (já demonstrável / formalizada):**
@@ -28,6 +29,7 @@ Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projet
 - API HTTP de estado/cenários (`mvp/apiestado`, `/api/*`)
 - UI React Opção A (T01–T05) consumindo o estado agregado
 - Ciclo de alarme ATIVO → RECONHECIDO → RESOLVIDO com identidade do operador
+- RF18 formalizado para o Marco 2; sua implementação deve incluir a etapa pendente de 2FA antes da sessão autenticada
 
 **Artefatos Must:** RF/RNF, MoSCoW, proposta MVP, pacotes, componentes lógico/físico, UCs/classes/sequências do núcleo + UC04, ER do núcleo.
 
@@ -74,5 +76,6 @@ Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projet
 4. Consumidor de auditoria
 5. API de estado + UI T01–T05 + ciclo ACK/resolver
 6. Autenticação (RF07) + `RegistroAcesso` (RF08) + RNF08
-7. (Should) Emergencia + ProtocoloEmergencia
-8. (Could, proposta) RF16 consulta → RF17 exportação do histórico (PR #71, pendente de aprovação)
+7. 2FA por celular (RF18): solicitação → confirmação/código → criação da sessão + auditoria da tentativa
+8. (Should) Emergencia + ProtocoloEmergencia
+9. (Could, proposta) RF16 consulta → RF17 exportação do histórico (PR #71, pendente de aprovação)

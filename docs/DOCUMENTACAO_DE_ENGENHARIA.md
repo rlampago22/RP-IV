@@ -37,7 +37,8 @@ Não duplica o conteúdo — só organiza links.
 
 | Artefato | Link |
 |----------|------|
-| EDA (canônico) | [`marco1/04-arquitetura-eda.md`](marco1/04-arquitetura-eda.md) |
+| EDA + camadas/MVC (canônico) | [`marco1/04-arquitetura-eda.md`](marco1/04-arquitetura-eda.md) |
+| Síntese da arquitetura híbrida (Marco 2) | [`marco2/01-arquitetura-hibrida.md`](marco2/01-arquitetura-hibrida.md) |
 | Backend Java (direção) | [`backend-java.md`](backend-java.md) |
 | Índice arquitetura | [`arquitetura/README.md`](arquitetura/README.md) |
 
