@@ -200,11 +200,56 @@ Duas decisões registradas:
 >
 > Consequência: o campo `operador` no histórico é **conveniência de leitura**, não prova. A fonte auditável de quem estava de serviço é a tabela `registro_autenticacao` do backend de autenticação, que grava cada login com `registrado_em`.
 
-## 6. Consumo no frontend
+---
 
-`frontend/src/api/estado.js` define `ESTADO_MOCK` (mesmo formato acima) usado como fallback quando o `fetch` falha, e `frontend/src/state/EstadoContext.jsx` faz polling a cada 3s. T01 (`OverviewPage.jsx`), T02 (`SensoresPage.jsx` — seeds Normal/Observação + histórico) e o shell (badge/banner em `main.jsx`) leem exclusivamente desse contexto.
+## 6. Push de estado por SSE — Observer V2
 
-## 7. Testes
+O frontend não faz mais polling. O estado chega por push, e o canal fica no **Spring
+(8081)**, não nesta API: `GET /api/eventos` devolve um `SseEmitter` e exige sessão
+autenticada, então só quem fez login recebe o fluxo.
+
+Como o `EventBus` vive no processo do `mvp/` e o Spring não tem referência a ele, há uma
+ponte entre os dois:
+
+```text
+EventBus (mvp, 8080)
+   └─ EncaminhadorEventosSpring   (assinante global, como auditoria e histórico)
+         └─ POST http://localhost:8081/api/eventos/publicar   {tipo, estado}
+               └─ EventoPushController  (Spring, 8081)
+                     └─ SseEmitter  ->  EventSource no navegador
+```
+
+O encaminhador é registrado **depois** do `EstadoAgregador`, porque o `EventBus` notifica
+na ordem de inscrição: assim o snapshot enviado já inclui o evento que disparou o push.
+O envio é assíncrono (`HttpClient.sendAsync`) para não bloquear o barramento, e falha em
+silêncio quando o Spring está fora do ar — com um único aviso no console.
+
+### Rotas (porta 8081)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/eventos` | Fluxo `text/event-stream`. Exige sessão. O navegador abre com `EventSource(url, { withCredentials: true })` |
+| `POST` | `/api/eventos/publicar` | Ponte interna chamada pelo `mvp/`. Corpo `{tipo, estado}`. Só aceita chamada de loopback |
+
+### Formato de cada mensagem
+
+| Campo | Valor |
+|-------|-------|
+| `event` | tipo do evento de domínio — `MEDICAO_REGISTRADA`, `OBSERVACAO_REGISTRADA`, `FALHA_SENSOR_DETECTADA`, `ALARME_EMITIDO`, `ALARME_RECONHECIDO`, `ALARME_RESOLVIDO`, `ACESSO_REGISTRADO` |
+| `data` | `EstadoSnapshot` completo (seção 4) |
+
+```text
+event: ALARME_EMITIDO
+data: {"status":"CRITICO","alarmes":[{...,"status":"ATIVO"}],...}
+```
+
+---
+
+## 7. Consumo no frontend
+
+`frontend/src/api/estado.js` define `ESTADO_MOCK` (mesmo formato acima) usado como fallback quando o `fetch` falha. O estado chega por **push**: `frontend/src/api/eventos.js` abre o `EventSource` de `/api/eventos` na Central (8081) e publica cada mensagem no sujeito `frontend/src/state/estadoObservavel.js`; `EstadoContext.jsx` apenas observa esse sujeito. Não há mais polling. T01 (`OverviewPage.jsx`), T02 (`SensoresPage.jsx` — seeds Normal/Observação + histórico) e o shell (badge/banner em `main.jsx`) leem exclusivamente desse contexto.
+
+## 8. Testes
 
 ```bat
 cd mvp
@@ -222,3 +267,4 @@ O script compila e roda todos os suites em sequência, abortando no primeiro que
 | `TestesApiAlarmes` | Ciclo HTTP do alarme: anomalia → reconhecer → resolver |
 | `TestesHistorico` | Amostragem por ciclo, status derivado, operador de serviço e recuperação após reinício (RNF09) |
 | `TestesApiHistorico` | `GET /api/historico`: período, faixas, combinação **E**, operador, limite/truncamento, HTTP 400 em critério inválido, e as rotas de turno |
+

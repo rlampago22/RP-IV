@@ -14,9 +14,8 @@ import {
   dispararCenario,
   solicitarAcesso,
 } from '../api/estado.js'
+import { conectarEventos } from '../api/eventos.js'
 import { EstadoObservavel } from './EstadoObservavel.js'
-
-const LEITURA_MS = 3000
 
 /**
  * Sujeito observável único da aplicação (Observer V1 — front-end, pedido do
@@ -24,12 +23,10 @@ const LEITURA_MS = 3000
  * objeto observado" da UI, não um estado de uma tela específica — cada
  * <EstadoProvider> apenas se assina nele.
  *
- * V1: quem publica aqui é a leitura periódica da API logo abaixo
- * (`produzirLeituras`), porque o back-end ainda não empurra eventos. A
- * notificação aos observadores (`update()`) só acontece quando o dado
- * muda de verdade — ver EstadoObservavel.publicar(). Quando a V2 (push real
- * via SSE, trilha do Bruno) estiver pronta, só este produtor muda: o
- * contrato assinar()/update() que as telas usam permanece o mesmo.
+ * V2: quem publica aqui é o push do back-end (`produzirPorPush`), via SSE da
+ * Central. Saiu a leitura periódica da V1 — o estado chega quando o evento
+ * acontece, não de 3 em 3 segundos. Como previsto na V1, só o produtor mudou:
+ * o contrato assinar()/update() que as telas usam permanece o mesmo.
  */
 const estadoObservavel = new EstadoObservavel()
 
@@ -38,23 +35,30 @@ const EstadoContext = createContext(null)
 let produtorIniciado = false
 let assinantesAtivos = 0
 
-function produzirLeituras(aoFalhar) {
-  let emVoo = false
-  const ler = async () => {
-    if (emVoo) return
-    emVoo = true
-    try {
-      const dados = await buscarEstado()
+/**
+ * Produtor V2: abre o fluxo SSE da Central e publica cada mensagem no sujeito.
+ *
+ * A primeira carga ainda é um fetch, para a tela não ficar vazia esperando o
+ * próximo evento. Daí em diante não há temporizador nenhum — o EventSource
+ * reconecta sozinho se a conexão cair.
+ *
+ * Devolve a função que encerra o fluxo.
+ */
+function produzirPorPush(aoFalhar) {
+  buscarEstado()
+    .then((dados) => {
       estadoObservavel.publicar(dados)
       aoFalhar(null)
-    } catch (erro) {
-      aoFalhar(erro?.message || 'API indisponivel')
-    } finally {
-      emVoo = false
-    }
-  }
-  ler()
-  return setInterval(ler, LEITURA_MS)
+    })
+    .catch((erro) => aoFalhar(erro?.message || 'API indisponivel'))
+
+  return conectarEventos(
+    (dados) => {
+      estadoObservavel.publicar(dados)
+      aoFalhar(null)
+    },
+    (erro) => aoFalhar(erro?.message || 'Canal de eventos indisponivel'),
+  )
 }
 
 export function EstadoProvider({ children, operadorNome = 'Operador de Reator (UI Web)' }) {
@@ -78,10 +82,10 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
     const cancelarAssinatura = estadoObservavel.assinar(observador)
 
     assinantesAtivos += 1
-    let intervaloProdutor = null
+    let pararProdutor = null
     if (!produtorIniciado) {
       produtorIniciado = true
-      intervaloProdutor = produzirLeituras((mensagemErro) => {
+      pararProdutor = produzirPorPush((mensagemErro) => {
         if (mensagemErro) {
           setOrigemMock(true)
           setErroApi(mensagemErro)
@@ -92,8 +96,8 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
     return () => {
       cancelarAssinatura()
       assinantesAtivos -= 1
-      if (assinantesAtivos <= 0 && intervaloProdutor) {
-        clearInterval(intervaloProdutor)
+      if (assinantesAtivos <= 0 && pararProdutor) {
+        pararProdutor()
         produtorIniciado = false
       }
     }
