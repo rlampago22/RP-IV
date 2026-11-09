@@ -6,6 +6,40 @@
 
 ---
 
+## 0. Roteiro do Marco 2 (aula de 09/11/2026) — pedidos do professor de 04/11
+
+Ordem sugerida (cerca de 8 minutos, uma pessoa por bloco):
+
+| # | Bloco | Quem | O que mostrar | Onde |
+|---|---|---|---|---|
+| 1 | Arquitetura híbrida | Álvaro | EDA no núcleo e na UI + camadas/MVC no backend Spring | `docs/marco2/01-arquitetura-hibrida.md` |
+| 2 | Observer V1 (front) | Bernardo | Tela deixa de fazer polling; o estado avisa as telas só quando muda | PR #82 |
+| 3 | Observer V2 (push) | Bruno | Backend empurra o estado por SSE | PR #83 |
+| 4 | Alarmes no Observer | José | Ciclo de alarme como consumidor do push + testes | PR #84 |
+| 5 | **2FA por celular + auditoria** | **Marcus** (spec do Álvaro) | Roteiro abaixo | `docs/marco2/02-2fa-celular-e-auditoria.md` |
+
+### Bloco 5 — 2FA por celular (RF18) e auditoria (2 a 3 minutos)
+
+1. **Frase de abertura:** "O senhor aprovou a segunda camada de autenticação pelo celular. O Álvaro
+   especificou o RF18; eu implementei e coloquei cada tentativa na trilha de auditoria."
+2. Na tela de login, entrar com e-mail e senha. Mostrar que a senha certa **não** entra: aparece
+   "Confirme no seu celular".
+3. Abrir `http://localhost:5173/celular` (o celular simulado) ao lado. Mostrar a solicitação com o código.
+4. Clicar **Aprovar** no celular e **Já aprovei no celular** na Central → entra. (Variação: digitar o código.)
+5. Ir em **Segurança → Trilha de autenticação** (como Administrador): cada etapa registrada
+   (`SENHA_OK_AGUARDANDO_2FA`, `2FA_SOLICITACAO_ENVIADA`, `2FA_APROVADO_NO_CELULAR`, `2FA_SUCESSO_APROVACAO`),
+   sem o código, e o selo **CADEIA ÍNTEGRA** (hash encadeado, como o AuditoriaLogs do núcleo).
+6. **Fechamento:** "O celular é um adaptador (`CanalCelular`): hoje é simulado, amanhã é push ou SMS sem
+   mexer na regra — é a parte em camadas da arquitetura híbrida. E a digital continua protegendo as
+   ações críticas, como pede o 4.2.10 do documento."
+
+**Se o professor perguntar:**
+- *Código errado?* 5 erros bloqueiam a tentativa; o código vale 3 minutos e uma única vez.
+- *Onde está o teste?* `backend/src/test/.../SegundoFatorLoginTest.java` (6 casos) — `mvn test` passa 23/23.
+- *Por que o celular é simulado?* Envio real exige provedor pago de SMS/push; a interface já está pronta para ele.
+
+---
+
 ## 1. O que foi feito agora (Resolução das Issues #52 e #57)
 
 ### A) Resolução da Issue #52: `Marcus — README demo + T05 Cenários (Opção A)`
