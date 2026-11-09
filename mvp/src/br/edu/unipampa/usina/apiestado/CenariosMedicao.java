@@ -2,12 +2,33 @@ package br.edu.unipampa.usina.apiestado;
 
 import br.edu.unipampa.usina.controlereator.ReatorFacade;
 
+import java.util.Map;
+
 /**
  * Seeds reproduzíveis de medição (S4 · Bernardo #50) para demo T02.
  * Valores fixos → {@link ReatorFacade#receberLeitura} → EventBus → histórico no ReatorRepository.
  */
 public final class CenariosMedicao {
+    /** Ponto de operação normal por sensor (último passo de {@link #aplicarNormal}). */
+    private static final Map<Long, Double> PONTO_NORMAL = Map.of(
+        1L, 310.5,
+        2L, 155.0,
+        3L, 2.4,
+        4L, 1100.0
+    );
+
     private CenariosMedicao() {}
+
+    /**
+     * Devolve o sensor ao ponto de operação normal. Usado quando um alarme é resolvido
+     * ("parâmetros normalizados"), para que as leituras exibidas acompanhem o status do reator.
+     */
+    public static void normalizarSensor(ReatorFacade reator, long sensorId) {
+        Double valor = PONTO_NORMAL.get(sensorId);
+        if (valor != null && reator.obterSensor(sensorId) != null) {
+            reator.receberLeitura(sensorId, valor);
+        }
+    }
 
     /** Operação normal estável (dentro da faixa ideal). */
     public static void aplicarNormal(ReatorFacade reator) {

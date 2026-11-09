@@ -24,3 +24,21 @@ app:
   cors-origin: ${APP_CORS_ORIGIN:http://localhost:5173}
   bootstrap-password: ${APP_BOOTSTRAP_PASSWORD:troque-esta-senha}
   reset-bootstrap-passwords: ${APP_RESET_BOOTSTRAP_PASSWORDS:false}
+  webauthn:
+    # RP ID = dominio onde a passkey vale; "localhost" serve para qualquer porta local.
+    rp-id: ${APP_WEBAUTHN_RP_ID:localhost}
+    rp-nome: ${APP_WEBAUTHN_RP_NOME:Central de Supervisao - Usina}
+    origens: ${APP_WEBAUTHN_ORIGENS:${app.cors-origin}}
+    # true = o navegador ja abre o QR code do celular; false (padrao) = oferece primeiro o leitor do
+    # proprio computador (Windows Hello), sem QR code.
+    preferir-celular: ${APP_WEBAUTHN_PREFERIR_CELULAR:false}
+  biometria:
+    # true = acoes criticas (administracao de acessos e, quando existir, protocolo de contingencia)
+    # exigem a digital alem da senha (RNF Seguranca e 4.2.10 do PDF). false so para desenvolvimento.
+    acoes-criticas: ${APP_BIOMETRIA_ACOES_CRITICAS:true}
+  segundo-fator:
+    # RF18 (2FA por celular): true = depois da senha o login fica pendente ate o celular aprovar ou o
+    # codigo ser digitado. false so para desenvolvimento/testes antigos.
+    login: ${APP_SEGUNDO_FATOR_LOGIN:true}
+    # Celular simulado da demonstracao (pagina /celular do front). Desligar quando houver push/SMS real.
+    celular-simulado: ${APP_CELULAR_SIMULADO:true}

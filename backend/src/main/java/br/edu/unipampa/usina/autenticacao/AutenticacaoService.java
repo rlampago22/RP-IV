@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class AutenticacaoService implements UserDetailsService {
     private final UsuarioRepository usuarios;
+    private final CredencialBiometricaRepository credenciais;
 
-    public AutenticacaoService(UsuarioRepository usuarios) {
+    public AutenticacaoService(UsuarioRepository usuarios, CredencialBiometricaRepository credenciais) {
         this.usuarios = usuarios;
+        this.credenciais = credenciais;
     }
 
     @Override
@@ -32,6 +34,6 @@ public class AutenticacaoService implements UserDetailsService {
         Usuario usuario = usuarios.findByEmailIgnoreCase(email)
             .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
         return new AuthDtos.UsuarioResponse(usuario.getNome(), usuario.getEmail(), usuario.getPapeis().stream()
-            .map(Papel::getCodigo).sorted().toList());
+            .map(Papel::getCodigo).sorted().toList(), credenciais.existsByUsuarioEmailIgnoreCase(email));
     }
 }

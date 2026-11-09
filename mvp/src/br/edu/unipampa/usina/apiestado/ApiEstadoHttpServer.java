@@ -1,6 +1,7 @@
 package br.edu.unipampa.usina.apiestado;
 
 import br.edu.unipampa.usina.alarmes.AlarmeFacade;
+import br.edu.unipampa.usina.auditorialogs.RegistroAuditoria;
 import br.edu.unipampa.usina.controlereator.ReatorFacade;
 import br.edu.unipampa.usina.segurancaacesso.AcessoFacade;
 import br.edu.unipampa.usina.segurancaacesso.RegistroAcesso;
@@ -44,6 +45,7 @@ public final class ApiEstadoHttpServer {
     private final AcessoFacade acesso;
     private final RegistroHistorico historico;
     private final OperadorDeServico operadorDeServico;
+    private final RegistroAuditoria auditoria;
     private final int porta;
     private HttpServer server;
 
@@ -56,10 +58,25 @@ public final class ApiEstadoHttpServer {
         OperadorDeServico operadorDeServico,
         int porta
     ) {
+        this(estado, alarmes, reator, acesso, historico, operadorDeServico, null, porta);
+    }
+
+    /** {@code auditoria} pode ser nula; nesse caso {@code /api/auditoria/integridade} responde 503. */
+    public ApiEstadoHttpServer(
+        EstadoAgregador estado,
+        AlarmeFacade alarmes,
+        ReatorFacade reator,
+        AcessoFacade acesso,
+        RegistroHistorico historico,
+        OperadorDeServico operadorDeServico,
+        RegistroAuditoria auditoria,
+        int porta
+    ) {
         this.estado = estado;
         this.alarmes = alarmes;
         this.reator = reator;
         this.acesso = acesso;
+        this.auditoria = auditoria;
         this.historico = historico;
         this.operadorDeServico = operadorDeServico;
         this.porta = porta;
@@ -73,6 +90,7 @@ public final class ApiEstadoHttpServer {
         server.createContext("/api/cenarios/", this::tratarCenario);
         server.createContext("/api/demo/anomalia", this::tratarAnomaliaDemo);
         server.createContext("/api/alarmes/", this::tratarAcaoAlarme);
+        server.createContext("/api/auditoria/integridade", this::tratarIntegridadeAuditoria);
         server.createContext("/api/acesso/", this::tratarAcesso);
         server.createContext("/api/historico", this::tratarHistorico);
         server.createContext("/api/historico/dias", this::tratarHistoricoDias);
@@ -200,12 +218,51 @@ public final class ApiEstadoHttpServer {
                 responsavel = lerCampoJson(corpo, "responsavel", responsavel);
             }
             String solucao = lerCampoJson(corpo, "solucao", "Parametros normalizados via T01 Overview");
-            boolean ok = alarmes.resolverAlarme(resolver.group(1), responsavel, solucao);
+            String alarmeId = resolver.group(1);
+            Long sensorDoAlarme = alarmes.consultarAlarmes().stream()
+                .filter(a -> a.getId().equalsIgnoreCase(alarmeId))
+                .map(a -> a.getOrigem().sensorId())
+                .findFirst()
+                .orElse(null);
+            boolean ok = alarmes.resolverAlarme(alarmeId, responsavel, solucao);
+            if (ok && sensorDoAlarme != null) {
+                // "Parâmetros normalizados": o sensor volta ao ponto normal, para as leituras
+                // exibidas acompanharem o status do reator (antes ficavam em 372 °C com status ESTÁVEL).
+                CenariosMedicao.normalizarSensor(reator, sensorDoAlarme);
+            }
             responder(exchange, ok ? 200 : 404, EstadoJson.escrever(estado.snapshot()));
             return;
         }
 
         responder(exchange, 404, "{\"erro\":\"rota nao encontrada\"}");
+    }
+
+    /**
+     * T04: {@code GET /api/auditoria/integridade} recalcula a cadeia SHA-256 do arquivo
+     * {@code dados/auditoria.log} (verificação física) e informa se está íntegra.
+     */
+    private void tratarIntegridadeAuditoria(HttpExchange exchange) throws IOException {
+        if (comCorsEPreflight(exchange, "GET")) {
+            return;
+        }
+        if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+            responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
+            return;
+        }
+        if (auditoria == null) {
+            responder(exchange, 503, "{\"erro\":\"auditoria nao configurada\"}");
+            return;
+        }
+        boolean integra = auditoria.verificarIntegridadeArquivo();
+        var entradas = auditoria.consultar();
+        String ultimoHash = entradas.isEmpty() ? "" : entradas.get(entradas.size() - 1).hashCurto();
+        responder(
+            exchange,
+            200,
+            "{\"integra\":" + integra
+                + ",\"entradas\":" + entradas.size()
+                + ",\"ultimoHash\":\"" + ultimoHash + "\"}"
+        );
     }
 
     private void tratarAcesso(HttpExchange exchange) throws IOException {

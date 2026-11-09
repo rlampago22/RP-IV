@@ -31,7 +31,9 @@ public class SecurityConfig {
             .cors(cors -> { })
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(registry -> registry
-                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/segundo-fator/**").permitAll()
+                // RF18: o "celular" da demonstracao nao tem sessao da Central (so existe com celular-simulado=true).
+                .requestMatchers("/api/celular-simulado/**").permitAll()
                 // Ponte interna mvp (8080) -> Spring (8081): o processo do núcleo não tem
                 // sessão. O próprio controller recusa chamada que não venha de loopback.
                 .requestMatchers(HttpMethod.POST, "/api/eventos/publicar").permitAll()
