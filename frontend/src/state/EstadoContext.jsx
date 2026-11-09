@@ -14,8 +14,8 @@ import {
   dispararCenario,
   solicitarAcesso,
 } from '../api/estado.js'
-
-const POLL_MS = 3000
+import { conectarEventos } from '../api/eventos.js'
+import { estadoObservavel } from './estadoObservavel.js'
 
 const EstadoContext = createContext(null)
 
@@ -32,7 +32,7 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
     emVooRef.current = true
     try {
       const dados = await buscarEstado()
-      setEstado(dados)
+      estadoObservavel.publicar(dados)
       setOrigemMock(false)
       setErroApi('')
     } catch (erro) {
@@ -44,10 +44,24 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
     }
   }, [])
 
+  // Observador: o provider só escuta o sujeito, não sabe de onde o estado vem.
+  useEffect(() => estadoObservavel.assinar(setEstado), [])
+
+  // Produtor: push por SSE no lugar do polling. O EventSource reconecta sozinho,
+  // então aqui não há temporizador nenhum — o estado chega quando o evento acontece.
   useEffect(() => {
-    atualizar()
-    const intervalo = setInterval(atualizar, POLL_MS)
-    return () => clearInterval(intervalo)
+    atualizar() // primeira carga: deixa a tela usável mesmo antes do primeiro evento
+    return conectarEventos(
+      (dados) => {
+        estadoObservavel.publicar(dados)
+        setOrigemMock(false)
+        setErroApi('')
+      },
+      (erro) => {
+        setOrigemMock(true)
+        setErroApi(erro?.message || 'Fluxo de eventos indisponivel')
+      },
+    )
   }, [atualizar])
 
   const executarAcao = useCallback(async (acao, fallbackMock) => {
@@ -55,13 +69,13 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
     emVooRef.current = true
     try {
       const dados = await acao()
-      setEstado(dados)
+      estadoObservavel.publicar(dados)
       setOrigemMock(false)
       setErroApi('')
       return true
     } catch (erro) {
       if (fallbackMock) {
-        setEstado(fallbackMock())
+        estadoObservavel.publicar(fallbackMock())
         setOrigemMock(true)
         setErroApi('')
         return true
