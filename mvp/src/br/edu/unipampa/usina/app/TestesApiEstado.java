@@ -8,6 +8,7 @@ import br.edu.unipampa.usina.apiestado.CenariosMedicao;
 import br.edu.unipampa.usina.apiestado.EstadoAgregador;
 import br.edu.unipampa.usina.apiestado.EstadoJson;
 import br.edu.unipampa.usina.apiestado.EstadoSnapshot;
+import br.edu.unipampa.usina.apiestado.EventoEstado;
 import br.edu.unipampa.usina.apiestado.SensorEstado;
 import br.edu.unipampa.usina.apiestado.StatusReator;
 import br.edu.unipampa.usina.controlereator.ReatorFacade;
@@ -81,8 +82,14 @@ public final class TestesApiEstado {
             "Alarme deve constar como RESOLVIDO apos a resolucao.");
 
         // 7. Timeline mantem o limite de eventos mais recentes primeiro.
-        List<?> eventos = estado.snapshot().eventos();
+        List<EventoEstado> eventos = estado.snapshot().eventos();
         exigir(!eventos.isEmpty(), "Timeline de eventos nao deve estar vazia.");
+        exigir(eventos.stream().anyMatch(evento -> "ALARME_EMITIDO".equals(evento.tipo())),
+            "EstadoAgregador deve observar ALARME_EMITIDO.");
+        exigir(eventos.stream().anyMatch(evento -> "ALARME_RECONHECIDO".equals(evento.tipo())),
+            "EstadoAgregador deve observar ALARME_RECONHECIDO.");
+        exigir(eventos.stream().anyMatch(evento -> "ALARME_RESOLVIDO".equals(evento.tipo())),
+            "EstadoAgregador deve observar ALARME_RESOLVIDO.");
 
         // 8. Seed Normal (#50): 6 leituras previsiveis + historico no JSON.
         CenariosMedicao.aplicarNormal(reator);
