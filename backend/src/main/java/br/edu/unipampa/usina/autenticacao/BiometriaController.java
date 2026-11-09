@@ -39,11 +39,11 @@ public class BiometriaController {
     private final CodigoAtivacaoService codigos;
     private final ConfirmacaoBiometrica confirmacao;
     private final UsuarioRepository usuarios;
-    private final RegistroAutenticacaoRepository registros;
+    private final AuditoriaAutenticacao registros;
     private final ObjectMapper json;
 
     public BiometriaController(BiometriaService biometria, CodigoAtivacaoService codigos, ConfirmacaoBiometrica confirmacao,
-                               UsuarioRepository usuarios, RegistroAutenticacaoRepository registros, ObjectMapper json) {
+                               UsuarioRepository usuarios, AuditoriaAutenticacao registros, ObjectMapper json) {
         this.biometria = biometria;
         this.codigos = codigos;
         this.confirmacao = confirmacao;

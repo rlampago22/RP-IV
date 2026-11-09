@@ -970,3 +970,10 @@ button.scada-btn:disabled {
 }
 
 .scada-opcao input { accent-color: var(--cyan); cursor: pointer; }
+
+/* RF18 — celular simulado da demonstração do 2FA */
+.celular-sim { width: 340px; min-height: 560px; border: 10px solid #1f2937; border-radius: 36px; background: var(--panel, #0f172a); padding: 22px 18px; display: flex; flex-direction: column; gap: 10px; }
+.celular-notch { width: 90px; height: 6px; border-radius: 6px; background: #334155; margin: 0 auto 8px; }
+.celular-notificacao { display: grid; gap: 6px; padding: 12px; border-radius: 14px; border: 1px solid #334155; font-size: 13px; color: var(--muted, #94a3b8); }
+.celular-notificacao strong { color: inherit; }
+.celular-codigo { font-size: 28px; font-weight: 800; letter-spacing: 6px; color: var(--cyan, #22d3ee); }

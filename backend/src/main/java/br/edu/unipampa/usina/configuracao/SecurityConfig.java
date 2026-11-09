@@ -31,7 +31,9 @@ public class SecurityConfig {
             .cors(cors -> { })
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(registry -> registry
-                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/segundo-fator/**").permitAll()
+                // RF18: o "celular" da demonstracao nao tem sessao da Central (so existe com celular-simulado=true).
+                .requestMatchers("/api/celular-simulado/**").permitAll()
                 .requestMatchers("/api/auth/me", "/api/auth/logout").authenticated()
                 .anyRequest().authenticated())
             .build();

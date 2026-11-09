@@ -10,6 +10,7 @@ import DemoPage from './pages/DemoPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import HistoricoPage from './pages/HistoricoPage.jsx'
 import SegurancaPage from './pages/SegurancaPage.jsx'
+import CelularSimuladoPage from './pages/CelularSimuladoPage.jsx'
 import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
 import { HistoricoProvider } from './state/HistoricoContext.jsx'
 import { authApi } from './services/authApi.js'
@@ -70,9 +71,7 @@ function App() {
 
   if (usuario === null) {
     return (
-      <LoginPage
-        onLogin={async (email, senha) => setUsuario(await authApi.login(email, senha))}
-      />
+      <LoginPage onAutenticado={setUsuario} />
     )
   }
 
@@ -219,8 +218,11 @@ function Shell({ usuario, onLogout }) {
   )
 }
 
+// RF18: /celular é o celular simulado da demonstração (fora da sessão da Central).
+const ehCelularSimulado = window.location.pathname === '/celular'
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    {ehCelularSimulado ? <CelularSimuladoPage /> : <App />}
   </React.StrictMode>,
 )

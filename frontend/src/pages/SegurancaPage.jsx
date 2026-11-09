@@ -26,7 +26,8 @@ export default function SegurancaPage({ usuario }) {
       <p className="scada-kicker">RNF08 · AUTENTICAÇÃO EM DOIS FATORES</p>
       <h1 className="scada-heading">Segurança do acesso</h1>
       <p className="scada-lead">
-        O login da Central usa a senha. As <strong>ações críticas</strong> pedem também a sua digital
+        O login da Central usa a senha e, em seguida, a <strong>confirmação no celular</strong> (RF18: aprovar
+        a solicitação ou digitar o código de 6 dígitos). As <strong>ações críticas</strong> pedem também a sua digital
         (leitor do computador ou celular): administrar acessos, remover uma digital e, quando existir,
         ativar o protocolo de contingência. Depois de confirmar, você tem 5 minutos para outras ações
         críticas sem confirmar de novo. A digital nunca sai do aparelho: a Central guarda só uma chave
@@ -34,6 +35,7 @@ export default function SegurancaPage({ usuario }) {
       </p>
       <MinhaDigital administrador={administrador} />
       {administrador && <AdministracaoAcessos usuarioAtual={usuario} />}
+      {administrador && <TrilhaAutenticacao />}
     </section>
   )
 }
@@ -298,6 +300,68 @@ function AdministracaoAcessos({ usuarioAtual }) {
         </div>
       )}
       <Aviso aviso={aviso} />
+    </div>
+  )
+}
+
+/** Issue #81 (RNF03/RNF05) — trilha de autenticação encadeada por hash, inclusive cada etapa do 2FA. */
+function TrilhaAutenticacao() {
+  const [trilha, setTrilha] = useState(null)
+  const [erro, setErro] = useState('')
+
+  async function carregar() {
+    try {
+      setTrilha(await authApi.auditoriaAutenticacao())
+      setErro('')
+    } catch (error) {
+      setErro(error.message)
+    }
+  }
+
+  useEffect(() => {
+    carregar()
+  }, [])
+
+  return (
+    <div className="scada-card" style={{ marginTop: 16 }}>
+      <h2 className="panel-heading">
+        <IconShield size={13} />
+        Trilha de autenticação (auditoria do 2FA)
+      </h2>
+      <p className="scada-lead" style={{ marginTop: 0 }}>
+        Cada tentativa de login e cada etapa do segundo fator ficam registradas (sucesso e falha), sem o código
+        e sem o telefone. Cada linha guarda o hash da anterior: alterar ou apagar uma linha quebra a cadeia.
+      </p>
+      {erro ? <p className="scada-note scada-note-erro">{erro}</p> : null}
+      {trilha && (
+        <>
+          <p style={{ margin: '0 0 10px' }}>
+            <span className={`scada-pill ${trilha.integra ? 'ok' : 'crit'}`}>
+              {trilha.integra ? 'CADEIA ÍNTEGRA' : `ADULTERADA NO REGISTRO ${trilha.primeiroAdulterado}`}
+            </span>{' '}
+            {trilha.total} registros{' '}
+            <button type="button" className="scada-btn scada-btn-ghost" onClick={carregar}>Atualizar</button>
+          </p>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="scada-table">
+              <thead>
+                <tr><th>Quando</th><th>E-mail</th><th>Método</th><th>Resultado</th><th>Hash</th></tr>
+              </thead>
+              <tbody>
+                {[...trilha.registros].reverse().map((r) => (
+                  <tr key={r.id}>
+                    <td>{formatarData(r.registradoEm)}</td>
+                    <td>{r.email}</td>
+                    <td>{r.metodo}</td>
+                    <td>{r.resultado}</td>
+                    <td><code>{r.hash}…</code></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   )
 }

@@ -18,6 +18,13 @@ async function request(path, options = {}) {
 
 export const authApi = {
   login: (email, senha) => request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, senha }) }),
+  // RF18 — 2FA por celular: concluir o login com o código ou depois de aprovar no celular.
+  segundoFatorCodigo: (codigo) => request('/api/auth/segundo-fator/codigo', { method: 'POST', body: JSON.stringify({ codigo }) }),
+  segundoFatorAprovacao: () => request('/api/auth/segundo-fator/aprovacao', { method: 'POST' }),
+  celularNotificacoes: () => request('/api/celular-simulado/notificacoes'),
+  celularAprovar: (id) => request(`/api/celular-simulado/${id}/aprovar`, { method: 'POST' }),
+  celularRecusar: (id) => request(`/api/celular-simulado/${id}/recusar`, { method: 'POST' }),
+  auditoriaAutenticacao: () => request('/api/admin/auditoria/autenticacao'),
   me: () => request('/api/auth/me'),
   logout: () => request('/api/auth/logout', { method: 'POST' }),
   centralStatus: () => request('/api/central/status'),

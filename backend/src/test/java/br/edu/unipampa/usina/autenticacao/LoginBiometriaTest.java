@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest(properties = {
     "spring.datasource.url=jdbc:h2:mem:login-biometria;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
     "app.bootstrap-password=senha-de-teste",
+    "app.segundo-fator.login=false",
 })
 @AutoConfigureMockMvc
 @Transactional
@@ -197,6 +198,7 @@ class LoginBiometriaTest {
     @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:biometria-desligada;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
         "app.bootstrap-password=senha-de-teste",
+        "app.segundo-fator.login=false",
         "app.biometria.acoes-criticas=false",
     })
     @AutoConfigureMockMvc

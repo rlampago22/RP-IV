@@ -26,11 +26,11 @@ public class AdministracaoAcessoController {
     private final UsuarioRepository usuarios;
     private final BiometriaService biometria;
     private final CodigoAtivacaoService codigos;
-    private final RegistroAutenticacaoRepository registros;
+    private final AuditoriaAutenticacao registros;
     private final ConfirmacaoBiometrica confirmacao;
 
     public AdministracaoAcessoController(UsuarioRepository usuarios, BiometriaService biometria,
-                                         CodigoAtivacaoService codigos, RegistroAutenticacaoRepository registros,
+                                         CodigoAtivacaoService codigos, AuditoriaAutenticacao registros,
                                          ConfirmacaoBiometrica confirmacao) {
         this.usuarios = usuarios;
         this.biometria = biometria;
