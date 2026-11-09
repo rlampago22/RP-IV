@@ -15,9 +15,51 @@ import {
   solicitarAcesso,
 } from '../api/estado.js'
 import { conectarEventos } from '../api/eventos.js'
-import { estadoObservavel } from './estadoObservavel.js'
+import { EstadoObservavel } from './EstadoObservavel.js'
+
+/**
+ * Sujeito observável único da aplicação (Observer V1 — front-end, pedido do
+ * professor em 04/11/2026). Vive fora do componente de propósito: é "o
+ * objeto observado" da UI, não um estado de uma tela específica — cada
+ * <EstadoProvider> apenas se assina nele.
+ *
+ * V2: quem publica aqui é o push do back-end (`produzirPorPush`), via SSE da
+ * Central. Saiu a leitura periódica da V1 — o estado chega quando o evento
+ * acontece, não de 3 em 3 segundos. Como previsto na V1, só o produtor mudou:
+ * o contrato assinar()/update() que as telas usam permanece o mesmo.
+ */
+const estadoObservavel = new EstadoObservavel()
 
 const EstadoContext = createContext(null)
+
+let produtorIniciado = false
+let assinantesAtivos = 0
+
+/**
+ * Produtor V2: abre o fluxo SSE da Central e publica cada mensagem no sujeito.
+ *
+ * A primeira carga ainda é um fetch, para a tela não ficar vazia esperando o
+ * próximo evento. Daí em diante não há temporizador nenhum — o EventSource
+ * reconecta sozinho se a conexão cair.
+ *
+ * Devolve a função que encerra o fluxo.
+ */
+function produzirPorPush(aoFalhar) {
+  buscarEstado()
+    .then((dados) => {
+      estadoObservavel.publicar(dados)
+      aoFalhar(null)
+    })
+    .catch((erro) => aoFalhar(erro?.message || 'API indisponivel'))
+
+  return conectarEventos(
+    (dados) => {
+      estadoObservavel.publicar(dados)
+      aoFalhar(null)
+    },
+    (erro) => aoFalhar(erro?.message || 'Canal de eventos indisponivel'),
+  )
+}
 
 export function EstadoProvider({ children, operadorNome = 'Operador de Reator (UI Web)' }) {
   const [estado, setEstado] = useState(ESTADO_MOCK)
@@ -27,48 +69,47 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
   const operadorRef = useRef(operadorNome)
   operadorRef.current = operadorNome
 
-  const atualizar = useCallback(async () => {
-    if (emVooRef.current) return
-    emVooRef.current = true
-    try {
-      const dados = await buscarEstado()
-      estadoObservavel.publicar(dados)
-      setOrigemMock(false)
-      setErroApi('')
-    } catch (erro) {
-      // API Java (mvp/4-EXECUTAR-API-ESTADO.bat) indisponível — mantém T01/T02 usável com o mock documentado.
-      setOrigemMock(true)
-      setErroApi(erro?.message || 'API indisponivel')
-    } finally {
-      emVooRef.current = false
-    }
-  }, [])
-
-  // Observador: o provider só escuta o sujeito, não sabe de onde o estado vem.
-  useEffect(() => estadoObservavel.assinar(setEstado), [])
-
-  // Produtor: push por SSE no lugar do polling. O EventSource reconecta sozinho,
-  // então aqui não há temporizador nenhum — o estado chega quando o evento acontece.
   useEffect(() => {
-    atualizar() // primeira carga: deixa a tela usável mesmo antes do primeiro evento
-    return conectarEventos(
-      (dados) => {
-        estadoObservavel.publicar(dados)
+    // Esta tela se registra como observadora do sujeito — update() só roda
+    // quando o dado publicado muda, nunca em timer próprio desta tela.
+    const observador = {
+      update(novoEstado) {
+        setEstado(novoEstado)
         setOrigemMock(false)
         setErroApi('')
       },
-      (erro) => {
-        setOrigemMock(true)
-        setErroApi(erro?.message || 'Fluxo de eventos indisponivel')
-      },
-    )
-  }, [atualizar])
+    }
+    const cancelarAssinatura = estadoObservavel.assinar(observador)
+
+    assinantesAtivos += 1
+    let pararProdutor = null
+    if (!produtorIniciado) {
+      produtorIniciado = true
+      pararProdutor = produzirPorPush((mensagemErro) => {
+        if (mensagemErro) {
+          setOrigemMock(true)
+          setErroApi(mensagemErro)
+        }
+      })
+    }
+
+    return () => {
+      cancelarAssinatura()
+      assinantesAtivos -= 1
+      if (assinantesAtivos <= 0 && pararProdutor) {
+        pararProdutor()
+        produtorIniciado = false
+      }
+    }
+  }, [])
 
   const executarAcao = useCallback(async (acao, fallbackMock) => {
     if (emVooRef.current) return false
     emVooRef.current = true
     try {
       const dados = await acao()
+      // Ação do operador também passa pelo sujeito único — mesma garantia de
+      // "só notifica quem mudou" vale para resultado de ação quanto para leitura.
       estadoObservavel.publicar(dados)
       setOrigemMock(false)
       setErroApi('')
