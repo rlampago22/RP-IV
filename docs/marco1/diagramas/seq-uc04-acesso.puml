@@ -1,0 +1,39 @@
+@startuml seq-uc04-acesso
+title SEQ-UC04 — Acesso Físico a Área Restrita (RF07/RF08)
+skinparam shadowing false
+
+actor "Guarda / Operador" as Op
+participant "AcessoFacade" as AF
+participant "RegistroAcesso" as Reg
+participant "EventBus" as Bus
+participant "AuditoriaSubscriber" as Aud
+participant "RegistroAuditoria" as Trilha
+
+Op -> AF: solicitarAcesso(credencial, area)
+AF -> AF: autorizar(credencial, area)
+note right of AF
+  Compara nível da credencial (crachá)
+  com o nível exigido pela área —
+  ex.: OPER-01 (2) x CORE-REATOR (3) = negado.
+end note
+
+AF -> Reg: new RegistroAcesso(credencial, area, resultado)
+AF -> AF: historico.add(registro)
+
+alt autorizado
+  AF -> Bus: publicar(AcessoRegistrado(..., resultado="SUCESSO"))
+else negado
+  AF -> Bus: publicar(AcessoRegistrado(..., resultado="FALHA"))
+end
+
+Bus -> Aud: onEvento(AcessoRegistrado)
+note right of Aud
+  Assinante global (assinarTodos) — audita
+  toda tentativa de acesso, autorizada ou não.
+end note
+Aud -> Trilha: registrar(evento)
+Trilha --> Aud: EntradaAuditoria (hash encadeado)
+
+AF --> Op: RegistroAcesso (resultado)
+
+@enduml
