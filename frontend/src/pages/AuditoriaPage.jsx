@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useEstado } from '../state/EstadoContext.jsx'
-import { interpretarEvento } from '../data/eventos.js'
+import { interpretarEvento, reatorDoEvento } from '../data/eventos.js'
 import {
   IconShield,
   IconBell,
@@ -9,6 +9,9 @@ import {
   IconAlertTriangle,
   IconActivity,
 } from '../components/icons.jsx'
+import SeletorReator, { AvisoOutrosReatores, doReator } from '../components/SeletorReator.jsx'
+import { TODOS, useReatorSelecionado } from '../state/reatorSelecionado.js'
+import { nomeReator } from '../data/reatores.js'
 
 const ICONE_TIPO = {
   ALARME_EMITIDO: IconBell,
@@ -30,13 +33,21 @@ function formatarHora(iso) {
 
 export default function AuditoriaPage() {
   const { estado } = useEstado()
+  const [reator] = useReatorSelecionado()
   const eventos = estado.eventos ?? []
   const [mostrarRotina, setMostrarRotina] = useState(false)
 
-  const interpretados = useMemo(
-    () => eventos.map((row, i) => ({ ...row, seq: eventos.length - i, ...interpretarEvento(row.tipo, row.resumo) })),
-    [eventos]
-  )
+  const interpretados = useMemo(() => {
+    const reatorPorAlarme = new Map((estado.alarmes ?? []).map((a) => [a.id, a.reatorId]))
+    return eventos
+      .map((row, i) => ({
+        ...row,
+        seq: eventos.length - i,
+        reatorId: reatorDoEvento(row, reatorPorAlarme),
+        ...interpretarEvento(row.tipo, row.resumo),
+      }))
+      .filter((e) => reator === TODOS || (e.reatorId != null && doReator(reator, e.reatorId)))
+  }, [eventos, estado.alarmes, reator])
   const importantes = interpretados.filter((e) => e.importante)
   const rotina = interpretados.filter((e) => !e.importante)
   const visiveis = mostrarRotina ? interpretados : importantes
@@ -50,6 +61,9 @@ export default function AuditoriaPage() {
         EventBus, protegido por uma cadeia de hash SHA-256 (não dá para editar ou apagar um
         registro sem quebrar a cadeia).
       </p>
+
+      <SeletorReator />
+      <AvisoOutrosReatores />
 
       <div className="scada-card" style={{ marginTop: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
@@ -67,7 +81,11 @@ export default function AuditoriaPage() {
         </div>
 
         {visiveis.length === 0 ? (
-          <p className="scada-lead">Sem eventos de auditoria nesta sessão.</p>
+          <p className="scada-lead">
+            {reator === TODOS
+              ? 'Sem eventos de auditoria nesta sessão.'
+              : `Sem eventos do ${nomeReator(reator)} entre os mais recentes.`}
+          </p>
         ) : (
           <div>
             {visiveis.map((evento) => {
@@ -80,6 +98,7 @@ export default function AuditoriaPage() {
                   </div>
                   <div className="audit-body">
                     <div className="audit-title" style={{ color: rotineiro ? 'var(--muted)' : 'var(--text)' }}>
+                      <span className="scada-pill reator-tag">{evento.reatorId ? nomeReator(evento.reatorId) : '—'}</span>{' '}
                       {evento.titulo}
                     </div>
                     <div className="audit-desc">{evento.descricao}</div>
