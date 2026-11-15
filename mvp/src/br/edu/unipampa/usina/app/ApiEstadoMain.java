@@ -6,7 +6,6 @@ import br.edu.unipampa.usina.alarmes.AvaliadorFaixaSegura;
 import br.edu.unipampa.usina.apiestado.ApiEstadoHttpServer;
 import br.edu.unipampa.usina.apiestado.EncaminhadorEventosSpring;
 import br.edu.unipampa.usina.apiestado.EstadoAgregador;
-import br.edu.unipampa.usina.apiestado.SensorEstado;
 import br.edu.unipampa.usina.auditorialogs.AuditoriaSubscriber;
 import br.edu.unipampa.usina.auditorialogs.RegistroAuditoria;
 import br.edu.unipampa.usina.controlereator.ReatorFacade;
@@ -19,24 +18,20 @@ import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * Sobe o backend EDA (EventBus + facades) e expõe {@code /api/estado} para o frontend React
  * (T01 Overview, Opção A). Contrato: docs/api-estado-contrato.md.
  */
 public final class ApiEstadoMain {
-    private static final int PORTA = 8080;
-    private static final long[] SENSOR_IDS = {1L, 2L, 3L, 4L};
-
-    /** Ponto de operação normal de cada sensor — a simulação oscila em torno deles, sem deriva permanente. */
-    private static final Map<Long, Double> SETPOINTS = Map.of(
-        1L, 310.5,
-        2L, 155.0,
-        3L, 2.4,
-        4L, 1100.0
-    );
+    /** Padrão 8080; {@code -Dusina.api.porta=...} sobe outra instância sem disputar a porta. */
+    private static final int PORTA = Integer.getInteger("usina.api.porta", 8080);
+    /** Reatores da usina. O primeiro é o principal: cenários do T05, T01, T02 e histórico. */
+    private static final List<String> REATORES = List.of("R-01", "R-02", "R-03", "R-04", "R-05");
 
     private ApiEstadoMain() {}
 
@@ -50,7 +45,6 @@ public final class ApiEstadoMain {
         new HistoricoSubscriber(eventBus, historico, operadorDeServico);
 
         AlarmeFacade alarmeFacade = new AlarmeFacade(eventBus, new AvaliadorFaixaSegura(), new AlarmeFactory());
-        ReatorFacade reator = new ReatorFacade(eventBus);
         AcessoFacade acesso = new AcessoFacade(eventBus);
         EstadoAgregador estado = new EstadoAgregador(eventBus);
 
@@ -58,70 +52,39 @@ public final class ApiEstadoMain {
         // ordem de inscrição, então o snapshot encaminhado já inclui o evento que o disparou.
         new EncaminhadorEventosSpring(eventBus, estado);
 
+        // Cada reator tem a sua facade (e o seu repositório de medições), todas no mesmo
+        // barramento — alarmes, auditoria e o painel observam os 5 sem saber quantos são.
+        List<ReatorFacade> reatores = new ArrayList<>();
+        for (String reatorId : REATORES) {
+            ReatorFacade reator = new ReatorFacade(eventBus, reatorId);
+            registrarSensoresRf1(reator);
+            reatores.add(reator);
+        }
+        ReatorFacade principal = reatores.get(0);
+
+        // Leitura inicial de todos: o painel já abre com os 5 reatores e o T01 com os 4 parâmetros RF-1.
+        SimuladorReatores simulador = new SimuladorReatores(reatores, estado::isTempoRealAtivo);
+        simulador.semear();
+
+        ApiEstadoHttpServer servidor =
+            new ApiEstadoHttpServer(estado, alarmeFacade, principal, acesso, historico, operadorDeServico, PORTA);
+        Map<String, ReatorFacade> porId = new LinkedHashMap<>();
+        reatores.forEach(reator -> porId.put(reator.getReatorId(), reator));
+        servidor.registrarReatores(porId, reatorId -> simulador.segurar(reatorId, SimuladorReatores.SEGURAR_CENARIO_MS));
+        servidor.iniciar();
+
+        // Só publica enquanto o tempo real estiver ligado (POST /api/tempo-real/iniciar).
+        simulador.iniciar();
+
+        System.out.println("[API ESTADO] " + REATORES.size() + " reatores simulados: " + String.join(", ", REATORES));
+        System.out.println("[API ESTADO] Pressione CTRL+C para encerrar.");
+    }
+
+    /** Os 4 parâmetros RF-1, com as mesmas faixas em todos os reatores. */
+    private static void registrarSensoresRf1(ReatorFacade reator) {
         reator.registrarSensor(new Sensor(1L, "TEMPERATURA", "Celsius", 0.0, 350.0, 20.0, 325.0));
         reator.registrarSensor(new Sensor(2L, "PRESSAO", "bar", 0.0, 160.0, 10.0, 155.0));
         reator.registrarSensor(new Sensor(3L, "RADIACAO", "mSv/h", 0.0, 5.0, 0.1, 4.2));
         reator.registrarSensor(new Sensor(4L, "FLUXO_RESFRIAMENTO", "m3/h", 500.0, 1500.0, 600.0, 1400.0));
-
-        // Operação normal inicial: o T01 já mostra os 4 parâmetros RF-1 assim que o painel React abre.
-        reator.receberLeitura(1L, 310.5);
-        reator.receberLeitura(2L, 155.0);
-        reator.receberLeitura(3L, 2.4);
-        reator.receberLeitura(4L, 1100.0);
-
-        ApiEstadoHttpServer servidor =
-            new ApiEstadoHttpServer(estado, alarmeFacade, reator, acesso, historico, operadorDeServico, PORTA);
-        servidor.iniciar();
-
-        iniciarTempoRealSimulado(reator, estado);
-
-        System.out.println("[API ESTADO] Pressione CTRL+C para encerrar.");
-    }
-
-    /**
-     * Enquanto {@code tempoReal} estiver ligado (POST /api/tempo-real/iniciar), varia levemente
-     * as leituras dos 4 sensores para simular telemetria contínua no T01.
-     */
-    private static void iniciarTempoRealSimulado(ReatorFacade reator, EstadoAgregador estado) {
-        Random aleatorio = new Random();
-        Thread thread = new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException interrompida) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-                if (!estado.isTempoRealAtivo()) {
-                    continue;
-                }
-                var sensoresAtuais = estado.snapshot().sensores();
-                for (long sensorId : SENSOR_IDS) {
-                    sensoresAtuais.stream()
-                        .filter(sensor -> sensor.id() == sensorId)
-                        .findFirst()
-                        .ifPresent(sensor -> reator.receberLeitura(sensorId, proximoValor(sensor, aleatorio)));
-                }
-            }
-        }, "tempo-real-simulado");
-        thread.setDaemon(true);
-        thread.start();
-    }
-
-    /**
-     * Passeio aleatório com reversão à média (Ornstein-Uhlenbeck simplificado): puxa o valor de
-     * volta ao setpoint operacional a cada tick, evitando deriva permanente para fora da faixa segura
-     * que geraria alarmes contínuos na demo (observado em teste manual: passeio aleatório puro "grudou"
-     * acima do limite de pressão e disparou dezenas de alarmes em poucos minutos).
-     */
-    private static double proximoValor(SensorEstado sensor, Random aleatorio) {
-        double faixa = sensor.limiteMaximo() - sensor.limiteMinimo();
-        double setpoint = SETPOINTS.getOrDefault(sensor.id(), (sensor.limiteMinimo() + sensor.limiteMaximo()) / 2);
-        double atracaoAoSetpoint = 0.12 * (setpoint - sensor.valor());
-        double ruido = (aleatorio.nextDouble() - 0.5) * faixa * 0.025;
-        double novoValor = sensor.valor() + atracaoAoSetpoint + ruido;
-        double minimo = sensor.limiteMinimo() - faixa * 0.1;
-        double maximo = sensor.limiteMaximo() + faixa * 0.1;
-        return Math.max(minimo, Math.min(maximo, novoValor));
     }
 }
