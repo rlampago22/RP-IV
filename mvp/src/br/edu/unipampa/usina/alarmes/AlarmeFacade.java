@@ -52,7 +52,8 @@ public final class AlarmeFacade implements IEventSubscriber {
 
         String mensagem = String.format(
             Locale.ROOT,
-            "%s fora da faixa segura: %.2f %s",
+            "%s · %s fora da faixa segura: %.2f %s",
+            medicao.reatorId(),
             medicao.tipoSensor(),
             medicao.valor(),
             medicao.unidade()
@@ -61,6 +62,7 @@ public final class AlarmeFacade implements IEventSubscriber {
         System.out.println("[NOTIFICACAO] " + String.join(" e ", DESTINATARIOS));
 
         eventBus.publicar(new AlarmeEmitido(
+            medicao.reatorId(),
             alarme.getCriadoEm(),
             alarme.getId(),
             medicao.sensorId(),
