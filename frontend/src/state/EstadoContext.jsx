@@ -134,8 +134,10 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
     erroApi,
     iniciarTempoReal: () => executarAcao(iniciarTempoReal),
     pausarTempoReal: () => executarAcao(pausarTempoReal),
-    aplicarCenarioNormal: () => executarAcao(aplicarCenarioNormal, estadoMockNormal),
-    aplicarCenarioObservacao: () => executarAcao(aplicarCenarioObservacao, estadoMockObservacao),
+    aplicarCenarioNormal: (reatorId) =>
+      executarAcao(() => aplicarCenarioNormal(reatorId), estadoMockNormal),
+    aplicarCenarioObservacao: (reatorId) =>
+      executarAcao(() => aplicarCenarioObservacao(reatorId), estadoMockObservacao),
     simularAnomalia: () => executarAcao(simularAnomalia),
     reconhecerAlarme: (alarmeId) =>
       executarAcao(() =>
@@ -151,7 +153,7 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
           solucao: 'Parametros normalizados via Central autenticada',
         }),
       ),
-    dispararCenario: (cenario) => executarAcao(() => dispararCenario(cenario)),
+    dispararCenario: (cenario, reatorId) => executarAcao(() => dispararCenario(cenario, reatorId)),
     solicitarAcesso: async (credencial, area) => {
       try {
         const resultado = await solicitarAcesso(credencial, area)

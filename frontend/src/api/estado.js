@@ -12,7 +12,12 @@
  *   contadores: { medicoes, alarmes, auditoria },
  *   alarmes: { id, sensorId, severidade, mensagem, status, criadoEm, operador, solucao }[],
  *   eventos: { ocorridoEm, tipo, resumo }[],
+ *   reatores: { id, nivel, atualizadoEm, alarmesAtivos,
+ *               sensores: { id, tipo, unidade, valor, limiteMinimo, limiteMaximo,
+ *                           emAtencao, atualizadoEm, serie: [epochMillis, valor][] }[] }[],
  * }
+ *
+ * `status` e `sensores` são do reator principal (R-01); `alarmes` traz `reatorId`.
  */
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
@@ -75,6 +80,8 @@ export const ESTADO_MOCK = {
       resumo: 'sensor=4 tipo=FLUXO_RESFRIAMENTO valor=1100.00 m3/h (mock local)',
     },
   ],
+  // Sem mock dos 5 reatores: o painel de monitoramento avisa que precisa da API.
+  reatores: [],
 }
 
 /** Seeds offline — mesmos valores de CenariosMedicao.java (demo sem API). */
@@ -137,14 +144,22 @@ export function pausarTempoReal() {
   return chamar('/api/tempo-real/pausar', { method: 'POST' })
 }
 
+/**
+ * `?reator=R-0X` aplica o cenário naquele reator sem pausar os outros. Sem reator, vale o
+ * comportamento original: reator principal e tempo real pausado.
+ */
+function comReator(caminho, reatorId) {
+  return reatorId ? `${caminho}?reator=${encodeURIComponent(reatorId)}` : caminho
+}
+
 /** Seed Normal (S4 #50) — valores fixos via ReatorFacade.receberLeitura. */
-export function aplicarCenarioNormal() {
-  return chamar('/api/cenarios/normal', { method: 'POST' })
+export function aplicarCenarioNormal(reatorId) {
+  return chamar(comReator('/api/cenarios/normal', reatorId), { method: 'POST' })
 }
 
 /** Seed Observação (Alt. 1 UC01) — temperatura 328 °C → ObservacaoRegistrada. */
-export function aplicarCenarioObservacao() {
-  return chamar('/api/cenarios/observacao', { method: 'POST' })
+export function aplicarCenarioObservacao(reatorId) {
+  return chamar(comReator('/api/cenarios/observacao', reatorId), { method: 'POST' })
 }
 
 /** Fallback offline para botões de seed na T02. */
@@ -177,8 +192,10 @@ export function resolverAlarme(alarmeId, corpo = {}) {
   })
 }
 
-export function dispararCenario(cenario) {
-  return chamar(`/api/cenarios/${encodeURIComponent(cenario.toLowerCase())}`, { method: 'POST' })
+export function dispararCenario(cenario, reatorId) {
+  return chamar(comReator(`/api/cenarios/${encodeURIComponent(cenario.toLowerCase())}`, reatorId), {
+    method: 'POST',
+  })
 }
 
 /** UC04 / RF08 — solicita acesso a área restrita no domínio mvp. */

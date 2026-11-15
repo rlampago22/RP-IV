@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useEstado } from '../state/EstadoContext.jsx'
 import { IconPlay, IconLock, IconCheck } from '../components/icons.jsx'
+import SeletorReator from '../components/SeletorReator.jsx'
+import { TODOS, useReatorSelecionado } from '../state/reatorSelecionado.js'
+import { nomeReator } from '../data/reatores.js'
 
 const SCENARIOS = [
   { key: 'NORMAL', title: 'Normal / Tempo Real', detail: 'Medições na faixa · núcleo ESTÁVEL' },
@@ -24,9 +27,17 @@ const SCENARIOS = [
 /**
  * T05 — botões do roteiro Marcus (Issue #52).
  * Dispara cenários via /api/cenarios/{key} atualizando o EventBus e refletindo em T01–T04.
+ *
+ * Com 5 reatores, o cenário cai no reator selecionado (`?reator=`) e só a simulação dele é
+ * segurada por 20 s; os outros continuam atualizando. Com "Todos", os botões ficam desligados —
+ * disparar um cenário na usina inteira não é uma ação que faça sentido.
  */
 export default function DemoPage() {
-  const { dispararCenario, origemMock, solicitarAcesso } = useEstado()
+  const { estado, dispararCenario, origemMock, solicitarAcesso } = useEstado()
+  const [reator] = useReatorSelecionado()
+  const comReatores = (estado.reatores ?? []).length > 0
+  const alvo = comReatores && reator !== TODOS ? reator : undefined
+  const semAlvo = comReatores && !alvo
   const [scenario, setScenario] = useState('NORMAL')
   const [disparando, setDisparando] = useState(false)
   const [mensagemFeedback, setMensagemFeedback] = useState(null)
@@ -36,11 +47,13 @@ export default function DemoPage() {
     setScenario(item.key)
     setDisparando(true)
     setMensagemFeedback(null)
-    const ok = await dispararCenario(item.key)
+    const ok = await dispararCenario(item.key, alvo)
     if (ok) {
       setMensagemFeedback({
         tipo: 'sucesso',
-        texto: `Cenário "${item.title}" disparado com sucesso no EventBus! Verifique T01 (Overview), T03 (Alarmes) e T04 (Auditoria).`,
+        texto: alvo
+          ? `Cenário "${item.title}" disparado no ${nomeReator(alvo)}. A simulação dele fica segurada por 20 s para o resultado aparecer; os outros reatores seguem atualizando. Veja no Monitoramento.`
+          : `Cenário "${item.title}" disparado com sucesso no EventBus! Verifique T01 (Overview), T03 (Alarmes) e T04 (Auditoria).`,
       })
     } else {
       setMensagemFeedback({
@@ -78,13 +91,20 @@ export default function DemoPage() {
         Injeção controlada de condições operacionais para validação de resposta do sistema: Normal, Atenção Preventiva, Falha Instrumental e Anomalia Crítica.
       </p>
 
+      <SeletorReator rotulo="Reator alvo" />
+      {semAlvo && (
+        <p className="scada-note" role="status">
+          Escolha o reator em que o cenário será disparado.
+        </p>
+      )}
+
       <div className="scada-scenarios">
         {SCENARIOS.map((item) => (
           <button
             key={item.key}
             type="button"
             className={`scada-scenario ${scenario === item.key ? 'scada-scenario-active' : ''}`}
-            disabled={disparando}
+            disabled={disparando || semAlvo}
             onClick={() => handleDisparar(item)}
           >
             <strong>{item.title}</strong>
