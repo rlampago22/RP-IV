@@ -28,7 +28,7 @@ export default function LoginPage({ onLogin }) {
         </div>
         <p className="scada-kicker">Acesso restrito</p>
         <h1 id="login-title">Central de Supervisão</h1>
-        <p>Identifique-se para acessar os dados operacionais do Reator-01.</p>
+        <p>Identifique-se para acessar os dados operacionais dos reatores.</p>
         <form onSubmit={enviar} className="auth-form">
           <label>
             E-mail institucional
