@@ -41,6 +41,14 @@ if ($Testar) {
         throw 'A suite do historico operacional falhou.'
     }
     & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.TestesApiHistorico
+    if ($LASTEXITCODE -ne 0) {
+        throw 'A suite da consulta do historico falhou.'
+    }
+    & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.TestesApiEstado
+    if ($LASTEXITCODE -ne 0) {
+        throw 'A suite da API de estado falhou.'
+    }
+    & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.TestesReatores
 } else {
     Write-Host 'Executando demonstração...' -ForegroundColor Cyan
     & java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.DemoMvp
