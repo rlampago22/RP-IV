@@ -67,7 +67,7 @@ export default function LoginPage({ onAutenticado }) {
 
         {!pendente ? (
           <>
-            <p>Identifique-se para acessar os dados operacionais do Reator-01.</p>
+            <p>Identifique-se para acessar os dados operacionais dos reatores.</p>
             <form onSubmit={enviarSenha} className="auth-form">
               <label>
                 E-mail institucional

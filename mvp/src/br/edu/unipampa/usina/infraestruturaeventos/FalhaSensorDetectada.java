@@ -9,6 +9,7 @@ import java.util.List;
  * Emite alerta de manutenção para a equipe técnica."
  */
 public record FalhaSensorDetectada(
+    String reatorId,
     Instant ocorridoEm,
     long sensorId,
     String tipoSensor,
@@ -17,7 +18,19 @@ public record FalhaSensorDetectada(
 ) implements EventoDominio {
 
     public FalhaSensorDetectada {
+        reatorId = EventoDominio.reatorOuPrincipal(reatorId);
         destinatarios = List.copyOf(destinatarios);
+    }
+
+    /** Falha num sensor do reator principal. */
+    public FalhaSensorDetectada(
+        Instant ocorridoEm,
+        long sensorId,
+        String tipoSensor,
+        String motivo,
+        List<String> destinatarios
+    ) {
+        this(REATOR_PRINCIPAL, ocorridoEm, sensorId, tipoSensor, motivo, destinatarios);
     }
 
     @Override
@@ -27,7 +40,8 @@ public record FalhaSensorDetectada(
 
     @Override
     public String resumo() {
-        return "sensor=" + sensorId
+        return "reator=" + reatorId
+            + " sensor=" + sensorId
             + " tipo=" + tipoSensor
             + " motivo=\"" + motivo + "\""
             + " destinatarios=" + String.join(", ", destinatarios);

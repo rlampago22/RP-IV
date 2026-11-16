@@ -8,6 +8,7 @@ import java.time.Instant;
  */
 public record AlarmeEstado(
     String id,
+    String reatorId,
     long sensorId,
     String severidade,
     String mensagem,
@@ -17,6 +18,6 @@ public record AlarmeEstado(
     String solucao
 ) {
     public AlarmeEstado comStatus(String novoStatus, String operador, String solucao) {
-        return new AlarmeEstado(id, sensorId, severidade, mensagem, novoStatus, criadoEm, operador, solucao);
+        return new AlarmeEstado(id, reatorId, sensorId, severidade, mensagem, novoStatus, criadoEm, operador, solucao);
     }
 }

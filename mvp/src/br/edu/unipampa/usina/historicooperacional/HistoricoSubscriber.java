@@ -66,6 +66,9 @@ public final class HistoricoSubscriber implements IEventSubscriber {
 
     @Override
     public synchronized void onEvento(EventoDominio evento) {
+        if (!doReatorPrincipal(evento)) {
+            return;
+        }
         if (evento instanceof MedicaoRegistrada medicao) {
             tipoPorSensor.put(medicao.sensorId(), medicao.tipoSensor());
             ultimoValorPorTipo.put(medicao.tipoSensor(), medicao.valor());
@@ -88,19 +91,44 @@ public final class HistoricoSubscriber implements IEventSubscriber {
             gravarTransicao(emitido.ocorridoEm());
         } else if (evento instanceof AlarmeReconhecido reconhecido) {
             Long sensor = sensorPorAlarme.get(reconhecido.alarmeId());
-            if (sensor != null) {
-                sensoresEmAlarme.remove(sensor);
-                sensoresReconhecidos.add(sensor);
+            if (sensor == null) {
+                return; // alarme de outro reator: não muda o estado do principal
             }
+            sensoresEmAlarme.remove(sensor);
+            sensoresReconhecidos.add(sensor);
             gravarTransicao(reconhecido.ocorridoEm());
         } else if (evento instanceof AlarmeResolvido resolvido) {
             Long sensor = sensorPorAlarme.remove(resolvido.alarmeId());
-            if (sensor != null) {
-                sensoresEmAlarme.remove(sensor);
-                sensoresReconhecidos.remove(sensor);
+            if (sensor == null) {
+                return;
             }
+            sensoresEmAlarme.remove(sensor);
+            sensoresReconhecidos.remove(sensor);
             gravarTransicao(resolvido.ocorridoEm());
         }
+    }
+
+    /**
+     * O histórico operacional (CSV, RF16/RF17) continua sendo do reator principal. Os ids de
+     * sensor (1 a 4) se repetem em todos os reatores, então sem este filtro uma leitura do sensor 1
+     * do R-03 fecharia o ciclo do R-01 com o valor errado.
+     *
+     * <p>Reconhecimento e resolução não carregam reator — são filtrados pelo alarme conhecido.
+     */
+    private static boolean doReatorPrincipal(EventoDominio evento) {
+        String reator;
+        if (evento instanceof MedicaoRegistrada m) {
+            reator = m.reatorId();
+        } else if (evento instanceof ObservacaoRegistrada o) {
+            reator = o.reatorId();
+        } else if (evento instanceof FalhaSensorDetectada f) {
+            reator = f.reatorId();
+        } else if (evento instanceof AlarmeEmitido a) {
+            reator = a.reatorId();
+        } else {
+            return true;
+        }
+        return EventoDominio.REATOR_PRINCIPAL.equals(reator);
     }
 
     /**

@@ -3,6 +3,9 @@ import { CODIGO_POR_ID, CODIGO_POR_TIPO } from '../data/sensores.js'
 import { useHistorico } from '../state/HistoricoContext.jsx'
 import GraficoHistorico from './GraficoHistorico.jsx'
 import RelatorioDiaMock from './RelatorioDiaMock.jsx'
+import SeletorReator from '../components/SeletorReator.jsx'
+import { TODOS, useReatorSelecionado } from '../state/reatorSelecionado.js'
+import { nomeReator } from '../data/reatores.js'
 import {
   IconClock,
   IconUser,
@@ -83,11 +86,25 @@ export default function HistoricoPage() {
     alternarGraficos,
     definirAnexarGraficos,
   } = useHistorico()
+  const [reator] = useReatorSelecionado()
+  const outroReator = reator !== TODOS && reator !== 'R-01'
 
   return (
     <section>
       <p className="scada-kicker scada-nao-imprimir">T06 · RF16 / RF17</p>
       <h1 className="scada-heading scada-nao-imprimir">Histórico Operacional</h1>
+
+      <div className="scada-nao-imprimir">
+        <SeletorReator />
+        {outroReator && (
+          <div className="aviso-outros-reatores" role="status">
+            <span>
+              O histórico ainda é registrado só para o <strong>Reator-01</strong>. Os dados abaixo
+              não são do {nomeReator(reator)}.
+            </span>
+          </div>
+        )}
+      </div>
 
       {!selecionada ? (
         <>

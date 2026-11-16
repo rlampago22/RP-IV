@@ -5,7 +5,7 @@
 
 Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projeto, com MVP expandido (núcleo + acesso + demo integrada) recuperável a partir do Marco 1.
 
-**Versão:** 2.1 — Must expandido (RF07–RF08 + RF18 + RNF08 + entrega integrada API/UI)
+**Versão:** 2.2 — Must expandido (RF07–RF08 + RF18 + RF19–RF21 + RNF08 + entrega integrada API/UI)
 
 ---
 
@@ -22,6 +22,9 @@ Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projet
 | RF07 | Autenticar acesso restrito | Identidade na Central (login web) e credencial simulada (UC04) |
 | RF08 | `RegistroAcesso` | Persistir tentativa/resultado de acesso; corrige classe APS |
 | RF18 | 2FA por celular | Feedback do professor de 04/11/2026: após a senha, confirmar solicitação ou código no celular vinculado antes de criar a sessão |
+| RF19 | 5 reatores com simulação independente | Feedback do professor de 13/11/2026: cada reator simula e notifica no seu ritmo, sem sincronia |
+| RF20 | Painel único de monitoramento | Mesmo feedback: todos os gráficos numa tela, cada um com o próprio push, gráfico completo (não só a oscilação) |
+| RF21 | Indicador verde/amarelo/vermelho por reator | Mesmo feedback: apontar nível crítico (ex.: radiação) em cada reator, alternando entre eles |
 | RNF01–RNF05, RNF08–RNF10 | Qualidade do núcleo + segurança de acesso | Sustentam EDA e pacote SegurancaAcesso |
 
 **Entrega integrada Must (já demonstrável / formalizada):**
@@ -40,6 +43,7 @@ Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projet
 | ID | Item | Justificativa |
 |----|------|---------------|
 | RF09 | `Emergencia.criarEmergencia` | Feedback APS + domínio de contingência. **Implementado em 16/11** (aba Emergência; `backend/.../emergencias`) |
+| — | Abas adaptadas aos 5 reatores (seletor de reator compartilhado, matriz de sensores, resumo da usina, cenário por reator) | Não pedido pelo professor, mas evita que as abas antigas mostrem só o R-01 ao lado do painel de 5 reatores; cenário por reator permite demonstrar o RF21 sem depender de pico aleatório. Histórico por reator fica para outra rodada |
 | RF10 | `ProtocoloEmergencia` | Classe faltante crítica no feedback APS. **Implementado em 16/11**: ativar e encerrar pedem a digital (4.2.10) |
 | RNF08 (2º fator) | Digital como segundo fator das **ações críticas** (administração de acessos e, quando existir, protocolo de contingência), com cadastro prévio autorizado pelo Administrador (código de ativação). Login continua com senha | PDF APS: RNF Segurança pede "autenticação multifator" (Must), 4.2.10 exige dois fatores na ativação de contingência, UC02 exige funcionário "previamente cadastrado" e 4.2.7 atribui a gestão ao Administrador. Marco 2, trilha Marcus — ver [`../backend-autenticacao.md`](../backend-autenticacao.md#segundo-fator-digital-nas-ações-críticas-rnf08) |
 
@@ -78,5 +82,6 @@ Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projet
 5. API de estado + UI T01–T05 + ciclo ACK/resolver
 6. Autenticação (RF07) + `RegistroAcesso` (RF08) + RNF08
 7. 2FA por celular (RF18): solicitação → confirmação/código → criação da sessão + auditoria da tentativa
+7.1. Monitoramento de 5 reatores (RF19–RF21): reator de origem nos eventos → estado por reator → simulação independente → painel com lâmpada por reator
 8. (Should) Emergencia + ProtocoloEmergencia
 9. (Could, proposta) RF16 consulta → RF17 exportação do histórico (PR #71, pendente de aprovação)

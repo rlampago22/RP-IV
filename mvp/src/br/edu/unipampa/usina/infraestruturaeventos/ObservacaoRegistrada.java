@@ -9,6 +9,7 @@ import java.util.Locale;
  * Registra observação sem gerar alarme crítico."
  */
 public record ObservacaoRegistrada(
+    String reatorId,
     Instant ocorridoEm,
     long sensorId,
     String tipoSensor,
@@ -16,6 +17,22 @@ public record ObservacaoRegistrada(
     double valor,
     String observacao
 ) implements EventoDominio {
+
+    public ObservacaoRegistrada {
+        reatorId = EventoDominio.reatorOuPrincipal(reatorId);
+    }
+
+    /** Observação do reator principal. */
+    public ObservacaoRegistrada(
+        Instant ocorridoEm,
+        long sensorId,
+        String tipoSensor,
+        String unidade,
+        double valor,
+        String observacao
+    ) {
+        this(REATOR_PRINCIPAL, ocorridoEm, sensorId, tipoSensor, unidade, valor, observacao);
+    }
 
     @Override
     public String tipo() {
@@ -26,7 +43,8 @@ public record ObservacaoRegistrada(
     public String resumo() {
         return String.format(
             Locale.ROOT,
-            "sensor=%d tipo=%s valor=%.2f %s obs=\"%s\"",
+            "reator=%s sensor=%d tipo=%s valor=%.2f %s obs=\"%s\"",
+            reatorId,
             sensorId,
             tipoSensor,
             valor,

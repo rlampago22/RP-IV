@@ -3,7 +3,7 @@
 **Disciplina:** AL0343 — Resolução de Problemas IV  
 **Sistema:** Controle de Usina Nuclear  
 **Equipe:** Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol  
-**Versão:** 2.1 — Must expandido + 2FA por celular (Marco 2)
+**Versão:** 2.2 — Must expandido + 2FA por celular + monitoramento de 5 reatores (Marco 2)
 
 ---
 
@@ -65,6 +65,25 @@ Escopo refinado a partir do legado APS, com foco no que o sistema de controle di
 - Rejeição, código inválido, reutilizado ou expirado, e falha de envio não podem liberar sessão nem recursos protegidos.
 - A solicitação e o código devem estar vinculados à tentativa de autenticação; o código não pode ser reutilizado.
 - O resultado da tentativa deve ser auditável, sem registrar ou exibir código, telefone ou outros dados sensíveis.
+
+### Monitoramento de 5 reatores (Marco 2 — Must)
+
+Origem: feedback do professor em 13/11/2026. O push atual (SSE, telas como observadoras) foi aprovado e **não muda**; o pedido é sobre o que ele mostra.
+
+| ID | Requisito | Descrição |
+|----|-----------|-----------|
+| RF19 | Supervisionar 5 reatores independentes | O sistema deve receber e exibir as medições de 5 reatores. Cada reator tem simulação própria e atualiza em momentos diferentes, sem sincronia entre eles. |
+| RF20 | Painel único de monitoramento | Uma tela deve reunir os 5 reatores, um bloco por reator, cada um atualizado pelo próprio push. Os gráficos principais (radiação e temperatura) aparecem completos — eixos, escala, valor atual e linhas de referência —; os secundários (pressão e fluxo) aparecem resumidos. Ao selecionar um reator, a tela mostra os 4 gráficos completos dele sem perder a visão dos demais. |
+| RF21 | Indicar nível crítico por reator | Cada reator deve ter um indicador verde / amarelo / vermelho do nível atual: verde dentro da faixa ideal, amarelo na faixa de atenção, vermelho acima do limite seguro (ex.: radiação acima de 5,0 mSv/h). Os indicadores mudam de forma independente entre os reatores. |
+
+**Critérios de aceite:**
+
+- O painel mostra os 5 reatores ao mesmo tempo, com radiação e temperatura em gráfico completo sem precisar clicar.
+- É possível ver um reator atualizar enquanto outro permanece sem atualização.
+- Os indicadores dos reatores mudam de cor em momentos diferentes, cada um pela simulação do seu reator.
+- O alarme gerado por um reator identifica o reator de origem.
+
+**Delimitação de escopo:** histórico operacional (RF16/RF17), cenários de demonstração (T05), T01 e T02 continuam sobre o reator principal (R-01). A lâmpada (RF21) reflete a leitura atual; o ciclo do alarme (RF04/RF05) continua independente dela — um alarme segue ativo até ser reconhecido, mesmo depois que a leitura volta ao normal.
 
 ### Consulta e exportação do histórico (MVP Could) — proposta, pendente de aprovação do grupo
 
