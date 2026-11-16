@@ -15,6 +15,11 @@
 - **Verificação ponta a ponta antes da apresentação**, no código já integrado (detalhes na seção 4).
 - **Roteiro da apresentação de 16/11:** o que mostrar, como foi verificado (estática e dinâmica), respostas para
   perguntas prováveis e cuidados ao vivo com a digital.
+- **Protocolo de contingência (RF09/RF10), branch `feat/protocolo-contingencia`:** aba **Emergência** para
+  registrar uma emergência e ativar um protocolo (desligamento emergencial, contenção de vazamento ou evacuação).
+  Ativar e encerrar são ações críticas e pedem a digital (4.2.10), pelo mesmo `ConfirmacaoBiometrica`; cada passo
+  vai para a trilha encadeada. `ProtocoloContingenciaTest` (8 casos), backend 31/31; testado no navegador com a
+  digital no celular (protocolo ativado em 16/11 às 11:49).
 
 Trabalho das semanas anteriores que entra nesta entrega:
 - 26–27/10: digital (passkey/WebAuthn) como 2º fator das ações críticas, com cadastro só por código de ativação do
