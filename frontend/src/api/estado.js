@@ -181,6 +181,11 @@ export function dispararCenario(cenario) {
   return chamar(`/api/cenarios/${encodeURIComponent(cenario.toLowerCase())}`, { method: 'POST' })
 }
 
+/** T04 — verificação física da cadeia SHA-256: { integra, entradas, ultimoHash }. */
+export function buscarIntegridadeAuditoria() {
+  return chamar('/api/auditoria/integridade')
+}
+
 /** UC04 / RF08 — solicita acesso a área restrita no domínio mvp. */
 export function solicitarAcesso(credencial, area) {
   return chamar('/api/acesso/solicitar', {

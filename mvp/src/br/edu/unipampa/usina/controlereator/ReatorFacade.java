@@ -51,7 +51,7 @@ public final class ReatorFacade {
     /**
      * SEQ-UC01 — Registrar medição (fluxo principal até publicação no EventBus).
      */
-    public MedicaoReator receberLeitura(long sensorId, double valor) {
+    public synchronized MedicaoReator receberLeitura(long sensorId, double valor) {
         Sensor sensor = sensores.get(sensorId);
         if (sensor == null) {
             throw new IllegalArgumentException("Sensor não cadastrado: " + sensorId);
@@ -107,7 +107,7 @@ public final class ReatorFacade {
      * Fluxo de Exceções do UC01: Falha na comunicação com sensor.
      * Emite alerta de manutenção para a equipe técnica.
      */
-    public void simularFalhaSensor(long sensorId, String motivo) {
+    public synchronized void simularFalhaSensor(long sensorId, String motivo) {
         Sensor sensor = sensores.get(sensorId);
         String tipoSensor = sensor != null ? sensor.tipo() : "DESCONHECIDO";
         System.out.printf(
@@ -126,17 +126,17 @@ public final class ReatorFacade {
         ));
     }
 
-    public List<MedicaoReator> consultarHistorico() {
+    public synchronized List<MedicaoReator> consultarHistorico() {
         return repository.listarTodas();
     }
 
     /** Histórico filtrado por sensor (T02 / telemetria). */
-    public List<MedicaoReator> consultarHistorico(long sensorId) {
+    public synchronized List<MedicaoReator> consultarHistorico(long sensorId) {
         return repository.listarPorSensor(sensorId);
     }
 
     /** Últimas N medições do repositório (histórico curto). */
-    public List<MedicaoReator> consultarHistoricoRecente(int limite) {
+    public synchronized List<MedicaoReator> consultarHistoricoRecente(int limite) {
         return repository.listarRecentes(limite);
     }
 
