@@ -2,6 +2,9 @@ package br.edu.unipampa.usina.auditorialogs;
 
 import br.edu.unipampa.usina.infraestruturaeventos.EventoDominio;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,16 +20,79 @@ import java.util.List;
  * Registro append-only com cadeia criptográfica SHA-256 e persistência multi-sessão.
  * Oferece inclusão e consulta segura, recuperando o histórico em reinicializações
  * e detectando qualquer adulteração física no arquivo de log.
+ *
+ * <p>Só pode existir 1 escritor por arquivo de log por vez (em qualquer processo): o
+ * construtor trava um arquivo {@code .lock} ao lado do log. Sem essa trava, duas
+ * instâncias (ex.: a API e a UI Swing legada rodando ao mesmo tempo) calculariam o
+ * próximo número de sequência cada uma a partir do próprio snapshot em memória e
+ * corromperiam a cadeia de hash para sempre a partir desse ponto — foi exatamente
+ * o que aconteceu em produção em 09/11/2026, descoberto só em 16/11.
  */
-public final class RegistroAuditoria {
+public final class RegistroAuditoria implements AutoCloseable {
     private static final String GENESIS = "GENESIS";
 
     private final Path arquivo;
     private final List<EntradaAuditoria> entradas = new ArrayList<>();
+    private final FileChannel canalLock;
+    private final FileLock lock;
 
     public RegistroAuditoria(Path arquivo) {
         this.arquivo = arquivo.toAbsolutePath().normalize();
+        this.canalLock = abrirELockearArquivo(this.arquivo);
+        this.lock = travarOuFalhar(this.canalLock, this.arquivo);
         carregarArquivoExistente();
+    }
+
+    private static FileChannel abrirELockearArquivo(Path arquivo) {
+        try {
+            if (arquivo.getParent() != null) {
+                Files.createDirectories(arquivo.getParent());
+            }
+            Path arquivoLock = arquivo.resolveSibling(arquivo.getFileName() + ".lock");
+            return FileChannel.open(arquivoLock, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        } catch (IOException error) {
+            throw new IllegalStateException("Não foi possível abrir o lock do log de auditoria.", error);
+        }
+    }
+
+    private static FileLock travarOuFalhar(FileChannel canalLock, Path arquivo) {
+        FileLock obtido;
+        try {
+            obtido = canalLock.tryLock();
+        } catch (OverlappingFileLockException jaTravadoNesteProcesso) {
+            obtido = null;
+        } catch (IOException error) {
+            fecharSilenciosamente(canalLock);
+            throw new IllegalStateException("Não foi possível travar o log de auditoria.", error);
+        }
+        if (obtido == null) {
+            fecharSilenciosamente(canalLock);
+            throw new IllegalStateException(
+                "Já existe outro processo (API, Swing legado ou outra sessão de testes) gravando em "
+                    + arquivo + ". Encerre-o antes de abrir uma nova sessão — gravar ao mesmo tempo "
+                    + "pelos dois corrompe a cadeia de hash permanentemente a partir desse ponto."
+            );
+        }
+        return obtido;
+    }
+
+    private static void fecharSilenciosamente(FileChannel canal) {
+        try {
+            canal.close();
+        } catch (IOException ignored) {
+            // melhor esforço — o SO libera o handle de qualquer forma quando o processo termina.
+        }
+    }
+
+    /** Libera a exclusividade sobre o log, permitindo que outro processo/sessão o abra. */
+    @Override
+    public synchronized void close() {
+        try {
+            lock.release();
+        } catch (IOException ignored) {
+            // melhor esforço — o SO libera o lock de qualquer forma ao fechar o canal/processo.
+        }
+        fecharSilenciosamente(canalLock);
     }
 
     private synchronized void carregarArquivoExistente() {
