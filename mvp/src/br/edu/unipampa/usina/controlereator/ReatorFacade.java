@@ -1,6 +1,7 @@
 package br.edu.unipampa.usina.controlereator;
 
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
+import br.edu.unipampa.usina.infraestruturaeventos.EventoDominio;
 import br.edu.unipampa.usina.infraestruturaeventos.FalhaSensorDetectada;
 import br.edu.unipampa.usina.infraestruturaeventos.MedicaoRegistrada;
 import br.edu.unipampa.usina.infraestruturaeventos.ObservacaoRegistrada;
@@ -25,15 +26,31 @@ public final class ReatorFacade {
 
     private final EventBus eventBus;
     private final ReatorRepository repository;
+    private final String reatorId;
     private final Map<Long, Sensor> sensores = new LinkedHashMap<>();
 
+    /** Facade do reator principal ({@link EventoDominio#REATOR_PRINCIPAL}). */
     public ReatorFacade(EventBus eventBus) {
-        this(eventBus, new ReatorRepository());
+        this(eventBus, EventoDominio.REATOR_PRINCIPAL);
+    }
+
+    /** Facade de um reator específico — cada um dos 5 reatores da usina tem a sua. */
+    public ReatorFacade(EventBus eventBus, String reatorId) {
+        this(eventBus, new ReatorRepository(), reatorId);
     }
 
     public ReatorFacade(EventBus eventBus, ReatorRepository repository) {
+        this(eventBus, repository, EventoDominio.REATOR_PRINCIPAL);
+    }
+
+    public ReatorFacade(EventBus eventBus, ReatorRepository repository, String reatorId) {
         this.eventBus = eventBus;
         this.repository = repository;
+        this.reatorId = EventoDominio.reatorOuPrincipal(reatorId);
+    }
+
+    public String getReatorId() {
+        return reatorId;
     }
 
     public void registrarSensor(Sensor sensor) {
@@ -51,7 +68,7 @@ public final class ReatorFacade {
     /**
      * SEQ-UC01 — Registrar medição (fluxo principal até publicação no EventBus).
      */
-    public MedicaoReator receberLeitura(long sensorId, double valor) {
+    public synchronized MedicaoReator receberLeitura(long sensorId, double valor) {
         Sensor sensor = sensores.get(sensorId);
         if (sensor == null) {
             throw new IllegalArgumentException("Sensor não cadastrado: " + sensorId);
@@ -63,7 +80,8 @@ public final class ReatorFacade {
 
         System.out.printf(
             Locale.ROOT,
-            "[MEDICAO] Sensor %d (%s): %.2f %s%n",
+            "[MEDICAO] %s · Sensor %d (%s): %.2f %s%n",
+            reatorId,
             sensor.id(),
             sensor.tipo(),
             valor,
@@ -71,6 +89,7 @@ public final class ReatorFacade {
         );
 
         eventBus.publicar(new MedicaoRegistrada(
+            reatorId,
             medicao.getTimestamp(),
             sensor.id(),
             sensor.tipo(),
@@ -91,6 +110,7 @@ public final class ReatorFacade {
                 sensor.atencaoMaxima()
             );
             eventBus.publicar(new ObservacaoRegistrada(
+                reatorId,
                 Instant.now(),
                 sensor.id(),
                 sensor.tipo(),
@@ -107,7 +127,7 @@ public final class ReatorFacade {
      * Fluxo de Exceções do UC01: Falha na comunicação com sensor.
      * Emite alerta de manutenção para a equipe técnica.
      */
-    public void simularFalhaSensor(long sensorId, String motivo) {
+    public synchronized void simularFalhaSensor(long sensorId, String motivo) {
         Sensor sensor = sensores.get(sensorId);
         String tipoSensor = sensor != null ? sensor.tipo() : "DESCONHECIDO";
         System.out.printf(
@@ -118,6 +138,7 @@ public final class ReatorFacade {
             motivo
         );
         eventBus.publicar(new FalhaSensorDetectada(
+            reatorId,
             Instant.now(),
             sensorId,
             tipoSensor,
@@ -126,17 +147,17 @@ public final class ReatorFacade {
         ));
     }
 
-    public List<MedicaoReator> consultarHistorico() {
+    public synchronized List<MedicaoReator> consultarHistorico() {
         return repository.listarTodas();
     }
 
     /** Histórico filtrado por sensor (T02 / telemetria). */
-    public List<MedicaoReator> consultarHistorico(long sensorId) {
+    public synchronized List<MedicaoReator> consultarHistorico(long sensorId) {
         return repository.listarPorSensor(sensorId);
     }
 
     /** Últimas N medições do repositório (histórico curto). */
-    public List<MedicaoReator> consultarHistoricoRecente(int limite) {
+    public synchronized List<MedicaoReator> consultarHistoricoRecente(int limite) {
         return repository.listarRecentes(limite);
     }
 

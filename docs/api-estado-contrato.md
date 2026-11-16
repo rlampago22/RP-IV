@@ -38,24 +38,28 @@ A migração `mvp/` → `backend/` (Maven/Gradle) é indicada em [`backend-java.
 | Método | Rota | Efeito |
 |--------|------|--------|
 | `GET` | `/api/estado` | Retorna o snapshot atual (ver contrato JSON abaixo) |
-| `POST` | `/api/tempo-real/iniciar` | Liga a simulação periódica de leituras (varia os 4 sensores a cada 3s) |
+| `POST` | `/api/tempo-real/iniciar` | Liga a simulação dos 5 reatores (`SimuladorReatores`): cada reator lê os 4 sensores em intervalo próprio, sorteado entre 2 e 8 s |
 | `POST` | `/api/tempo-real/pausar` | Desliga a simulação periódica |
 | `POST` | `/api/cenarios/normal` | Pausa tempo-real e aplica seed Normal (`CenariosMedicao` → 6 leituras estáveis por sensor) |
 | `POST` | `/api/cenarios/observacao` | Seed Observação (Normal + temp 328 °C → `ObservacaoRegistrada`) |
-| `POST` | `/api/cenarios/falha` | Simula falha de telemetria no sensor de pressão (`FalhaSensorDetectada`) |
+| `POST` | `/api/cenarios/falha` | Simula falha de telemetria no sensor de pressão (`FalhaSensorDetectada`); o status vai a `ATENCAO` até o sensor voltar a reportar |
 | `POST` | `/api/cenarios/critico` | Anomalia crítica: temp 372 °C + fluxo 420 → `AlarmeEmitido` |
 | `POST` | `/api/demo/anomalia` | Alias do roteiro T03: mesmo efeito de `/api/cenarios/critico` |
 | `POST` | `/api/alarmes/{id}/reconhecer` | Publica `AlarmeReconhecido` (corpo JSON opcional: `operador`, `justificativa`; default UI Web) |
-| `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` (corpo JSON opcional: `operador`/`responsavel`, `solucao`) |
+| `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` (corpo JSON opcional: `operador`/`responsavel`, `solucao`) e devolve o sensor do alarme ao ponto normal (nova `MedicaoRegistrada`) |
+| `GET` | `/api/auditoria/integridade` | Recalcula a cadeia SHA-256 de `dados/auditoria.log`: `{"integra":true,"entradas":N,"ultimoHash":"..."}` (503 se a auditoria não estiver configurada) |
 | `POST` | `/api/acesso/solicitar` | UC04/RF08 — corpo `{credencial, area}`; retorna `RegistroAcesso` e publica `ACESSO_REGISTRADO` |
 | `GET` | `/api/acesso/registros` | Lista registros de acesso da sessão |
-| `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` para o alarme `{id}` (responsável fixo "Engenheiro de Turno (UI Web)") |
 | `GET` | `/api/historico` | **RF16** — consulta filtrada do histórico operacional (ver seção 5) |
 | `GET` | `/api/historico/exportar` | **RF17** — baixa o recorte filtrado em CSV (mesmos parâmetros da consulta) |
 | `POST` | `/api/turno?operador=&papeis=` | Declara quem está de serviço, para o histórico registrar o operador |
 | `POST` | `/api/turno/liberar` | Fim de turno: volta ao estado não identificado |
 
+Um sensor fora da faixa segura mantém **um único alarme aberto**: novas leituras violadas do mesmo sensor não criam alarmes duplicados até o alarme ser resolvido. `contadores.alarmes` continua sendo o total emitido na sessão; a UI exibe os alarmes abertos a partir de `alarmes[]`.
+
 Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, para o front sempre re-sincronizar após uma ação. CORS liberado (`Access-Control-Allow-Origin: *`) para consumo local do Vite.
+
+**Cenário num reator específico:** as rotas `/api/cenarios/*` e `/api/demo/anomalia` aceitam `?reator=R-0X`. Com o parâmetro, o cenário é aplicado naquele reator, o tempo real **não** é pausado e só a simulação daquele reator fica segurada por 20 s (`SimuladorReatores.SEGURAR_CENARIO_MS`), para o resultado aparecer antes de a próxima leitura simulada sobrescrevê-lo. Reator inexistente responde **404**. Sem o parâmetro, vale o comportamento original: R-01 e tempo real pausado.
 
 `/api/demo/anomalia` é somente um gatilho do roteiro acadêmico. Não representa uma operação disponível ao operador em produção.
 
@@ -84,9 +88,10 @@ Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, p
   "alarmes": [
     {
       "id": "D46AE2F2",
+      "reatorId": "R-01",
       "sensorId": 2,
       "severidade": "CRITICA",
-      "mensagem": "PRESSAO fora da faixa segura: 200.00 bar",
+      "mensagem": "R-01 · PRESSAO fora da faixa segura: 200.00 bar",
       "status": "ATIVO",
       "criadoEm": "2026-09-20T20:38:01.000Z",
       "operador": null,
@@ -97,7 +102,28 @@ Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, p
     {
       "ocorridoEm": "2026-09-20T20:37:44.428Z",
       "tipo": "MEDICAO_REGISTRADA",
-      "resumo": "sensor=4 tipo=FLUXO_RESFRIAMENTO valor=1100.00 m3/h faixa=[500.00, 1500.00]"
+      "resumo": "reator=R-01 sensor=4 tipo=FLUXO_RESFRIAMENTO valor=1100.00 m3/h faixa=[500.00, 1500.00]"
+    }
+  ],
+  "reatores": [
+    {
+      "id": "R-03",
+      "nivel": "ATENCAO",
+      "atualizadoEm": "2026-11-14T17:48:51.214Z",
+      "alarmesAtivos": 0,
+      "sensores": [
+        {
+          "id": 3,
+          "tipo": "RADIACAO",
+          "unidade": "mSv/h",
+          "valor": 4.54,
+          "limiteMinimo": 0.0,
+          "limiteMaximo": 5.0,
+          "emAtencao": true,
+          "atualizadoEm": "2026-11-14T17:48:51.214Z",
+          "serie": [[1794678500000, 2.41], [1794678505800, 3.41], [1794678511214, 4.54]]
+        }
+      ]
     }
   ]
 }
@@ -107,20 +133,32 @@ Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, p
 
 | Campo | Tipo | Regra |
 |-------|------|-------|
-| `status` | `"ESTAVEL" \| "ATENCAO" \| "CRITICO"` | `CRITICO` se houver alarme `ATIVO`; senão `ATENCAO` se houver alarme `RECONHECIDO` **ou** sensor com `ObservacaoRegistrada` pendente; senão `ESTAVEL` |
+| `status` | `"ESTAVEL" \| "ATENCAO" \| "CRITICO"` | **Reator principal (R-01).** `CRITICO` se houver alarme `ATIVO` do R-01; senão `ATENCAO` se houver alarme `RECONHECIDO` do R-01 **ou** sensor do R-01 com `ObservacaoRegistrada` pendente; senão `ESTAVEL` |
 | `tempoReal` | `boolean` | Reflete `/api/tempo-real/iniciar` \| `/pausar` |
 | `atualizadoEm` | `string` (ISO-8601) | Timestamp do snapshot (não do último evento) |
-| `sensores[]` | array | Última leitura conhecida de cada sensor (`MedicaoRegistrada`); vazio até a 1ª leitura |
+| `sensores[]` | array | Última leitura conhecida de cada sensor **do R-01** (`MedicaoRegistrada`); vazio até a 1ª leitura. Os outros reatores estão em `reatores[]` |
 | `sensores[].historico` | `number[]` | Últimas até 6 leituras do sensor (antigo → atual), buffer no `EstadoAgregador` a partir de `MedicaoRegistrada` — alimenta sparkline/tabela da T02 |
 | `contadores.medicoes` | `int` | Total de `MedicaoRegistrada` desde o start do processo |
 | `contadores.alarmes` | `int` | Total de `AlarmeEmitido` (não decresce ao resolver) |
 | `contadores.auditoria` | `int` | Total de eventos de qualquer tipo publicados no bus (equivalente ao que `AuditoriaSubscriber` grava) |
-| `alarmes[]` | array | Todos os alarmes emitidos na sessão, com `status` `ATIVO \| RECONHECIDO \| RESOLVIDO`; `operador`/`solucao` só preenchidos após reconhecer/resolver |
+| `alarmes[]` | array | Todos os alarmes emitidos na sessão, **de todos os reatores**, com `reatorId` de origem e `status` `ATIVO \| RECONHECIDO \| RESOLVIDO`; `operador`/`solucao` só preenchidos após reconhecer/resolver |
 | `eventos[]` | array | Timeline dos últimos 20 eventos do bus, mais recente primeiro (`MEDICAO_REGISTRADA`, `OBSERVACAO_REGISTRADA`, `FALHA_SENSOR_DETECTADA`, `ALARME_EMITIDO`, `ALARME_RECONHECIDO`, `ALARME_RESOLVIDO` — os 6 eventos obrigatórios de [`ui/direcao-opcao-a.md`](ui/direcao-opcao-a.md)) |
+| `reatores[]` | array | Os 5 reatores (RF19–RF21), ordenados por `id`. Alimenta a aba Monitoramento |
+| `reatores[].nivel` | `"ESTAVEL" \| "ATENCAO" \| "CRITICO"` | Lâmpada do reator, pela **leitura atual**: `CRITICO` se algum sensor está fora do limite seguro; senão `ATENCAO` se algum gerou observação na última leitura; senão `ESTAVEL`. Não depende do ciclo do alarme — volta ao verde quando a leitura volta |
+| `reatores[].alarmesAtivos` | `int` | Alarmes `ATIVO` daquele reator. Separado do `nivel` porque o alarme continua ativo até alguém reconhecer |
+| `reatores[].sensores[].serie` | `[epochMillis, valor][]` | Até 60 leituras (antigo → atual), com o instante de cada uma: os reatores atualizam em intervalo variável e o gráfico usa eixo de tempo real. Par em vez de objeto para reduzir o payload de cada push |
+
+### Vários reatores
+
+Os eventos `MEDICAO_REGISTRADA`, `OBSERVACAO_REGISTRADA`, `FALHA_SENSOR_DETECTADA` e `ALARME_EMITIDO` carregam `reatorId` (`R-01` a `R-05`) e o `resumo` começa com `reator=R-0X`. Os ids de sensor (1 a 4) se repetem em todos os reatores, então a chave de um sensor é sempre reator + sensor. Construtores sem reator assumem `R-01`, para o código anterior a 5 reatores continuar funcionando.
+
+O histórico operacional (seção 5) continua sobre o **R-01**. Os cenários vão para o R-01 quando chamados sem `?reator=` (seção 3).
+
+Para subir uma segunda instância sem disputar a porta: `-Dusina.api.porta=18080` (padrão 8080) e `-Dusina.push.destino=...` para não empurrar para o Spring da instância principal.
 
 ## 5. Consulta do histórico operacional (`GET /api/historico`) — RF16
 
-Fonte: `mvp/src/.../historicooperacional/`. O `HistoricoSubscriber` grava uma linha a cada **ciclo completo** dos 4 sensores RF-1 em `mvp/dados/historico-operacional.csv` (append-only, recuperável entre sessões — RNF09). A rota consulta esse arquivo.
+Fonte: `mvp/src/.../historicooperacional/`. O `HistoricoSubscriber` grava uma linha a cada **ciclo completo** dos 4 sensores RF-1 do reator principal (R-01) em `mvp/dados/historico-operacional.csv` (append-only, recuperável entre sessões — RNF09). A rota consulta esse arquivo.
 
 > **Por que snapshot por ciclo, e não uma linha por medição:** uma `MedicaoRegistrada` pertence a um sensor só. No modelo por medição, filtrar "temperatura entre X e Y **e** pressão entre W e Z" retornaria sempre vazio. Gravando os 4 parâmetros do mesmo ciclo numa linha, o filtro combinado passa a fazer sentido.
 
@@ -247,7 +285,9 @@ data: {"status":"CRITICO","alarmes":[{...,"status":"ATIVO"}],...}
 
 ## 7. Consumo no frontend
 
-`frontend/src/api/estado.js` define `ESTADO_MOCK` (mesmo formato acima) usado como fallback quando o `fetch` falha. O estado chega por **push**: `frontend/src/api/eventos.js` abre o `EventSource` de `/api/eventos` na Central (8081) e publica cada mensagem no sujeito `frontend/src/state/estadoObservavel.js`; `EstadoContext.jsx` apenas observa esse sujeito. Não há mais polling. T01 (`OverviewPage.jsx`), T02 (`SensoresPage.jsx` — seeds Normal/Observação + histórico) e o shell (badge/banner em `main.jsx`) leem exclusivamente desse contexto.
+`frontend/src/api/estado.js` define `ESTADO_MOCK` (mesmo formato acima) usado como fallback quando o `fetch` falha. O estado chega por **push**: `frontend/src/api/eventos.js` abre o `EventSource` de `/api/eventos` na Central (8081) e publica cada mensagem no sujeito `frontend/src/state/estadoObservavel.js`; `EstadoContext.jsx` apenas observa esse sujeito. Não há mais polling. T01 (`OverviewPage.jsx`), T02 (`SensoresPage.jsx` — seeds Normal/Observação + histórico) e o shell (badge/banner em `main.jsx`) leem exclusivamente desse contexto. A aba **Monitoramento** (`MonitoramentoPage.jsx`) lê `reatores[]` do mesmo contexto; cada bloco de reator é memorizado pelo `atualizadoEm` do seu reator, então só redesenha quando chega leitura dele.
+
+**Reator selecionado entre abas:** todas as abas têm o mesmo seletor (`components/SeletorReator.jsx`) e a escolha fica na URL (`?reator=R-03`, ver `state/reatorSelecionado.js`). O menu repassa o parâmetro, então trocar de aba mantém o filtro. Para o filtro não esconder alarme sem avisar, o banner de alarme do topo ignora o filtro e cada aba filtrada mostra quantos alarmes ativos existem em outros reatores. O selo do topo mostra a usina inteira.
 
 ## 8. Testes
 
@@ -267,4 +307,5 @@ O script compila e roda todos os suites em sequência, abortando no primeiro que
 | `TestesApiAlarmes` | Ciclo HTTP do alarme: anomalia → reconhecer → resolver |
 | `TestesHistorico` | Amostragem por ciclo, status derivado, operador de serviço e recuperação após reinício (RNF09) |
 | `TestesApiHistorico` | `GET /api/historico`: período, faixas, combinação **E**, operador, limite/truncamento, HTTP 400 em critério inválido, e as rotas de turno |
+| `TestesReatores` | 5 reatores: estado separado por reator, lâmpada verde/amarela/vermelha, alarme com reator de origem, série com teto de 60 pontos, campos do R-01 preservados, histórico isolado no R-01 e cenário via HTTP com `?reator=` (só o reator alvo muda, tempo real segue ligado, 404 para reator inexistente, sem parâmetro mantém o comportamento antigo) |
 

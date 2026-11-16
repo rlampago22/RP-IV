@@ -76,6 +76,14 @@ export function celulasHistorico(historico) {
   return preenchido
 }
 
+/** Sensores de um reator do painel (ver `data/reatores.js`), no formato desta tela —
+ * histórico curto = últimas 6 amostras da série `[epochMillis, valor]` do reator. */
+export function sensoresDoReator(reator) {
+  return mapearDaApi(
+    (reator?.sensores ?? []).map((s) => ({ ...s, historico: (s.serie ?? []).slice(-6).map(([, v]) => v) })),
+  )
+}
+
 export function Sparkline({ values, color }) {
   if (!values?.length) return null
   const w = 120

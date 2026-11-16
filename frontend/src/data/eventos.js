@@ -16,6 +16,24 @@ function nomeSensor(tipo) {
   return NOME_SENSOR[tipo] ?? tipo ?? 'sensor'
 }
 
+/**
+ * Reator de um evento da timeline: medição, observação, falha e alarme emitido trazem `reator=`
+ * no resumo; reconhecimento e resolução só trazem o id do alarme, então o reator vem do próprio
+ * alarme (`reatorPorAlarme`: id → reatorId). Acesso não pertence a reator (`null`).
+ */
+export function reatorDoEvento(evento, reatorPorAlarme) {
+  const direto = /(?:^|\s)reator=(R-\d+)/.exec(evento.resumo ?? '')
+  if (direto) return direto[1]
+  const alarme = /alarme=(\S+)/.exec(evento.resumo ?? '')
+  return alarme ? reatorPorAlarme?.get(alarme[1]) ?? null : null
+}
+
+/** Eventos de medição e alarme começam com `reator=R-0X` desde que a usina tem 5 reatores. */
+function prefixoReator(resumo) {
+  const achado = /(?:^|\s)reator=(R-\d+)/.exec(resumo ?? '')
+  return achado ? `Reator-${achado[1].slice(2)} · ` : ''
+}
+
 const PADROES = [
   {
     tipo: 'ALARME_EMITIDO',
@@ -106,5 +124,8 @@ export function interpretarEvento(tipo, resumo) {
     const sucesso = match[4] === 'SUCESSO'
     return { ...padrao.montar(match), cor: sucesso ? 'var(--ok)' : 'var(--crit)', importante: true }
   }
-  return { ...padrao.montar(match), ...meta }
+  const montado = padrao.montar(match)
+  // A mensagem do alarme já começa com o reator ("R-04 · ..."): não repetir.
+  const prefixo = /^R-\d+ · /.test(montado.descricao) ? '' : prefixoReator(resumo)
+  return { ...montado, descricao: prefixo + montado.descricao, ...meta }
 }

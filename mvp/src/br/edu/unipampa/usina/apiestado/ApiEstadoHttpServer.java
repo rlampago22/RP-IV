@@ -1,6 +1,7 @@
 package br.edu.unipampa.usina.apiestado;
 
 import br.edu.unipampa.usina.alarmes.AlarmeFacade;
+import br.edu.unipampa.usina.auditorialogs.RegistroAuditoria;
 import br.edu.unipampa.usina.controlereator.ReatorFacade;
 import br.edu.unipampa.usina.segurancaacesso.AcessoFacade;
 import br.edu.unipampa.usina.segurancaacesso.RegistroAcesso;
@@ -22,6 +23,7 @@ import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,7 +46,10 @@ public final class ApiEstadoHttpServer {
     private final AcessoFacade acesso;
     private final RegistroHistorico historico;
     private final OperadorDeServico operadorDeServico;
+    private final RegistroAuditoria auditoria;
     private final int porta;
+    private Map<String, ReatorFacade> reatoresPorId;
+    private Consumer<String> segurarSimulacao = reatorId -> { };
     private HttpServer server;
 
     public ApiEstadoHttpServer(
@@ -56,13 +61,42 @@ public final class ApiEstadoHttpServer {
         OperadorDeServico operadorDeServico,
         int porta
     ) {
+        this(estado, alarmes, reator, acesso, historico, operadorDeServico, null, porta);
+    }
+
+    /** {@code auditoria} pode ser nula; nesse caso {@code /api/auditoria/integridade} responde 503. */
+    public ApiEstadoHttpServer(
+        EstadoAgregador estado,
+        AlarmeFacade alarmes,
+        ReatorFacade reator,
+        AcessoFacade acesso,
+        RegistroHistorico historico,
+        OperadorDeServico operadorDeServico,
+        RegistroAuditoria auditoria,
+        int porta
+    ) {
         this.estado = estado;
         this.alarmes = alarmes;
         this.reator = reator;
         this.acesso = acesso;
+        this.auditoria = auditoria;
         this.historico = historico;
         this.operadorDeServico = operadorDeServico;
         this.porta = porta;
+        this.reatoresPorId = Map.of(reator.getReatorId(), reator);
+    }
+
+    /**
+     * Habilita {@code ?reator=R-0X} nas rotas de cenário (aba Demo e Sensores com reator escolhido).
+     *
+     * @param reatores         facades dos reatores da usina, por id
+     * @param segurarSimulacao chamado antes de aplicar o cenário num reator específico: segura a
+     *                         simulação <b>daquele</b> reator por alguns segundos, para o resultado do
+     *                         cenário ficar visível sem pausar os outros
+     */
+    public void registrarReatores(Map<String, ReatorFacade> reatores, Consumer<String> segurarSimulacao) {
+        this.reatoresPorId = Map.copyOf(reatores);
+        this.segurarSimulacao = segurarSimulacao == null ? reatorId -> { } : segurarSimulacao;
     }
 
     public void iniciar() throws IOException {
@@ -73,6 +107,7 @@ public final class ApiEstadoHttpServer {
         server.createContext("/api/cenarios/", this::tratarCenario);
         server.createContext("/api/demo/anomalia", this::tratarAnomaliaDemo);
         server.createContext("/api/alarmes/", this::tratarAcaoAlarme);
+        server.createContext("/api/auditoria/integridade", this::tratarIntegridadeAuditoria);
         server.createContext("/api/acesso/", this::tratarAcesso);
         server.createContext("/api/historico", this::tratarHistorico);
         server.createContext("/api/historico/dias", this::tratarHistoricoDias);
@@ -116,6 +151,10 @@ public final class ApiEstadoHttpServer {
     /**
      * T05 (#52) + seeds T02 (#50): {@code POST /api/cenarios/{normal|observacao|falha|critico}}.
      * Normal/Observação usam {@link CenariosMedicao} (histórico previsível).
+     *
+     * <p>Sem {@code ?reator=}: comportamento original — reator principal, tempo real pausado.
+     * Com {@code ?reator=R-0X}: aplica naquele reator e segura só a simulação dele; os outros
+     * reatores continuam atualizando (demonstração do painel de 5 reatores).
      */
     private void tratarCenario(HttpExchange exchange) throws IOException {
         if (comCorsEPreflight(exchange, "POST")) {
@@ -134,19 +173,22 @@ public final class ApiEstadoHttpServer {
         }
 
         String cenario = matcher.group(1).toLowerCase();
-        estado.definirTempoReal(false);
+        if (!List.of("normal", "observacao", "falha", "critico").contains(cenario)) {
+            responder(exchange, 400, "{\"erro\":\"cenario desconhecido: " + cenario + "\"}");
+            return;
+        }
+        ReatorFacade alvo = alvoDoCenario(exchange);
+        if (alvo == null) {
+            return;
+        }
         switch (cenario) {
-            case "normal" -> CenariosMedicao.aplicarNormal(reator);
-            case "observacao" -> CenariosMedicao.aplicarObservacao(reator);
-            case "falha" -> reator.simularFalhaSensor(
+            case "normal" -> CenariosMedicao.aplicarNormal(alvo);
+            case "observacao" -> CenariosMedicao.aplicarObservacao(alvo);
+            case "falha" -> alvo.simularFalhaSensor(
                 2L,
                 "Falha de comunicacao de telemetria no barramento"
             );
-            case "critico" -> aplicarAnomaliaCritica();
-            default -> {
-                responder(exchange, 400, "{\"erro\":\"cenario desconhecido: " + cenario + "\"}");
-                return;
-            }
+            default -> aplicarAnomaliaCritica(alvo);
         }
         responder(exchange, 200, EstadoJson.escrever(estado.snapshot()));
     }
@@ -160,16 +202,38 @@ public final class ApiEstadoHttpServer {
             responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
             return;
         }
-        estado.definirTempoReal(false);
-        aplicarAnomaliaCritica();
+        ReatorFacade alvo = alvoDoCenario(exchange);
+        if (alvo == null) {
+            return;
+        }
+        aplicarAnomaliaCritica(alvo);
         responder(exchange, 200, EstadoJson.escrever(estado.snapshot()));
     }
 
+    /**
+     * Resolve o reator do cenário e prepara a simulação. Responde 404 e devolve {@code null} se o
+     * reator pedido não existe.
+     */
+    private ReatorFacade alvoDoCenario(HttpExchange exchange) throws IOException {
+        String reatorId = parametrosDaQuery(exchange.getRequestURI().getRawQuery()).get("reator");
+        if (reatorId == null || reatorId.isBlank()) {
+            estado.definirTempoReal(false);
+            return reator;
+        }
+        ReatorFacade alvo = reatoresPorId.get(reatorId);
+        if (alvo == null) {
+            responder(exchange, 404, "{\"erro\":\"reator desconhecido: " + reatorId.replace("\"", "") + "\"}");
+            return null;
+        }
+        segurarSimulacao.accept(reatorId);
+        return alvo;
+    }
+
     /** Temp crítica; fluxo baixo só se o sensor 4 estiver cadastrado (demo completa). */
-    private void aplicarAnomaliaCritica() {
-        reator.receberLeitura(1L, 372.0);
-        if (reator.obterSensor(4L) != null) {
-            reator.receberLeitura(4L, 420.0);
+    private static void aplicarAnomaliaCritica(ReatorFacade alvo) {
+        alvo.receberLeitura(1L, 372.0);
+        if (alvo.obterSensor(4L) != null) {
+            alvo.receberLeitura(4L, 420.0);
         }
     }
 
@@ -200,12 +264,51 @@ public final class ApiEstadoHttpServer {
                 responsavel = lerCampoJson(corpo, "responsavel", responsavel);
             }
             String solucao = lerCampoJson(corpo, "solucao", "Parametros normalizados via T01 Overview");
-            boolean ok = alarmes.resolverAlarme(resolver.group(1), responsavel, solucao);
+            String alarmeId = resolver.group(1);
+            Long sensorDoAlarme = alarmes.consultarAlarmes().stream()
+                .filter(a -> a.getId().equalsIgnoreCase(alarmeId))
+                .map(a -> a.getOrigem().sensorId())
+                .findFirst()
+                .orElse(null);
+            boolean ok = alarmes.resolverAlarme(alarmeId, responsavel, solucao);
+            if (ok && sensorDoAlarme != null) {
+                // "Parâmetros normalizados": o sensor volta ao ponto normal, para as leituras
+                // exibidas acompanharem o status do reator (antes ficavam em 372 °C com status ESTÁVEL).
+                CenariosMedicao.normalizarSensor(reator, sensorDoAlarme);
+            }
             responder(exchange, ok ? 200 : 404, EstadoJson.escrever(estado.snapshot()));
             return;
         }
 
         responder(exchange, 404, "{\"erro\":\"rota nao encontrada\"}");
+    }
+
+    /**
+     * T04: {@code GET /api/auditoria/integridade} recalcula a cadeia SHA-256 do arquivo
+     * {@code dados/auditoria.log} (verificação física) e informa se está íntegra.
+     */
+    private void tratarIntegridadeAuditoria(HttpExchange exchange) throws IOException {
+        if (comCorsEPreflight(exchange, "GET")) {
+            return;
+        }
+        if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+            responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
+            return;
+        }
+        if (auditoria == null) {
+            responder(exchange, 503, "{\"erro\":\"auditoria nao configurada\"}");
+            return;
+        }
+        boolean integra = auditoria.verificarIntegridadeArquivo();
+        var entradas = auditoria.consultar();
+        String ultimoHash = entradas.isEmpty() ? "" : entradas.get(entradas.size() - 1).hashCurto();
+        responder(
+            exchange,
+            200,
+            "{\"integra\":" + integra
+                + ",\"entradas\":" + entradas.size()
+                + ",\"ultimoHash\":\"" + ultimoHash + "\"}"
+        );
     }
 
     private void tratarAcesso(HttpExchange exchange) throws IOException {

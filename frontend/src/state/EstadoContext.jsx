@@ -104,6 +104,11 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
   }, [])
 
   const executarAcao = useCallback(async (acao, fallbackMock) => {
+    // Se um poll estiver em andamento, espera terminar em vez de descartar o clique
+    // (antes o botão falhava com "confira se a API está rodando" mesmo com a API no ar).
+    for (let tentativa = 0; emVooRef.current && tentativa < 60; tentativa++) {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    }
     if (emVooRef.current) return false
     emVooRef.current = true
     try {
@@ -118,7 +123,7 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
       if (fallbackMock) {
         estadoObservavel.publicar(fallbackMock())
         setOrigemMock(true)
-        setErroApi('')
+        setErroApi(erro?.message || 'API indisponivel')
         return true
       }
       setErroApi(erro?.message || 'Falha na acao')
@@ -134,8 +139,10 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
     erroApi,
     iniciarTempoReal: () => executarAcao(iniciarTempoReal),
     pausarTempoReal: () => executarAcao(pausarTempoReal),
-    aplicarCenarioNormal: () => executarAcao(aplicarCenarioNormal, estadoMockNormal),
-    aplicarCenarioObservacao: () => executarAcao(aplicarCenarioObservacao, estadoMockObservacao),
+    aplicarCenarioNormal: (reatorId) =>
+      executarAcao(() => aplicarCenarioNormal(reatorId), estadoMockNormal),
+    aplicarCenarioObservacao: (reatorId) =>
+      executarAcao(() => aplicarCenarioObservacao(reatorId), estadoMockObservacao),
     simularAnomalia: () => executarAcao(simularAnomalia),
     reconhecerAlarme: (alarmeId) =>
       executarAcao(() =>
@@ -151,7 +158,7 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
           solucao: 'Parametros normalizados via Central autenticada',
         }),
       ),
-    dispararCenario: (cenario) => executarAcao(() => dispararCenario(cenario)),
+    dispararCenario: (cenario, reatorId) => executarAcao(() => dispararCenario(cenario, reatorId)),
     solicitarAcesso: async (credencial, area) => {
       try {
         const resultado = await solicitarAcesso(credencial, area)
