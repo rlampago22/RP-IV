@@ -5,6 +5,7 @@ import br.edu.unipampa.usina.infraestruturaeventos.AlarmeReconhecido;
 import br.edu.unipampa.usina.infraestruturaeventos.AlarmeResolvido;
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
 import br.edu.unipampa.usina.infraestruturaeventos.EventoDominio;
+import br.edu.unipampa.usina.infraestruturaeventos.FalhaSensorDetectada;
 import br.edu.unipampa.usina.infraestruturaeventos.IEventSubscriber;
 import br.edu.unipampa.usina.infraestruturaeventos.MedicaoRegistrada;
 import br.edu.unipampa.usina.infraestruturaeventos.ObservacaoRegistrada;
@@ -77,6 +78,9 @@ public final class EstadoAgregador implements IEventSubscriber {
             reator.atualizadoEm = medicao.ocorridoEm();
         } else if (evento instanceof ObservacaoRegistrada observacao) {
             reator(observacao.reatorId()).sensoresEmAtencao.add(observacao.sensorId());
+        } else if (evento instanceof FalhaSensorDetectada falha) {
+            // Falha de comunicação mantém o reator em ATENÇÃO até o sensor voltar a reportar uma medição.
+            reator(falha.reatorId()).sensoresEmAtencao.add(falha.sensorId());
         } else if (evento instanceof AlarmeEmitido emitido) {
             totalAlarmes.incrementAndGet();
             alarmes.put(emitido.alarmeId(), new AlarmeEstado(

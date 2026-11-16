@@ -42,9 +42,10 @@ Critério: maximizar valor demonstrável da arquitetura EDA + padrões de projet
 
 | ID | Item | Justificativa |
 |----|------|---------------|
-| RF09 | `Emergencia.criarEmergencia` | Feedback APS + domínio de contingência |
+| RF09 | `Emergencia.criarEmergencia` | Feedback APS + domínio de contingência. **Implementado em 16/11** (aba Emergência; `backend/.../emergencias`) |
 | — | Abas adaptadas aos 5 reatores (seletor de reator compartilhado, matriz de sensores, resumo da usina, cenário por reator) | Não pedido pelo professor, mas evita que as abas antigas mostrem só o R-01 ao lado do painel de 5 reatores; cenário por reator permite demonstrar o RF21 sem depender de pico aleatório. Histórico por reator fica para outra rodada |
-| RF10 | `ProtocoloEmergencia` | Classe faltante crítica no feedback APS |
+| RF10 | `ProtocoloEmergencia` | Classe faltante crítica no feedback APS. **Implementado em 16/11**: ativar e encerrar pedem a digital (4.2.10) |
+| RNF08 (2º fator) | Digital como segundo fator das **ações críticas** (administração de acessos e, quando existir, protocolo de contingência), com cadastro prévio autorizado pelo Administrador (código de ativação). Login continua com senha | PDF APS: RNF Segurança pede "autenticação multifator" (Must), 4.2.10 exige dois fatores na ativação de contingência, UC02 exige funcionário "previamente cadastrado" e 4.2.7 atribui a gestão ao Administrador. Marco 2, trilha Marcus — ver [`../backend-autenticacao.md`](../backend-autenticacao.md#segundo-fator-digital-nas-ações-críticas-rnf08) |
 
 ---
 

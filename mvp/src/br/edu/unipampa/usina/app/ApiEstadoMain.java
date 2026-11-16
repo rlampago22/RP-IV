@@ -67,7 +67,7 @@ public final class ApiEstadoMain {
         simulador.semear();
 
         ApiEstadoHttpServer servidor =
-            new ApiEstadoHttpServer(estado, alarmeFacade, principal, acesso, historico, operadorDeServico, PORTA);
+            new ApiEstadoHttpServer(estado, alarmeFacade, principal, acesso, historico, operadorDeServico, registro, PORTA);
         Map<String, ReatorFacade> porId = new LinkedHashMap<>();
         reatores.forEach(reator -> porId.put(reator.getReatorId(), reator));
         servidor.registrarReatores(porId, reatorId -> simulador.segurar(reatorId, SimuladorReatores.SEGURAR_CENARIO_MS));

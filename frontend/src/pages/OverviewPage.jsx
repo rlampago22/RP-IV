@@ -94,7 +94,8 @@ function Linhatempo({ eventos, comReator }) {
   )
 }
 
-function Contadores({ contadores }) {
+/** `abertos` = alarmes ainda não resolvidos (o total histórico confundia: mostrava alarme já encerrado). */
+function Contadores({ contadores, abertos }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
       <div className="stat-tile">
@@ -105,12 +106,12 @@ function Contadores({ contadores }) {
         </div>
       </div>
       <div className="stat-tile">
-        <IconBell size={20} style={{ color: contadores.alarmes > 0 ? 'var(--crit)' : 'var(--muted)' }} />
+        <IconBell size={20} style={{ color: abertos > 0 ? 'var(--crit)' : 'var(--muted)' }} />
         <div>
-          <div className="num" style={{ color: contadores.alarmes > 0 ? 'var(--crit)' : undefined }}>
-            {contadores.alarmes}
+          <div className="num" style={{ color: abertos > 0 ? 'var(--crit)' : undefined }}>
+            {abertos}
           </div>
-          <div className="lbl">ALARMES</div>
+          <div className="lbl">ALARMES ABERTOS</div>
         </div>
       </div>
       <div className="stat-tile">
@@ -221,7 +222,7 @@ function VisaoReator({ reatorId, status, sensores, alarmes, eventos, contadores,
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-        <Contadores contadores={contadores} />
+        <Contadores contadores={contadores} abertos={alarmesNaoResolvidos.length} />
 
         <div className="scada-card" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           <h2 className="panel-heading">
@@ -305,7 +306,7 @@ function ResumoUsina({ reatores, alarmes, eventos, contadores, acoes, onSelecion
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <Contadores contadores={contadores} />
+          <Contadores contadores={contadores} abertos={pendentes.length} />
           <div className="scada-card" style={{ flex: 1 }}>
             <h2 className="panel-heading">
               <IconClock size={13} />
