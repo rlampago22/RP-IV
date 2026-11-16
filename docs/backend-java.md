@@ -16,6 +16,10 @@ Migrar gradualmente o domínio de `mvp/src/...` → `backend/`, expondo API HTTP
 
 `mvp/src/br/edu/unipampa/usina/apiestado/` expõe `GET/POST http://localhost:8080/api/*` derivado do EventBus (JDK `com.sun.net.httpserver`, sem dependências externas). Contrato completo, endpoints e como rodar: [`api-estado-contrato.md`](api-estado-contrato.md).
 
+## Autenticação web (em evolução)
+
+A primeira fatia de autenticação está em `backend/`, com migrations Flyway, PostgreSQL local e sessão HTTP. A API de autenticação usa porta separada da API de estado do MVP para permitir que ambas coexistam durante a migração.
+
 ## Trilhas (entrega vertical)
 
 | Trilha | Pacotes |

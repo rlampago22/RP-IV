@@ -3,7 +3,7 @@
 **Disciplina:** AL0343 — Resolução de Problemas IV  
 **Sistema:** Controle de Usina Nuclear  
 **Equipe:** Álvaro Domingues, Bruno Rocha, Bernardo Dorneles, José Guilherme Monteiro, Marcus Querol  
-**Versão:** 2.0 — Must expandido (acesso no MVP)
+**Versão:** 2.1 — Must expandido + 2FA por celular (Marco 2)
 
 ---
 
@@ -23,6 +23,48 @@ Escopo refinado a partir do legado APS, com foco no que o sistema de controle di
 | RF06 | Auditar eventos | Registrar trilha de eventos relevantes (medições críticas, alarmes, publicações no barramento). |
 | RF07 | Autenticar acesso restrito | Validar identidade na Central (login web) e/ou credencial simulada (crachá/biometria) para áreas classificadas (UC04). |
 | RF08 | Registrar acesso | Persistir tentativa/resultado de acesso em `RegistroAcesso` (sucesso ou falha). |
+
+### Segundo fator de autenticação (Marco 2 — Must)
+
+| ID | Requisito | Descrição |
+|----|-----------|-----------|
+| RF18 | Confirmar acesso com 2FA por celular | Depois de validar e-mail e senha, o sistema deve solicitar um segundo fator no celular previamente vinculado ao usuário. O acesso à Central só é liberado após a confirmação no celular **ou** a validação do código recebido nesse dispositivo. |
+
+#### UC05 — Confirmar acesso à Central com 2FA por celular
+
+| Campo | Conteúdo |
+|-------|----------|
+| Objetivo | Concluir a autenticação na Central por meio de um segundo fator vinculado ao celular do usuário. |
+| Ator primário | Usuário da Central (Operador de Reator, Supervisão Central, Guarda / Controle de Acesso ou Administrador do Sistema). |
+| Ator secundário | Celular previamente vinculado ao usuário. |
+| Pré-condições | Usuário ativo, celular vinculado e primeiro fator (e-mail e senha) válido. |
+| Pós-condições de sucesso | Sessão autenticada é criada e o usuário pode acessar somente os recursos autorizados ao seu papel. |
+| Pós-condições de falha | Nenhuma sessão autenticada é criada; a tentativa fica registrada para auditoria. |
+
+**Fluxo principal:**
+
+1. O usuário informa e-mail e senha na Central.
+2. O sistema valida o primeiro fator e cria uma solicitação de segundo fator associada à tentativa de acesso.
+3. O sistema envia a solicitação ao celular vinculado.
+4. O usuário confirma a solicitação no celular **ou** informa na Central o código recebido no celular.
+5. O sistema valida a confirmação ou o código e libera a sessão autenticada.
+6. O sistema registra o resultado da autenticação sem expor o código ou o telefone em logs/mensagens.
+
+**Alternativas e exceções:**
+
+| ID | Condição | Tratamento |
+|----|----------|------------|
+| A1 | Usuário rejeita a solicitação no celular | Sistema nega o acesso e registra a tentativa. |
+| A2 | Código informado é inválido, já utilizado ou expirado | Sistema mantém o acesso negado e permite iniciar uma nova solicitação conforme a política de segurança. |
+| E1 | Não há celular vinculado ou o envio não pode ser iniciado | Sistema não cria sessão e informa que o segundo fator não pôde ser concluído, sem revelar dados sensíveis. |
+
+**Critérios de aceite:**
+
+- Com e-mail e senha válidos, a Central deve permanecer em estado de autenticação pendente até a confirmação no celular ou a validação do código.
+- A confirmação correta no celular ou o código válido deve liberar uma única sessão para o usuário autenticado.
+- Rejeição, código inválido, reutilizado ou expirado, e falha de envio não podem liberar sessão nem recursos protegidos.
+- A solicitação e o código devem estar vinculados à tentativa de autenticação; o código não pode ser reutilizado.
+- O resultado da tentativa deve ser auditável, sem registrar ou exibir código, telefone ou outros dados sensíveis.
 
 ### Consulta e exportação do histórico (MVP Could) — proposta, pendente de aprovação do grupo
 
@@ -77,15 +119,15 @@ Alinhados à justificativa da arquitetura EDA mantida.
 | RNF05 | Auditabilidade | Histórico append-only de eventos relevantes com adulteração detectável. | Pacote AuditoriaLogs + eventos |
 | RNF06 | Manutenibilidade | Alterar limiares/estratégia de alarme sem reescrever todo o sistema. | Módulos + Strategy |
 | RNF07 | Escalabilidade | Possibilidade futura de escalar consumidores independentemente. | Persistência dedicada + bus |
-| RNF08 | Segurança | Políticas de acesso granuláveis por módulo/área; sessão autenticada na Central. | Pacote SegurancaAcesso + auth web |
+| RNF08 | Segurança | Políticas de acesso granuláveis por módulo/área; sessão autenticada na Central e segundo fator vinculado ao celular do usuário. | Pacote SegurancaAcesso + auth web |
 | RNF09 | Persistência segura do núcleo | Medições e alarmes com backup/recuperação simples no MVP. | Auditoria + schema de auth |
 | RNF10 | Testabilidade | Módulos testáveis com eventos simulados. | Event bus mockável |
 
 ### Situação no MVP expandido
 
-- **Must de qualidade:** RNF01–RNF05, RNF08–RNF10 entram no aceite.
-- **Atendidos / demonstráveis:** RNF03, RNF05, RNF08 (login + papéis), RNF10; isolamento básico RNF02/RNF04 por subscriber.
-- **Parciais:** RNF09 (auditoria em arquivo; medições/alarmes ainda em memória no `mvp/`); RNF01 (bus in-process).
+- **Must de qualidade:** RNF01–RNF05, RNF08–RNF10 entram no aceite. Para RF18, RNF08 exige que a sessão só exista após os dois fatores e que segredos do segundo fator não sejam expostos.
+- **Atendidos / demonstráveis:** RNF03, RNF05 e RNF10; isolamento básico RNF02/RNF04 por subscriber.
+- **Parciais:** RNF08 (login + papéis implementados; 2FA de RF18 pendente), RNF09 (auditoria em arquivo; medições/alarmes ainda em memória no `mvp/`) e RNF01 (bus in-process).
 - **Planejados (não Must):** RNF06/RNF07 plenos, banco para medições/alarmes, fila durável.
 
 ---

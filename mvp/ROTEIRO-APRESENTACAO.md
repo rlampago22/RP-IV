@@ -92,9 +92,11 @@
 | Facade | `mvp/src/br/edu/unipampa/usina/controlereator/ReatorFacade.java` | Entrada do caso de uso de medição; publica `MedicaoRegistrada` sem acoplar o produtor à avaliação do alarme. |
 | Strategy | `mvp/src/br/edu/unipampa/usina/alarmes/AvaliadorLimiar.java` e `AvaliadorFaixaSegura.java` | Regra intercambiável para verificar violação dos limites seguros. |
 | Factory | `mvp/src/br/edu/unipampa/usina/alarmes/AlarmeFactory.java` | Centraliza a criação da entidade `Alarme` a partir da medição crítica. |
-| Observer / Pub-Sub | `mvp/src/br/edu/unipampa/usina/infraestruturaeventos/EventBus.java` e `mvp/src/br/edu/unipampa/usina/alarmes/AlarmeFacade.java` | A Facade assina `MedicaoRegistrada`; o barramento distribui os fatos sem chamada direta do produtor para o consumidor. |
+| Observer / Pub-Sub | `mvp/src/br/edu/unipampa/usina/infraestruturaeventos/EventBus.java`, `mvp/src/br/edu/unipampa/usina/alarmes/AlarmeFacade.java`, `mvp/src/br/edu/unipampa/usina/apiestado/EstadoAgregador.java`, `mvp/src/br/edu/unipampa/usina/auditorialogs/AuditoriaSubscriber.java` e `mvp/src/br/edu/unipampa/usina/historicooperacional/HistoricoSubscriber.java` | `AlarmeFacade` assina `MedicaoRegistrada` e publica `AlarmeEmitido`, `AlarmeReconhecido` e `AlarmeResolvido`. Os três consumidores globais assinam todos os eventos: `EstadoAgregador` atualiza estado/timeline, `AuditoriaSubscriber` registra a trilha SHA-256 e `HistoricoSubscriber` deriva o histórico operacional. |
 
 **Fala GoF (20 segundos):** “A `ReatorFacade` simplifica a entrada do caso de uso. A Strategy avalia a faixa segura, a Factory cria o alarme e o Observer distribui os eventos pelo `EventBus`. Assim, o produtor da medição não precisa conhecer diretamente quem avalia, notifica ou audita.”
+
+**Precisão do fluxo de alarmes:** `AlarmeFacade` não assina os eventos do ciclo de vida do alarme; ela os publica. Quem os observa com `assinarTodos` são `EstadoAgregador`, `AuditoriaSubscriber` e `HistoricoSubscriber`. `TestesApiEstado` verifica a presença dos três tipos na timeline derivada pelo `EstadoAgregador`.
 
 ---
 
