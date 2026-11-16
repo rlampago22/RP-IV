@@ -14,6 +14,7 @@ import MonitoramentoPage from './pages/MonitoramentoPage.jsx'
 import SegurancaPage from './pages/SegurancaPage.jsx'
 import CelularSimuladoPage from './pages/CelularSimuladoPage.jsx'
 import EmergenciaPage from './pages/EmergenciaPage.jsx'
+import FaixaEmergencia from './components/FaixaEmergencia.jsx'
 import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
 import { HistoricoProvider } from './state/HistoricoContext.jsx'
 import { buscaDoReator } from './state/reatorSelecionado.js'
@@ -225,6 +226,8 @@ function Shell({ usuario, onLogout }) {
           Falha na API: {erroApi}
         </div>
       )}
+
+      <FaixaEmergencia />
 
       {alarmeAtivo && (
         <div className="scada-banner">

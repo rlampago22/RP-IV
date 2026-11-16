@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { authApi } from '../services/authApi.js'
 import { executarAcaoCritica } from '../services/acaoCritica.js'
 import { IconAlertTriangle, IconShield } from '../components/icons.jsx'
+import { EVENTO_EMERGENCIAS } from '../components/FaixaEmergencia.jsx'
 
 const TIPOS = {
   SUPERAQUECIMENTO: 'Superaquecimento do núcleo',
@@ -54,6 +55,7 @@ export default function EmergenciaPage() {
       await acao()
       setAviso({ tipo: 'ok', texto: textoOk })
       await carregar()
+      window.dispatchEvent(new Event(EVENTO_EMERGENCIAS)) // avisa a faixa do topo, sem polling
     } catch (error) {
       setAviso({ tipo: 'erro', texto: error.message })
     } finally {
