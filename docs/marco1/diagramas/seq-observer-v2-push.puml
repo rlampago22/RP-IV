@@ -1,0 +1,53 @@
+@startuml seq-observer-v2-push
+title SEQ — Observer V2: push de estado via SSE (EventBus -> navegador)
+skinparam shadowing false
+
+participant "EventBus" as Bus
+participant "EncaminhadorEventosSpring" as Enc
+participant "EventoPushController" as Ctrl
+participant "SseEmitter" as Emit
+participant "EventSource" as ES
+participant "EstadoObservavel" as Obs
+participant "EstadoProvider (UI)" as UI
+
+note over Bus
+  Qualquer evento de domínio (MedicaoRegistrada,
+  AlarmeEmitido, AcessoRegistrado, ...) chega aqui —
+  o Encaminhador é assinante global (assinarTodos),
+  não sabe quem publicou.
+end note
+
+Bus -> Enc: onEvento(evento)
+Enc -> Ctrl: POST /api/eventos/publicar {tipo, estado}
+note right of Enc
+  HttpClient assíncrono (sendAsync);
+  se o Spring estiver fora do ar, falha
+  silenciosa com aviso único no console.
+end note
+
+alt requisição não veio de loopback (127.0.0.1/::1)
+  Ctrl --> Enc: 403
+else loopback OK
+  loop para cada emissor inscrito
+    Ctrl -> Emit: send(evento nomeado, estado em JSON)
+  end
+  Ctrl --> Enc: 202 Accepted
+end
+
+Emit -> ES: mensagem SSE (nome = tipo do evento)
+ES -> Obs: aoReceber(dados, tipoEvento)
+Obs -> Obs: publicar(dados)
+note right of Obs
+  publicar() compara com o último snapshot
+  (JSON.stringify) — só notifica se mudou.
+end note
+Obs -> UI: observador.update(novoEstado)
+UI -> UI: setEstado(novoEstado)
+
+note over ES
+  Se a conexão cair, o próprio EventSource
+  reconecta sozinho — não há laço de retry
+  no código da aplicação.
+end note
+
+@enduml

@@ -4,6 +4,7 @@ import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router
 import './styles/app.css'
 import OverviewPage from './pages/OverviewPage.jsx'
 import SensoresPage from './pages/SensoresPage.jsx'
+import SensorDetailPage from './pages/sensores/SensorDetailPage.jsx'
 import AlarmesPage from './pages/AlarmesPage.jsx'
 import AuditoriaPage from './pages/AuditoriaPage.jsx'
 import DemoPage from './pages/DemoPage.jsx'
@@ -241,6 +242,7 @@ function Shell({ usuario, onLogout }) {
           <Route path="/" element={<OverviewPage />} />
           <Route path="/monitoramento" element={<MonitoramentoPage />} />
           <Route path="/sensores" element={<SensoresPage />} />
+          <Route path="/sensores/:slug" element={<SensorDetailPage />} />
           <Route path="/alarmes" element={<AlarmesPage />} />
           <Route path="/auditoria" element={<AuditoriaPage />} />
           <Route path="/historico" element={<HistoricoPage />} />

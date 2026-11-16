@@ -58,7 +58,10 @@ export const SENSORES_RF1 = [
  * Código operacional do sensor (T-CORE-01, P-PRIM-01, …), derivado da meta acima.
  * Compartilhado por T02 e T06 para o mesmo sensor não aparecer com nomes diferentes em cada tela.
  */
-export const CODIGO_POR_TIPO = Object.fromEntries(SENSORES_RF1.map((s) => [s.tipo, s.id]))
+export const CODIGO_POR_TIPO = {
+  ...Object.fromEntries(SENSORES_RF1.map((s) => [s.tipo, s.id])),
+  FLUXO_RESFRIAMENTO: 'F-COOL-01',
+}
 export const CODIGO_POR_ID = Object.fromEntries(SENSORES_RF1.map((s) => [s.sensorId, s.id]))
 
 export function statusSensor(s) {
