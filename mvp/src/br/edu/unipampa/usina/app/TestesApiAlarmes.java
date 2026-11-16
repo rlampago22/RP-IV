@@ -43,6 +43,13 @@ public final class TestesApiAlarmes {
             HttpClient cliente = HttpClient.newHttpClient();
             String base = "http://localhost:" + porta;
 
+            HttpResponse<String> alarmeInexistente = post(
+                cliente,
+                base + "/api/alarmes/INEXISTENTE/reconhecer"
+            );
+            exigir(alarmeInexistente.statusCode() == 404,
+                "Alarme inexistente deve responder HTTP 404.");
+
             HttpResponse<String> disparo = post(cliente, base + "/api/demo/anomalia");
             exigir(disparo.statusCode() == 200, "Cenario critico deve responder HTTP 200.");
             exigir(disparo.body().contains("\"status\":\"CRITICO\""),
@@ -51,6 +58,15 @@ public final class TestesApiAlarmes {
             Matcher matcher = ID_ALARME.matcher(disparo.body());
             exigir(matcher.find(), "Resposta deve conter o ID do alarme emitido.");
             String id = matcher.group(1);
+
+            HttpResponse<String> resolucaoPrematura = post(
+                cliente,
+                base + "/api/alarmes/" + id + "/resolver"
+            );
+            exigir(resolucaoPrematura.statusCode() == 409,
+                "Resolucao antes do reconhecimento deve ser recusada.");
+            exigir(resolucaoPrematura.body().contains("\"status\":\"CRITICO\""),
+                "Resolucao prematura deve manter o alarme ativo.");
 
             HttpResponse<String> reconhecimento = post(
                 cliente,
@@ -62,6 +78,15 @@ public final class TestesApiAlarmes {
             exigir(reconhecimento.body().contains("\"operador\":\"Operador de Reator (UI Web)\""),
                 "ACK deve registrar o operador no estado.");
 
+            HttpResponse<String> reconhecimentoDuplicado = post(
+                cliente,
+                base + "/api/alarmes/" + id + "/reconhecer"
+            );
+            exigir(reconhecimentoDuplicado.statusCode() == 409,
+                "Reconhecimento repetido deve ser recusado.");
+            exigir(reconhecimentoDuplicado.body().contains("\"status\":\"ATENCAO\""),
+                "Reconhecimento repetido deve preservar o estado reconhecido.");
+
             HttpResponse<String> resolucao = post(
                 cliente,
                 base + "/api/alarmes/" + id + "/resolver"
@@ -72,7 +97,16 @@ public final class TestesApiAlarmes {
             exigir(resolucao.body().contains("\"tipo\":\"ALARME_RESOLVIDO\""),
                 "Resolver deve publicar ALARME_RESOLVIDO na timeline.");
 
-            System.out.println("[SUCESSO] Ciclo HTTP de alarme: anomalia -> ACK -> resolver.");
+            HttpResponse<String> resolucaoDuplicada = post(
+                cliente,
+                base + "/api/alarmes/" + id + "/resolver"
+            );
+            exigir(resolucaoDuplicada.statusCode() == 409,
+                "Resolucao repetida deve ser recusada.");
+            exigir(resolucaoDuplicada.body().contains("\"status\":\"RESOLVIDO\""),
+                "Resolucao repetida deve preservar o estado resolvido.");
+
+            System.out.println("[SUCESSO] Ciclo HTTP de alarme e transicoes invalidas passaram.");
         } finally {
             servidor.parar();
         }

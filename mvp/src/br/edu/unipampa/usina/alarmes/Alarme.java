@@ -50,6 +50,9 @@ public final class Alarme {
         if (!emitido) {
             throw new IllegalStateException("O alarme precisa ter sido emitido para ser reconhecido.");
         }
+        if (status != Status.ATIVO) {
+            throw new IllegalStateException("Somente um alarme ativo pode ser reconhecido.");
+        }
         this.operadorReconhecimento = operador != null ? operador : "Operador";
         this.justificativaReconhecimento = justificativa != null ? justificativa : "Alerta validado";
         this.momentoReconhecimento = Instant.now();
@@ -57,6 +60,9 @@ public final class Alarme {
     }
 
     public void resolver(String responsavel, String solucao) {
+        if (status != Status.RECONHECIDO) {
+            throw new IllegalStateException("O alarme precisa ser reconhecido antes de ser resolvido.");
+        }
         this.responsavelSolucao = responsavel != null ? responsavel : "Operador";
         this.solucao = solucao != null ? solucao : "Parametro normalizado";
         this.momentoSolucao = Instant.now();
