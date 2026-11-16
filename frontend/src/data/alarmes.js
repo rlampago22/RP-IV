@@ -34,7 +34,7 @@ export const ALARMES_INICIAIS = [
 export function clsSeveridade(sev) {
   switch (sev) {
     case 'ALTO':
-    case 'CRITICA':
+    case 'CRITICA': // severidade enviada pela API (AlarmeFacade)
     case 'CRITICO':
       return 'crit'
     case 'MANUT':

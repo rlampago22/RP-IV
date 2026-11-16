@@ -29,6 +29,8 @@ Para PostgreSQL: `$env:SPRING_PROFILES_ACTIVE = "postgres"` e variáveis em [`.e
 
 Endpoints: `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`, `GET /api/central/status`.
 
+Segundo fator por digital (RNF08, passkey/WebAuthn) nas **ações críticas**; o login continua com senha. Cadastro da digital só com código de ativação do Administrador: `/api/auth/biometria/**` e `/api/admin/usuarios/**`. Na primeira inicialização, o código do `admin@usina.local` aparece no log (`[PRIMEIRO ACESSO]`). Para desenvolver sem leitor de digital: `APP_BIOMETRIA_ACOES_CRITICAS=false`. Regra, endpoints e roteiro em [`../docs/backend-autenticacao.md`](../docs/backend-autenticacao.md#segundo-fator-digital-nas-ações-críticas-rnf08). Testes: `mvn test`.
+
 Contrato: [`../docs/backend-autenticacao.md`](../docs/backend-autenticacao.md).
 
 **Registro de acesso físico (RF08 / UC04)** vive no domínio `mvp/` (`POST /api/acesso/solicitar`), não nesta API Spring.
