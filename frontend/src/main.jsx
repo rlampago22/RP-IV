@@ -12,6 +12,7 @@ import HistoricoPage from './pages/HistoricoPage.jsx'
 import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
 import { HistoricoProvider } from './state/HistoricoContext.jsx'
 import { authApi } from './services/authApi.js'
+import ConfirmacaoAlarme from './components/ConfirmacaoAlarme.jsx'
 import {
   AtomLogo,
   IconGrid,
@@ -118,6 +119,7 @@ function App() {
 
 function Shell({ usuario, onLogout }) {
   const { estado, origemMock, erroApi, reconhecerAlarme } = useEstado()
+  const [acaoPendente, setAcaoPendente] = useState(null)
   const alarmeAtivo = estado.alarmes.find((a) => a.status === 'ATIVO')
 
   const alarmeAtivoAgora = estado.alarmes.some((a) => a.status === 'ATIVO')
@@ -194,7 +196,7 @@ function Shell({ usuario, onLogout }) {
           <button
             type="button"
             className="scada-btn scada-btn-amber"
-            onClick={() => reconhecerAlarme(alarmeAtivo.id)}
+            onClick={() => setAcaoPendente({ tipo: 'reconhecer', alarme: alarmeAtivo })}
           >
             Validar / Reconhecer
           </button>
@@ -211,6 +213,15 @@ function Shell({ usuario, onLogout }) {
           <Route path="/demo" element={<DemoPage />} />
         </Routes>
       </main>
+      <ConfirmacaoAlarme
+        acao={acaoPendente}
+        onCancelar={() => setAcaoPendente(null)}
+        onConfirmar={() => {
+          const alarme = acaoPendente.alarme
+          setAcaoPendente(null)
+          reconhecerAlarme(alarme.id)
+        }}
+      />
     </div>
   )
 }

@@ -90,7 +90,9 @@ Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, p
       "status": "ATIVO",
       "criadoEm": "2026-09-20T20:38:01.000Z",
       "operador": null,
-      "solucao": null
+      "solucao": null,
+      "resolvidoEm": null,
+      "resolvidoPor": null
     }
   ],
   "eventos": [
@@ -115,7 +117,7 @@ Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, p
 | `contadores.medicoes` | `int` | Total de `MedicaoRegistrada` desde o start do processo |
 | `contadores.alarmes` | `int` | Total de `AlarmeEmitido` (não decresce ao resolver) |
 | `contadores.auditoria` | `int` | Total de eventos de qualquer tipo publicados no bus (equivalente ao que `AuditoriaSubscriber` grava) |
-| `alarmes[]` | array | Todos os alarmes emitidos na sessão, com `status` `ATIVO \| RECONHECIDO \| RESOLVIDO`; `operador`/`solucao` só preenchidos após reconhecer/resolver |
+| `alarmes[]` | array | Todos os alarmes emitidos na sessão, com `status` `ATIVO \| RECONHECIDO \| RESOLVIDO`; `criadoEm` registra o disparo, `operador`/`solucao` registram o reconhecimento/solução e `resolvidoEm`/`resolvidoPor` são preenchidos ao resolver |
 | `eventos[]` | array | Timeline dos últimos 20 eventos do bus, mais recente primeiro (`MEDICAO_REGISTRADA`, `OBSERVACAO_REGISTRADA`, `FALHA_SENSOR_DETECTADA`, `ALARME_EMITIDO`, `ALARME_RECONHECIDO`, `ALARME_RESOLVIDO` — os 6 eventos obrigatórios de [`ui/direcao-opcao-a.md`](ui/direcao-opcao-a.md)) |
 
 ## 5. Consulta do histórico operacional (`GET /api/historico`) — RF16
@@ -267,4 +269,3 @@ O script compila e roda todos os suites em sequência, abortando no primeiro que
 | `TestesApiAlarmes` | Ciclo HTTP do alarme: anomalia → reconhecer → resolver |
 | `TestesHistorico` | Amostragem por ciclo, status derivado, operador de serviço e recuperação após reinício (RNF09) |
 | `TestesApiHistorico` | `GET /api/historico`: período, faixas, combinação **E**, operador, limite/truncamento, HTTP 400 em critério inválido, e as rotas de turno |
-

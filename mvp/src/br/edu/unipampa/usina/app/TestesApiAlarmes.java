@@ -96,6 +96,10 @@ public final class TestesApiAlarmes {
                 "Resolver deve atualizar o alarme para RESOLVIDO.");
             exigir(resolucao.body().contains("\"tipo\":\"ALARME_RESOLVIDO\""),
                 "Resolver deve publicar ALARME_RESOLVIDO na timeline.");
+            exigir(resolucao.body().contains("\"resolvidoPor\":\"Engenheiro de Turno (UI Web)\""),
+                "Snapshot deve informar quem resolveu o alarme.");
+            exigir(resolucao.body().matches("(?s).*\"resolvidoEm\":\"[^\\\"]+\".*"),
+                "Snapshot deve informar o instante da resolucao.");
 
             HttpResponse<String> resolucaoDuplicada = post(
                 cliente,

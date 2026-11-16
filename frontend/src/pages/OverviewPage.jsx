@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { useEstado } from '../state/EstadoContext.jsx'
+import ConfirmacaoAlarme from '../components/ConfirmacaoAlarme.jsx'
 import { interpretarEvento } from '../data/eventos.js'
 import {
   IconThermometer,
@@ -62,6 +64,7 @@ function formatarHora(iso) {
 export default function OverviewPage() {
   const { estado, iniciarTempoReal, pausarTempoReal, reconhecerAlarme, resolverAlarme } =
     useEstado()
+  const [acaoPendente, setAcaoPendente] = useState(null)
   const { status, tempoReal, sensores, contadores, alarmes, eventos } = estado
 
   const alarmePendenteReconhecer = alarmes.find((a) => a.status === 'ATIVO')
@@ -69,6 +72,7 @@ export default function OverviewPage() {
   const alarmesNaoResolvidos = alarmes.filter((a) => a.status !== 'RESOLVIDO')
 
   return (
+    <>
     <section>
       <p className="scada-kicker">PAINEL DE SUPERVISÃO CENTRAL • PACOTE R-01</p>
       <h1 className="scada-heading">Visão Geral Operacional</h1>
@@ -214,7 +218,8 @@ export default function OverviewPage() {
                 style={{ background: '#b45309' }}
                 disabled={!alarmePendenteReconhecer}
                 onClick={() =>
-                  alarmePendenteReconhecer && reconhecerAlarme(alarmePendenteReconhecer.id)
+                  alarmePendenteReconhecer &&
+                  setAcaoPendente({ tipo: 'reconhecer', alarme: alarmePendenteReconhecer })
                 }
               >
                 <IconCheck size={14} />
@@ -225,7 +230,10 @@ export default function OverviewPage() {
                 className="action-btn2"
                 style={{ background: '#059669' }}
                 disabled={!alarmePendenteResolver}
-                onClick={() => alarmePendenteResolver && resolverAlarme(alarmePendenteResolver.id)}
+                onClick={() =>
+                  alarmePendenteResolver &&
+                  setAcaoPendente({ tipo: 'resolver', alarme: alarmePendenteResolver })
+                }
               >
                 <IconCheck size={14} />
                 Normalizar / Encerrar
@@ -235,5 +243,16 @@ export default function OverviewPage() {
         </div>
       </div>
     </section>
+    <ConfirmacaoAlarme
+      acao={acaoPendente}
+      onCancelar={() => setAcaoPendente(null)}
+      onConfirmar={() => {
+        const { tipo, alarme } = acaoPendente
+        setAcaoPendente(null)
+        if (tipo === 'reconhecer') reconhecerAlarme(alarme.id)
+        else resolverAlarme(alarme.id)
+      }}
+    />
+    </>
   )
 }

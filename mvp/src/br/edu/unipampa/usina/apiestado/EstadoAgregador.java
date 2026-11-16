@@ -80,17 +80,23 @@ public final class EstadoAgregador implements IEventSubscriber {
                 "ATIVO",
                 emitido.ocorridoEm(),
                 null,
+                null,
+                null,
                 null
             ));
         } else if (evento instanceof AlarmeReconhecido reconhecido) {
             alarmes.computeIfPresent(
                 reconhecido.alarmeId(),
-                (id, atual) -> atual.comStatus("RECONHECIDO", reconhecido.operador(), null)
+                (id, atual) -> atual.comReconhecimento(reconhecido.operador())
             );
         } else if (evento instanceof AlarmeResolvido resolvido) {
             alarmes.computeIfPresent(
                 resolvido.alarmeId(),
-                (id, atual) -> atual.comStatus("RESOLVIDO", atual.operador(), resolvido.solucao())
+                (id, atual) -> atual.comResolucao(
+                    resolvido.ocorridoEm(),
+                    resolvido.responsavel(),
+                    resolvido.solucao()
+                )
             );
         }
     }

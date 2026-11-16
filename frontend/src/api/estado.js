@@ -10,7 +10,7 @@
  *   atualizadoEm: string (ISO-8601),
  *   sensores: { id, tipo, unidade, valor, limiteMinimo, limiteMaximo, atualizadoEm, historico }[],
  *   contadores: { medicoes, alarmes, auditoria },
- *   alarmes: { id, sensorId, severidade, mensagem, status, criadoEm, operador, solucao }[],
+ *   alarmes: { id, sensorId, severidade, mensagem, status, criadoEm, operador, solucao, resolvidoEm, resolvidoPor }[],
  *   eventos: { ocorridoEm, tipo, resumo }[],
  * }
  */
@@ -193,4 +193,3 @@ export function solicitarAcesso(credencial, area) {
 export function listarAcessos() {
   return chamar('/api/acesso/registros')
 }
-

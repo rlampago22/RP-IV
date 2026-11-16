@@ -621,6 +621,44 @@ button.scada-btn:disabled {
 }
 .action-btn2:disabled { opacity: 0.45; cursor: not-allowed; }
 
+.alarm-confirm-dialog {
+  width: min(460px, calc(100vw - 32px));
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--text);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 55%);
+}
+.alarm-confirm-dialog::backdrop { background: rgb(3 7 18 / 78%); backdrop-filter: blur(3px); }
+.alarm-confirm-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 16px;
+  border: 1px solid rgb(245 158 11 / 35%);
+  border-radius: 12px;
+  background: rgb(245 158 11 / 12%);
+  color: var(--warn);
+}
+.alarm-confirm-dialog .scada-kicker { margin-bottom: 6px; }
+.alarm-confirm-dialog h2 { margin: 0; font-size: 20px; }
+.alarm-confirm-message { margin: 12px 0; color: var(--text); line-height: 1.5; }
+.alarm-confirm-meta { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; }
+.alarm-confirm-note {
+  margin: 16px 0 20px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--warn);
+  background: rgb(245 158 11 / 7%);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.alarm-confirm-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.alarm-confirm-submit { background: #059669; }
+.alarm-confirm-dialog button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
 .tab2 {
   display: flex;
   align-items: center;

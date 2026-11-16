@@ -14,9 +14,19 @@ public record AlarmeEstado(
     String status,
     Instant criadoEm,
     String operador,
-    String solucao
+    String solucao,
+    Instant resolvidoEm,
+    String resolvidoPor
 ) {
-    public AlarmeEstado comStatus(String novoStatus, String operador, String solucao) {
-        return new AlarmeEstado(id, sensorId, severidade, mensagem, novoStatus, criadoEm, operador, solucao);
+    public AlarmeEstado comReconhecimento(String operador) {
+        return new AlarmeEstado(
+            id, sensorId, severidade, mensagem, "RECONHECIDO", criadoEm, operador, solucao, resolvidoEm, resolvidoPor
+        );
+    }
+
+    public AlarmeEstado comResolucao(Instant momento, String responsavel, String solucao) {
+        return new AlarmeEstado(
+            id, sensorId, severidade, mensagem, "RESOLVIDO", criadoEm, operador, solucao, momento, responsavel
+        );
     }
 }
