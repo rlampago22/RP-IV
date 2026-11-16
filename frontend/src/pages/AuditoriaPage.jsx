@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { buscarIntegridadeAuditoria } from '../api/estado.js'
 import { useEstado } from '../state/EstadoContext.jsx'
 import { interpretarEvento } from '../data/eventos.js'
 import {
@@ -28,9 +29,34 @@ function formatarHora(iso) {
   }
 }
 
+const INTERVALO_INTEGRIDADE_MS = 5000
+
 export default function AuditoriaPage() {
-  const { estado } = useEstado()
+  const { estado, origemMock } = useEstado()
   const eventos = estado.eventos ?? []
+  // null = verificando · 'indisponivel' = API fora · objeto = { integra, entradas, ultimoHash }
+  const [integridade, setIntegridade] = useState(null)
+
+  useEffect(() => {
+    let ativo = true
+    const verificar = async () => {
+      try {
+        const resultado = await buscarIntegridadeAuditoria()
+        if (ativo) setIntegridade(resultado)
+      } catch {
+        if (ativo) setIntegridade('indisponivel')
+      }
+    }
+    verificar()
+    const intervalo = setInterval(verificar, INTERVALO_INTEGRIDADE_MS)
+    return () => {
+      ativo = false
+      clearInterval(intervalo)
+    }
+  }, [])
+
+  const indisponivel = origemMock || integridade === 'indisponivel'
+
   const [mostrarRotina, setMostrarRotina] = useState(false)
 
   const interpretados = useMemo(
@@ -64,6 +90,26 @@ export default function AuditoriaPage() {
           >
             {mostrarRotina ? 'Ocultar medições de rotina' : `Mostrar também medições de rotina (${rotina.length})`}
           </button>
+        </div>
+
+        <div className="scada-integridade" role="status">
+          {indisponivel && (
+            <span className="scada-pill warn">VERIFICAÇÃO INDISPONÍVEL</span>
+          )}
+          {!indisponivel && integridade === null && (
+            <span className="scada-pill">VERIFICANDO CADEIA…</span>
+          )}
+          {!indisponivel && integridade && integridade !== 'indisponivel' && (
+            <>
+              <span className={`scada-pill ${integridade.integra ? 'ok' : 'crit'}`}>
+                {integridade.integra ? 'CADEIA ÍNTEGRA' : 'INTEGRIDADE COMPROMETIDA'}
+              </span>
+              <span className="scada-integridade-detalhe">
+                {integridade.entradas} registros
+                {integridade.ultimoHash ? ` · último selo ${integridade.ultimoHash}` : ''}
+              </span>
+            </>
+          )}
         </div>
 
         {visiveis.length === 0 ? (

@@ -9,6 +9,8 @@ import AuditoriaPage from './pages/AuditoriaPage.jsx'
 import DemoPage from './pages/DemoPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import HistoricoPage from './pages/HistoricoPage.jsx'
+import SegurancaPage from './pages/SegurancaPage.jsx'
+import CelularSimuladoPage from './pages/CelularSimuladoPage.jsx'
 import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
 import { HistoricoProvider } from './state/HistoricoContext.jsx'
 import { authApi } from './services/authApi.js'
@@ -21,6 +23,7 @@ import {
   IconClock,
   IconPlay,
   IconPower,
+  IconLock,
 } from './components/icons.jsx'
 
 const TABS = [
@@ -30,6 +33,7 @@ const TABS = [
   { to: '/auditoria', text: 'Auditoria', Icon: IconShield },
   { to: '/historico', text: 'Histórico', Icon: IconClock },
   { to: '/demo', text: 'Demo / Cenários', Icon: IconPlay },
+  { to: '/seguranca', text: 'Segurança', Icon: IconLock },
 ]
 
 const BADGE_TEXTO = {
@@ -67,9 +71,7 @@ function App() {
 
   if (usuario === null) {
     return (
-      <LoginPage
-        onLogin={async (email, senha) => setUsuario(await authApi.login(email, senha))}
-      />
+      <LoginPage onAutenticado={setUsuario} />
     )
   }
 
@@ -209,14 +211,18 @@ function Shell({ usuario, onLogout }) {
           <Route path="/auditoria" element={<AuditoriaPage />} />
           <Route path="/historico" element={<HistoricoPage />} />
           <Route path="/demo" element={<DemoPage />} />
+          <Route path="/seguranca" element={<SegurancaPage usuario={usuario} />} />
         </Routes>
       </main>
     </div>
   )
 }
 
+// RF18: /celular é o celular simulado da demonstração (fora da sessão da Central).
+const ehCelularSimulado = window.location.pathname === '/celular'
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    {ehCelularSimulado ? <CelularSimuladoPage /> : <App />}
   </React.StrictMode>,
 )

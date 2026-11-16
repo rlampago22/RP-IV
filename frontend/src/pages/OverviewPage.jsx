@@ -148,12 +148,12 @@ export default function OverviewPage() {
               </div>
             </div>
             <div className="stat-tile">
-              <IconBell size={20} style={{ color: contadores.alarmes > 0 ? 'var(--crit)' : 'var(--muted)' }} />
+              <IconBell size={20} style={{ color: alarmesNaoResolvidos.length > 0 ? 'var(--crit)' : 'var(--muted)' }} />
               <div>
-                <div className="num" style={{ color: contadores.alarmes > 0 ? 'var(--crit)' : undefined }}>
-                  {contadores.alarmes}
+                <div className="num" style={{ color: alarmesNaoResolvidos.length > 0 ? 'var(--crit)' : undefined }}>
+                  {alarmesNaoResolvidos.length}
                 </div>
-                <div className="lbl">ALARMES</div>
+                <div className="lbl">ALARMES ABERTOS</div>
               </div>
             </div>
             <div className="stat-tile">
