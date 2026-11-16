@@ -12,7 +12,7 @@ cada parte cobre um momento diferente.
 | Momento | O que é pedido | Quem especificou | Implementação |
 |---|---|---|---|
 | **Entrar na Central (login)** | Senha + confirmação no celular **ou** código de 6 dígitos | Álvaro (RF18/UC05, pedido do professor em 04/11) | `SegundoFatorService`, `AutenticacaoController` (este documento) |
-| **Ações críticas** (gerar código de ativação, revogar digital, futura contingência RF09/RF10) | Confirmar com a digital (passkey/WebAuthn) | Marcus (RNF08, item 4.2.10 do PDF da APS) | `ConfirmacaoBiometrica`, `BiometriaController` (semana de 26/10) |
+| **Ações críticas** (gerar código de ativação, revogar digital, ativar protocolo de contingência e encerrar emergência — RF09/RF10, desde 16/11) | Confirmar com a digital (passkey/WebAuthn) | Marcus (RNF08, item 4.2.10 do PDF da APS) | `ConfirmacaoBiometrica`, `BiometriaController` (semana de 26/10) |
 | **Auditoria de tudo isso** | Toda tentativa registrada, sucesso e falha, sem dados sensíveis | Issue #81 (RNF03/RNF05) | `AuditoriaAutenticacao` (trilha com hash encadeado) |
 
 ## 2. Fluxo do RF18 no código

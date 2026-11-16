@@ -51,7 +51,7 @@ A biometria do UC02 é a da **porta** (acesso físico, nosso UC04 no `mvp/`); o 
 ### Regra
 
 - **Login da Central:** e-mail e senha, como antes.
-- **Ações críticas** exigem a digital: hoje, gerar código de ativação, revogar digital e remover a própria digital; quando existir, **ativar protocolo de contingência** (RF09/RF10). Confirmada a digital, a sessão fica liberada para ações críticas por **5 minutos**.
+- **Ações críticas** exigem a digital: gerar código de ativação, revogar digital, remover a própria digital, **ativar o protocolo de contingência** e **encerrar a emergência** (RF09/RF10, `EmergenciaController`). Confirmada a digital, a sessão fica liberada para ações críticas por **5 minutos**.
 - **Cadastro da digital:** só com o código de ativação emitido pelo Administrador (uso único, 24 h, guardado só como hash BCrypt; gerar outro invalida o anterior; 5 códigos errados bloqueiam o código vigente).
 - **Leitor perdido:** o Administrador revoga a digital e gera um código novo.
 - **Primeiro Administrador:** enquanto nenhum Administrador tiver digital, cada inicialização do backend emite um código para ele e o escreve no log (`[PRIMEIRO ACESSO] ... Codigo de ativacao de admin@usina.local: XXXX-XXXX`). É a ativação na instalação do sistema.

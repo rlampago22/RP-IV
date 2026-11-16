@@ -39,4 +39,10 @@ export const authApi = {
   listarUsuarios: () => request('/api/admin/usuarios'),
   emitirCodigoAtivacao: (id) => request(`/api/admin/usuarios/${id}/codigo-ativacao`, { method: 'POST' }),
   revogarBiometriaDe: (id) => request(`/api/admin/usuarios/${id}/biometria/revogar`, { method: 'POST' }),
+  // RF09/RF10 — emergências e protocolo de contingência. Ativar e encerrar são ações críticas (digital).
+  listarEmergencias: () => request('/api/emergencias'),
+  listarProtocolos: () => request('/api/emergencias/protocolos'),
+  criarEmergencia: (tipo, descricao) => request('/api/emergencias', { method: 'POST', body: JSON.stringify({ tipo, descricao }) }),
+  ativarProtocolo: (id, protocolo) => request(`/api/emergencias/${id}/protocolo`, { method: 'POST', body: JSON.stringify({ protocolo }) }),
+  encerrarEmergencia: (id) => request(`/api/emergencias/${id}/encerrar`, { method: 'POST' }),
 }
