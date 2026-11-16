@@ -90,7 +90,8 @@ a { color: inherit; text-decoration: none; }
 .auth-card > p:not(.scada-kicker) { margin: 0; color: var(--muted); line-height: 1.5; font-size: 14px; }
 .auth-form { display: grid; gap: 14px; margin-top: 4px; }
 .auth-form label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 700; }
-.auth-form input {
+.auth-form input,
+.auth-form select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border);
@@ -99,7 +100,8 @@ a { color: inherit; text-decoration: none; }
   color: var(--text);
   font: inherit;
 }
-.auth-form input:focus { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.auth-form input:focus,
+.auth-form select:focus { outline: 2px solid var(--cyan); outline-offset: 1px; }
 .auth-error { margin: 0; color: #fecdd3; font-size: 13px; }
 .codigo-ativacao {
   font-family: var(--mono);
@@ -977,3 +979,33 @@ button.scada-btn:disabled {
 .celular-notificacao { display: grid; gap: 6px; padding: 12px; border-radius: 14px; border: 1px solid #334155; font-size: 13px; color: var(--muted, #94a3b8); }
 .celular-notificacao strong { color: inherit; }
 .celular-codigo { font-size: 28px; font-weight: 800; letter-spacing: 6px; color: var(--cyan, #22d3ee); }
+
+/* RF09/RF10 — tela de Emergência e protocolo de contingência */
+.emergencia-item {
+  display: grid;
+  gap: 6px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+.emergencia-item:first-of-type { border-top: 0; padding-top: 0; }
+.emergencia-item header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.emergencia-item p { margin: 0; color: var(--text); }
+.emergencia-item small { color: var(--muted); }
+.emergencia-protocolo {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border: 1px solid rgb(245 158 11 / 35%);
+  border-radius: 9px;
+}
+.emergencia-protocolo ol { margin: 4px 0 0; padding-left: 20px; color: var(--muted); font-size: 13px; }
+.emergencia-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.emergencia-acoes select {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #0b1220;
+  color: var(--text);
+  font: inherit;
+}

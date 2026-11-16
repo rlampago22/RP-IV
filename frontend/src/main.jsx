@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage.jsx'
 import HistoricoPage from './pages/HistoricoPage.jsx'
 import SegurancaPage from './pages/SegurancaPage.jsx'
 import CelularSimuladoPage from './pages/CelularSimuladoPage.jsx'
+import EmergenciaPage from './pages/EmergenciaPage.jsx'
 import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
 import { HistoricoProvider } from './state/HistoricoContext.jsx'
 import { authApi } from './services/authApi.js'
@@ -24,6 +25,7 @@ import {
   IconPlay,
   IconPower,
   IconLock,
+  IconAlertTriangle,
 } from './components/icons.jsx'
 
 const TABS = [
@@ -33,6 +35,7 @@ const TABS = [
   { to: '/auditoria', text: 'Auditoria', Icon: IconShield },
   { to: '/historico', text: 'Histórico', Icon: IconClock },
   { to: '/demo', text: 'Demo / Cenários', Icon: IconPlay },
+  { to: '/emergencia', text: 'Emergência', Icon: IconAlertTriangle },
   { to: '/seguranca', text: 'Segurança', Icon: IconLock },
 ]
 
@@ -211,6 +214,7 @@ function Shell({ usuario, onLogout }) {
           <Route path="/auditoria" element={<AuditoriaPage />} />
           <Route path="/historico" element={<HistoricoPage />} />
           <Route path="/demo" element={<DemoPage />} />
+          <Route path="/emergencia" element={<EmergenciaPage />} />
           <Route path="/seguranca" element={<SegurancaPage usuario={usuario} />} />
         </Routes>
       </main>
