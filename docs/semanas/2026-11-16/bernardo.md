@@ -85,9 +85,28 @@ as tarefas da semana entre os 5 integrantes.
 - PR #94: base corrigida (`gh pr view 94`), conflito real confirmado e
   comunicado ao José, não resolvido às cegas.
 
+## Atualização (17/11)
+
+- Fix do histórico multi-reator mesclado em `desenvolvimento` via
+  [PR #95](https://github.com/rlampago22/RP-IV/pull/95).
+- Conflito da PR #94 (José) resolvido: a branch `jose` estava 25+ commits
+  atrás e tinha divergido em `AlarmeEstado.java` (ciclo de vida do alarme,
+  campo `resolvidoEm`/`resolvidoPor`) e em telas do front (confirmação de
+  alarme vs. seletor de reator). Mesclei `desenvolvimento` em `jose`,
+  combinando as duas features (ex.: `comReconhecimento`/`comResolucao` agora
+  também carregam `reatorId`), rodei as 7 suítes do `mvp/` + build do
+  frontend, e enviei (`push`). PR #94 está `CLEAN`/`MERGEABLE`, pronta pra
+  mergear.
+- Issues da semana criadas para os 5 integrantes:
+  [#96](https://github.com/rlampago22/RP-IV/issues/96) (Bruno),
+  [#97](https://github.com/rlampago22/RP-IV/issues/97) (Bernardo),
+  [#98](https://github.com/rlampago22/RP-IV/issues/98) (José),
+  [#99](https://github.com/rlampago22/RP-IV/issues/99) (Marcus),
+  [#100](https://github.com/rlampago22/RP-IV/issues/100) (Álvaro).
+
 ## Pendências
 
-- José ainda precisa resolver o conflito da PR #94 e mergear.
+- PR #94 pronta, aguardando decisão de mergear.
 - Migração para banco (reator/sensor-histórico/auditoria) é trabalho da
-  semana, não concluído ainda — este doc define só a divisão, não a entrega.
-- Commit/push deste trabalho (branch `bernardo`) ainda não feito.
+  semana, não concluído ainda — este doc e as issues definem só a divisão.
+- Commit/push desta atualização (branch `bernardo`) ainda não feito.
