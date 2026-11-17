@@ -17,7 +17,8 @@ public record FiltroHistorico(
     Faixa pressao,
     Faixa radiacao,
     Faixa fluxo,
-    String operador
+    String operador,
+    String reatorId
 ) {
     /** Faixa fechada opcional: {@code null} em qualquer extremo significa sem limite daquele lado. */
     public record Faixa(Double min, Double max) {
@@ -42,7 +43,7 @@ public record FiltroHistorico(
     }
 
     public static final FiltroHistorico TUDO = new FiltroHistorico(
-        null, null, Faixa.LIVRE, Faixa.LIVRE, Faixa.LIVRE, Faixa.LIVRE, null);
+        null, null, Faixa.LIVRE, Faixa.LIVRE, Faixa.LIVRE, Faixa.LIVRE, null, null);
 
     public FiltroHistorico {
         if (de != null && ate != null && de.isAfter(ate)) {
@@ -53,15 +54,22 @@ public record FiltroHistorico(
         radiacao = radiacao == null ? Faixa.LIVRE : radiacao;
         fluxo = fluxo == null ? Faixa.LIVRE : fluxo;
         operador = operador == null || operador.isBlank() ? null : operador.trim();
+        reatorId = reatorId == null || reatorId.isBlank() ? null : reatorId.trim();
     }
 
+    /** Sem {@code reatorId} informado, traz todos os 5 reatores (RF16/RF17 agora cobrem todos). */
     public boolean aceita(SnapshotOperacional snapshot) {
         return dentroDoPeriodo(snapshot.instante())
             && temperatura.aceita(snapshot.temperatura())
             && pressao.aceita(snapshot.pressao())
             && radiacao.aceita(snapshot.radiacao())
             && fluxo.aceita(snapshot.fluxoResfriamento())
-            && casaOperador(snapshot.operador());
+            && casaOperador(snapshot.operador())
+            && casaReator(snapshot.reatorId());
+    }
+
+    private boolean casaReator(String reatorDaLinha) {
+        return reatorId == null || reatorId.equals(reatorDaLinha);
     }
 
     private boolean dentroDoPeriodo(Instant instante) {

@@ -542,7 +542,8 @@ public final class ApiEstadoHttpServer {
                 decimal(p.get("radiacaoMax"), "radiacaoMax")),
             new FiltroHistorico.Faixa(decimal(p.get("fluxoMin"), "fluxoMin"),
                 decimal(p.get("fluxoMax"), "fluxoMax")),
-            p.get("operador")
+            p.get("operador"),
+            p.get("reator")
         );
     }
 

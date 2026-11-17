@@ -1,5 +1,6 @@
 package br.edu.unipampa.usina.historicooperacional;
 
+import br.edu.unipampa.usina.infraestruturaeventos.EventoDominio;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
@@ -26,8 +27,15 @@ import java.util.Locale;
  *
  * <p>Separador {@code ;} para o Excel dividir as colunas; decimais com ponto ({@code Locale.ROOT})
  * porque a consulta filtra numericamente. Listas internas usam {@code |}.
+ *
+ * <p>Carrega o {@code reatorId} desde 16/11 — até então o histórico operacional só cobria o
+ * reator principal (R-01), porque os 4 ids de sensor (1 a 4) se repetem em todos os 5 reatores e
+ * sem essa coluna não dava pra saber de qual reator cada linha era. Linhas antigas no CSV, escritas
+ * antes dessa coluna existir, têm 1 campo a menos: {@link #deLinhaCsv(String)} detecta isso e
+ * assume {@code R-01}, que é o que elas de fato eram.
  */
 public record SnapshotOperacional(
+    String reatorId,
     Instant instante,
     double temperatura,
     double pressao,
@@ -42,15 +50,17 @@ public record SnapshotOperacional(
     OperadorDeServico.Origem origemOperador
 ) {
     public static final String CABECALHO =
-        "instante;temperatura;pressao;radiacao;fluxo_resfriamento;"
+        "reator_id;instante;temperatura;pressao;radiacao;fluxo_resfriamento;"
             + "sensores_em_alarme;sensores_reconhecidos;sensores_em_observacao;sensores_em_falha;"
             + "operador;papeis_operador;origem_operador";
 
     private static final String SEPARADOR = ";";
     private static final String SEPARADOR_LISTA = "|";
-    private static final int COLUNAS = 12;
+    private static final int COLUNAS = 13;
+    private static final int COLUNAS_SEM_REATOR_LEGADO = 12;
 
     public SnapshotOperacional {
+        reatorId = EventoDominio.reatorOuPrincipal(reatorId);
         sensoresEmAlarme = copia(sensoresEmAlarme);
         sensoresReconhecidos = copia(sensoresReconhecidos);
         sensoresEmObservacao = copia(sensoresEmObservacao);
@@ -69,7 +79,8 @@ public record SnapshotOperacional(
     public String linhaCsv() {
         return String.format(
             Locale.ROOT,
-            "%s;%.2f;%.2f;%.2f;%.2f;%s;%s;%s;%s;%s;%s;%s",
+            "%s;%s;%.2f;%.2f;%.2f;%.2f;%s;%s;%s;%s;%s;%s;%s",
+            reatorId,
             instante,
             temperatura,
             pressao,
@@ -91,15 +102,46 @@ public record SnapshotOperacional(
 
     /** Devolve {@code null} para linha de cabeçalho, vazia ou malformada. */
     public static SnapshotOperacional deLinhaCsv(String linha) {
-        if (linha == null || linha.isBlank() || linha.startsWith("instante")) {
+        if (linha == null || linha.isBlank() || linha.startsWith("instante") || linha.startsWith("reator_id")) {
             return null;
         }
         String[] campos = linha.trim().split(SEPARADOR, -1);
-        if (campos.length < COLUNAS) {
-            return null;
+        if (campos.length >= COLUNAS) {
+            return deCampos(campos);
         }
+        if (campos.length >= COLUNAS_SEM_REATOR_LEGADO) {
+            // Linha gravada antes de 16/11, sem a coluna reator_id: era sempre do R-01.
+            return deCamposLegado(campos);
+        }
+        return null;
+    }
+
+    private static SnapshotOperacional deCampos(String[] campos) {
         try {
             return new SnapshotOperacional(
+                campos[0].trim(),
+                Instant.parse(campos[1].trim()),
+                Double.parseDouble(campos[2].trim()),
+                Double.parseDouble(campos[3].trim()),
+                Double.parseDouble(campos[4].trim()),
+                Double.parseDouble(campos[5].trim()),
+                separar(campos[6]),
+                separar(campos[7]),
+                separar(campos[8]),
+                separar(campos[9]),
+                campos[10].trim(),
+                separar(campos[11]),
+                OperadorDeServico.Origem.valueOf(campos[12].trim())
+            );
+        } catch (RuntimeException malformada) {
+            return null;
+        }
+    }
+
+    private static SnapshotOperacional deCamposLegado(String[] campos) {
+        try {
+            return new SnapshotOperacional(
+                EventoDominio.REATOR_PRINCIPAL,
                 Instant.parse(campos[0].trim()),
                 Double.parseDouble(campos[1].trim()),
                 Double.parseDouble(campos[2].trim()),

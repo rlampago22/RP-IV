@@ -16,6 +16,7 @@ import br.edu.unipampa.usina.controlereator.Sensor;
 import br.edu.unipampa.usina.historicooperacional.HistoricoSubscriber;
 import br.edu.unipampa.usina.historicooperacional.OperadorDeServico;
 import br.edu.unipampa.usina.historicooperacional.RegistroHistorico;
+import br.edu.unipampa.usina.historicooperacional.SnapshotOperacional;
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
 
 import java.io.IOException;
@@ -120,12 +121,15 @@ public final class TestesReatores {
         exigir(estado.snapshot().sensores().get(0).historico().size() <= 6,
             "Historico curto do T02 deve continuar com no maximo 6 valores.");
 
-        // 7. Histórico operacional (CSV) é só do R-01: ciclo completo do R-03 não grava linha.
+        // 7. Histórico operacional (CSV) cobre os 5 reatores (corrigido em 16/11): ciclo completo
+        // do R-03 grava sua própria linha, sem se misturar com a do R-01.
         int linhasAntes = historico.tamanho();
         cicloNormal(r03);
-        exigir(historico.tamanho() == linhasAntes, "Ciclo do R-03 nao deve gravar no historico do R-01.");
+        exigir(historico.tamanho() == linhasAntes + 1, "Ciclo do R-03 deve gravar no historico do R-03.");
+        exigir("R-03".equals(ultima(historico).reatorId()), "Linha gravada deve apontar para o R-03.");
         cicloNormal(r01);
-        exigir(historico.tamanho() == linhasAntes + 1, "Ciclo do R-01 deve continuar gravando.");
+        exigir(historico.tamanho() == linhasAntes + 2, "Ciclo do R-01 deve continuar gravando separadamente.");
+        exigir("R-01".equals(ultima(historico).reatorId()), "Linha gravada deve apontar para o R-01.");
 
         // 8. Contrato JSON leva os reatores e o reator do alarme.
         String json = EstadoJson.escrever(estado.snapshot());
@@ -213,6 +217,11 @@ public final class TestesReatores {
         reator.receberLeitura(2L, 150.0);
         reator.receberLeitura(3L, 2.4);
         reator.receberLeitura(4L, 1100.0);
+    }
+
+    private static SnapshotOperacional ultima(RegistroHistorico registro) {
+        List<SnapshotOperacional> todas = registro.consultar();
+        return todas.get(todas.size() - 1);
     }
 
     private static ReatorEstado reator(EstadoSnapshot snapshot, String id) {

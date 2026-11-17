@@ -10,6 +10,7 @@ import br.edu.unipampa.usina.historicooperacional.OperadorDeServico;
 import br.edu.unipampa.usina.historicooperacional.RegistroHistorico;
 import br.edu.unipampa.usina.historicooperacional.SnapshotOperacional;
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
+import br.edu.unipampa.usina.infraestruturaeventos.EventoDominio;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -222,6 +223,7 @@ public final class TestesApiHistorico {
     ) {
         boolean identificado = !operador.isEmpty();
         return new SnapshotOperacional(
+            EventoDominio.REATOR_PRINCIPAL,
             instante, temp, pressao, radiacao, fluxo,
             alarmesAtivos > 0 ? List.of("2:PRESSAO") : List.of(),
             List.of(),
