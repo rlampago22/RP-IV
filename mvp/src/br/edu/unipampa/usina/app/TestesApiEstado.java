@@ -80,6 +80,10 @@ public final class TestesApiEstado {
             .findFirst();
         exigir(alarmeFinal.isPresent() && "RESOLVIDO".equals(alarmeFinal.get().status()),
             "Alarme deve constar como RESOLVIDO apos a resolucao.");
+        exigir(alarmeFinal.isPresent()
+                && "Engenheiro Teste".equals(alarmeFinal.get().resolvidoPor())
+                && alarmeFinal.get().resolvidoEm() != null,
+            "Estado deve preservar responsavel e instante da resolucao.");
 
         // 7. Timeline mantem o limite de eventos mais recentes primeiro.
         List<EventoEstado> eventos = estado.snapshot().eventos();
@@ -119,6 +123,9 @@ public final class TestesApiEstado {
         exigir(json.contains("\"sensores\":"), "JSON deve conter o campo sensores.");
         exigir(json.contains("\"historico\":"), "JSON deve conter o campo historico por sensor.");
         exigir(json.contains("\"alarmes\":"), "JSON deve conter o campo alarmes.");
+        exigir(json.contains("\"resolvidoPor\":\"Engenheiro Teste\"")
+                && json.contains("\"resolvidoEm\":"),
+            "JSON deve expor responsavel e instante da resolucao do alarme.");
         exigir(json.contains("\"eventos\":"), "JSON deve conter o campo eventos.");
 
         System.out.println("\n[SUCESSO] Testes da API de estado (EstadoAgregador/EstadoJson + seeds #50) passaram com 100% de exito!");

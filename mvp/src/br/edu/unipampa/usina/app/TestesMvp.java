@@ -79,10 +79,34 @@ public final class TestesMvp {
             "CT-RF04-01: Destinatarios devem incluir Operador e Supervisao Central.");
 
         // 5. UC01: Ciclo de vida do Alarme (Reconhecimento pelo Operador e Normalizacao)
+        exigir(!alarmes.resolverAlarme(alarmeEmitido.getId(), "Engenheiro Bruno", "Resolucao prematura")
+            && alarmeEmitido.isAtivo(),
+            "UC01: Alarme ativo nao pode ser resolvido antes do reconhecimento.");
+        exigirEstadoIlegal(
+            () -> alarmeEmitido.resolver("Engenheiro Bruno", "Resolucao prematura"),
+            "Dominio deve rejeitar resolucao antes do reconhecimento."
+        );
         boolean reconhecido = alarmes.reconhecerAlarme(alarmeEmitido.getId(), "Operador Alvaro", "Verificado e em analise");
         exigir(reconhecido && alarmeEmitido.isReconhecido(), "UC01: Alarme deve ter sido reconhecido pelo operador.");
+        exigir(!alarmes.reconhecerAlarme(alarmeEmitido.getId(), "Operador Alvaro", "Reconhecimento duplicado")
+            && alarmeEmitido.isReconhecido(),
+            "UC01: Alarme reconhecido nao pode ser reconhecido novamente.");
+        exigirEstadoIlegal(
+            () -> alarmeEmitido.reconhecer("Operador Alvaro", "Reconhecimento duplicado"),
+            "Dominio deve rejeitar reconhecimento repetido."
+        );
         boolean resolvido = alarmes.resolverAlarme(alarmeEmitido.getId(), "Engenheiro Bruno", "Pressao e temp normalizadas");
         exigir(resolvido && alarmeEmitido.isResolvido(), "UC01: Alarme deve ter sido encerrado/resolvido.");
+        exigir(!alarmes.resolverAlarme(alarmeEmitido.getId(), "Engenheiro Bruno", "Resolucao duplicada")
+            && alarmeEmitido.isResolvido(),
+            "UC01: Alarme resolvido nao pode ser resolvido novamente.");
+        exigirEstadoIlegal(
+            () -> alarmeEmitido.resolver("Engenheiro Bruno", "Resolucao duplicada"),
+            "Dominio deve rejeitar resolucao repetida."
+        );
+        exigir(!alarmes.reconhecerAlarme(alarmeEmitido.getId(), "Operador Alvaro", "Reconhecimento tardio")
+            && alarmeEmitido.isResolvido(),
+            "UC01: Alarme resolvido nao pode voltar ao estado reconhecido.");
 
         // 6. UC01: Fluxo Alternativo 1 (Registro de Observacao preventiva)
         AtomicBoolean observacaoRecebida = new AtomicBoolean(false);
@@ -170,5 +194,15 @@ public final class TestesMvp {
             throw new AssertionError(mensagem);
         }
         System.out.println("[OK] " + mensagem);
+    }
+
+    private static void exigirEstadoIlegal(Runnable acao, String mensagem) {
+        try {
+            acao.run();
+        } catch (IllegalStateException esperado) {
+            System.out.println("[OK] " + mensagem);
+            return;
+        }
+        throw new AssertionError(mensagem);
     }
 }

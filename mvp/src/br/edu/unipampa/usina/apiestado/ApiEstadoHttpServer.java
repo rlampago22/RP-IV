@@ -253,7 +253,8 @@ public final class ApiEstadoHttpServer {
             String operador = lerCampoJson(corpo, "operador", "Operador de Reator (UI Web)");
             String justificativa = lerCampoJson(corpo, "justificativa", "Reconhecido via T01 Overview");
             boolean ok = alarmes.reconhecerAlarme(reconhecer.group(1), operador, justificativa);
-            responder(exchange, ok ? 200 : 404, EstadoJson.escrever(estado.snapshot()));
+            responder(exchange, ok ? 200 : statusFalhaAcaoAlarme(reconhecer.group(1)),
+                EstadoJson.escrever(estado.snapshot()));
             return;
         }
 
@@ -272,15 +273,20 @@ public final class ApiEstadoHttpServer {
                 .orElse(null);
             boolean ok = alarmes.resolverAlarme(alarmeId, responsavel, solucao);
             if (ok && sensorDoAlarme != null) {
-                // "Parâmetros normalizados": o sensor volta ao ponto normal, para as leituras
-                // exibidas acompanharem o status do reator (antes ficavam em 372 °C com status ESTÁVEL).
                 CenariosMedicao.normalizarSensor(reator, sensorDoAlarme);
             }
-            responder(exchange, ok ? 200 : 404, EstadoJson.escrever(estado.snapshot()));
+            responder(exchange, ok ? 200 : statusFalhaAcaoAlarme(alarmeId),
+                EstadoJson.escrever(estado.snapshot()));
             return;
         }
 
         responder(exchange, 404, "{\"erro\":\"rota nao encontrada\"}");
+    }
+
+    private int statusFalhaAcaoAlarme(String alarmeId) {
+        boolean existe = alarmes.consultarAlarmes().stream()
+            .anyMatch(alarme -> alarme.getId().equalsIgnoreCase(alarmeId));
+        return existe ? 409 : 404;
     }
 
     /**

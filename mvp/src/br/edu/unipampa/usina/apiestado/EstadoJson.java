@@ -130,7 +130,10 @@ public final class EstadoJson {
                 .append("\"status\":").append(str(alarme.status())).append(',')
                 .append("\"criadoEm\":").append(str(alarme.criadoEm().toString())).append(',')
                 .append("\"operador\":").append(nullavel(alarme.operador())).append(',')
-                .append("\"solucao\":").append(nullavel(alarme.solucao()))
+                .append("\"solucao\":").append(nullavel(alarme.solucao())).append(',')
+                .append("\"resolvidoEm\":").append(alarme.resolvidoEm() == null
+                    ? "null" : str(alarme.resolvidoEm().toString())).append(',')
+                .append("\"resolvidoPor\":").append(nullavel(alarme.resolvidoPor()))
                 .append('}');
         }
         return json.append(']').toString();
