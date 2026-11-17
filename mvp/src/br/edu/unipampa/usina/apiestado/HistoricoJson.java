@@ -66,7 +66,8 @@ public final class HistoricoJson {
             + "\"pressao\":" + faixa(filtro.pressao()) + ','
             + "\"radiacao\":" + faixa(filtro.radiacao()) + ','
             + "\"fluxo\":" + faixa(filtro.fluxo()) + ','
-            + "\"operador\":" + (filtro.operador() == null ? "null" : texto(filtro.operador()))
+            + "\"operador\":" + (filtro.operador() == null ? "null" : texto(filtro.operador())) + ','
+            + "\"reatorId\":" + (filtro.reatorId() == null ? "null" : texto(filtro.reatorId()))
             + "}";
     }
 
@@ -83,6 +84,7 @@ public final class HistoricoJson {
                 json.append(',');
             }
             json.append('{')
+                .append("\"reatorId\":").append(texto(r.reatorId())).append(',')
                 .append("\"instante\":").append(texto(r.instante().toString())).append(',')
                 .append("\"temperatura\":").append(r.temperatura()).append(',')
                 .append("\"pressao\":").append(r.pressao()).append(',')

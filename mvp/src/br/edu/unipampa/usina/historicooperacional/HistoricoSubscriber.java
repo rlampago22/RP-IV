@@ -49,14 +49,12 @@ public final class HistoricoSubscriber implements IEventSubscriber {
     private final RegistroHistorico registro;
     private final OperadorDeServico operador;
 
-    private final Map<String, Double> ultimoValorPorTipo = new HashMap<>();
-    private final Map<Long, String> tipoPorSensor = new HashMap<>();
+    /** Um ciclo por reator — os ids de sensor (1 a 4) se repetem em todos os 5 reatores, então o
+     * ciclo de um não pode compartilhar estado com o de outro (ver {@link EstadoCiclo}). */
+    private final Map<String, EstadoCiclo> estadoPorReator = new HashMap<>();
+    /** alarmeId -> (sensorId, reatorId): reconhecimento/resolução só carregam o alarmeId. */
     private final Map<String, Long> sensorPorAlarme = new HashMap<>();
-    private final Set<String> tiposDoCicloAtual = new LinkedHashSet<>();
-    private final Set<Long> sensoresEmAlarme = new LinkedHashSet<>();
-    private final Set<Long> sensoresReconhecidos = new LinkedHashSet<>();
-    private final Set<Long> sensoresEmObservacao = new LinkedHashSet<>();
-    private final Set<Long> falhasDesdeUltimaLinha = new LinkedHashSet<>();
+    private final Map<String, String> reatorPorAlarme = new HashMap<>();
 
     public HistoricoSubscriber(EventBus eventBus, RegistroHistorico registro, OperadorDeServico operador) {
         this.registro = registro;
@@ -66,73 +64,60 @@ public final class HistoricoSubscriber implements IEventSubscriber {
 
     @Override
     public synchronized void onEvento(EventoDominio evento) {
-        if (!doReatorPrincipal(evento)) {
-            return;
-        }
         if (evento instanceof MedicaoRegistrada medicao) {
-            tipoPorSensor.put(medicao.sensorId(), medicao.tipoSensor());
-            ultimoValorPorTipo.put(medicao.tipoSensor(), medicao.valor());
-            tiposDoCicloAtual.add(medicao.tipoSensor());
-            sensoresEmObservacao.remove(medicao.sensorId());
-            if (cicloCompleto()) {
-                gravar(medicao.ocorridoEm());
-                tiposDoCicloAtual.clear();
+            EstadoCiclo estado = estadoDe(medicao.reatorId());
+            estado.tipoPorSensor.put(medicao.sensorId(), medicao.tipoSensor());
+            estado.ultimoValorPorTipo.put(medicao.tipoSensor(), medicao.valor());
+            estado.tiposDoCicloAtual.add(medicao.tipoSensor());
+            estado.sensoresEmObservacao.remove(medicao.sensorId());
+            if (cicloCompleto(estado)) {
+                gravar(medicao.reatorId(), estado, medicao.ocorridoEm());
+                estado.tiposDoCicloAtual.clear();
             }
         } else if (evento instanceof ObservacaoRegistrada observacao) {
-            tipoPorSensor.put(observacao.sensorId(), observacao.tipoSensor());
-            sensoresEmObservacao.add(observacao.sensorId());
+            EstadoCiclo estado = estadoDe(observacao.reatorId());
+            estado.tipoPorSensor.put(observacao.sensorId(), observacao.tipoSensor());
+            estado.sensoresEmObservacao.add(observacao.sensorId());
         } else if (evento instanceof FalhaSensorDetectada falha) {
-            tipoPorSensor.put(falha.sensorId(), falha.tipoSensor());
-            falhasDesdeUltimaLinha.add(falha.sensorId());
-            gravarTransicao(falha.ocorridoEm());
+            EstadoCiclo estado = estadoDe(falha.reatorId());
+            estado.tipoPorSensor.put(falha.sensorId(), falha.tipoSensor());
+            estado.falhasDesdeUltimaLinha.add(falha.sensorId());
+            gravarTransicao(falha.reatorId(), estado, falha.ocorridoEm());
         } else if (evento instanceof AlarmeEmitido emitido) {
             sensorPorAlarme.put(emitido.alarmeId(), emitido.sensorId());
-            sensoresEmAlarme.add(emitido.sensorId());
-            gravarTransicao(emitido.ocorridoEm());
+            reatorPorAlarme.put(emitido.alarmeId(), emitido.reatorId());
+            EstadoCiclo estado = estadoDe(emitido.reatorId());
+            estado.sensoresEmAlarme.add(emitido.sensorId());
+            gravarTransicao(emitido.reatorId(), estado, emitido.ocorridoEm());
         } else if (evento instanceof AlarmeReconhecido reconhecido) {
             Long sensor = sensorPorAlarme.get(reconhecido.alarmeId());
-            if (sensor == null) {
-                return; // alarme de outro reator: não muda o estado do principal
+            String reatorId = reatorPorAlarme.get(reconhecido.alarmeId());
+            if (sensor == null || reatorId == null) {
+                return; // alarme desconhecido: nada a atualizar
             }
-            sensoresEmAlarme.remove(sensor);
-            sensoresReconhecidos.add(sensor);
-            gravarTransicao(reconhecido.ocorridoEm());
+            EstadoCiclo estado = estadoDe(reatorId);
+            estado.sensoresEmAlarme.remove(sensor);
+            estado.sensoresReconhecidos.add(sensor);
+            gravarTransicao(reatorId, estado, reconhecido.ocorridoEm());
         } else if (evento instanceof AlarmeResolvido resolvido) {
             Long sensor = sensorPorAlarme.remove(resolvido.alarmeId());
-            if (sensor == null) {
+            String reatorId = reatorPorAlarme.remove(resolvido.alarmeId());
+            if (sensor == null || reatorId == null) {
                 return;
             }
-            sensoresEmAlarme.remove(sensor);
-            sensoresReconhecidos.remove(sensor);
-            gravarTransicao(resolvido.ocorridoEm());
+            EstadoCiclo estado = estadoDe(reatorId);
+            estado.sensoresEmAlarme.remove(sensor);
+            estado.sensoresReconhecidos.remove(sensor);
+            gravarTransicao(reatorId, estado, resolvido.ocorridoEm());
         }
     }
 
-    /**
-     * O histórico operacional (CSV, RF16/RF17) continua sendo do reator principal. Os ids de
-     * sensor (1 a 4) se repetem em todos os reatores, então sem este filtro uma leitura do sensor 1
-     * do R-03 fecharia o ciclo do R-01 com o valor errado.
-     *
-     * <p>Reconhecimento e resolução não carregam reator — são filtrados pelo alarme conhecido.
-     */
-    private static boolean doReatorPrincipal(EventoDominio evento) {
-        String reator;
-        if (evento instanceof MedicaoRegistrada m) {
-            reator = m.reatorId();
-        } else if (evento instanceof ObservacaoRegistrada o) {
-            reator = o.reatorId();
-        } else if (evento instanceof FalhaSensorDetectada f) {
-            reator = f.reatorId();
-        } else if (evento instanceof AlarmeEmitido a) {
-            reator = a.reatorId();
-        } else {
-            return true;
-        }
-        return EventoDominio.REATOR_PRINCIPAL.equals(reator);
+    private EstadoCiclo estadoDe(String reatorId) {
+        return estadoPorReator.computeIfAbsent(reatorId, id -> new EstadoCiclo());
     }
 
     /**
-     * Grava a mudança de condição, desde que os 4 parâmetros já tenham leitura conhecida.
+     * Grava a mudança de condição, desde que os 4 parâmetros do reator já tenham leitura conhecida.
      *
      * <p>Não há guarda de "ciclo em andamento": as rotas de cenário do T05 publicam seeds parciais
      * (o cenário crítico mexe em 2 sensores) com o tempo real pausado, então um ciclo iniciado
@@ -142,42 +127,54 @@ public final class HistoricoSubscriber implements IEventSubscriber {
      * da transição e outra ao fechar o ciclo. Ambas são verdadeiras — mudam os valores entre uma e
      * outra — e alarme é raro o suficiente para isso não poluir o relatório.
      */
-    private void gravarTransicao(Instant instante) {
-        if (todosOsValoresConhecidos()) {
-            gravar(instante);
+    private void gravarTransicao(String reatorId, EstadoCiclo estado, Instant instante) {
+        if (todosOsValoresConhecidos(estado)) {
+            gravar(reatorId, estado, instante);
         }
     }
 
-    private void gravar(Instant instante) {
+    private void gravar(String reatorId, EstadoCiclo estado, Instant instante) {
         registro.registrar(new SnapshotOperacional(
+            reatorId,
             instante,
-            ultimoValorPorTipo.get(TEMPERATURA),
-            ultimoValorPorTipo.get(PRESSAO),
-            ultimoValorPorTipo.get(RADIACAO),
-            ultimoValorPorTipo.get(FLUXO),
-            rotular(sensoresEmAlarme),
-            rotular(sensoresReconhecidos),
-            rotular(sensoresEmObservacao),
-            rotular(falhasDesdeUltimaLinha),
+            estado.ultimoValorPorTipo.get(TEMPERATURA),
+            estado.ultimoValorPorTipo.get(PRESSAO),
+            estado.ultimoValorPorTipo.get(RADIACAO),
+            estado.ultimoValorPorTipo.get(FLUXO),
+            rotular(estado, estado.sensoresEmAlarme),
+            rotular(estado, estado.sensoresReconhecidos),
+            rotular(estado, estado.sensoresEmObservacao),
+            rotular(estado, estado.falhasDesdeUltimaLinha),
             operador.nome(),
             operador.papeis(),
             operador.origem()
         ));
-        falhasDesdeUltimaLinha.clear();
+        estado.falhasDesdeUltimaLinha.clear();
     }
 
-    private boolean cicloCompleto() {
-        return tiposDoCicloAtual.containsAll(TIPOS_RF1);
+    private boolean cicloCompleto(EstadoCiclo estado) {
+        return estado.tiposDoCicloAtual.containsAll(TIPOS_RF1);
     }
 
-    private boolean todosOsValoresConhecidos() {
-        return ultimoValorPorTipo.keySet().containsAll(TIPOS_RF1);
+    private boolean todosOsValoresConhecidos(EstadoCiclo estado) {
+        return estado.ultimoValorPorTipo.keySet().containsAll(TIPOS_RF1);
     }
 
     /** Rótulo {@code id:TIPO} — identifica o sensor sem depender de código definido no frontend. */
-    private List<String> rotular(Set<Long> sensores) {
+    private List<String> rotular(EstadoCiclo estado, Set<Long> sensores) {
         return sensores.stream()
-            .map(id -> id + ":" + tipoPorSensor.getOrDefault(id, "DESCONHECIDO"))
+            .map(id -> id + ":" + estado.tipoPorSensor.getOrDefault(id, "DESCONHECIDO"))
             .toList();
+    }
+
+    /** Ciclo de leituras em andamento de 1 reator — ver nota de campo acima. */
+    private static final class EstadoCiclo {
+        final Map<String, Double> ultimoValorPorTipo = new HashMap<>();
+        final Map<Long, String> tipoPorSensor = new HashMap<>();
+        final Set<String> tiposDoCicloAtual = new LinkedHashSet<>();
+        final Set<Long> sensoresEmAlarme = new LinkedHashSet<>();
+        final Set<Long> sensoresReconhecidos = new LinkedHashSet<>();
+        final Set<Long> sensoresEmObservacao = new LinkedHashSet<>();
+        final Set<Long> falhasDesdeUltimaLinha = new LinkedHashSet<>();
     }
 }
