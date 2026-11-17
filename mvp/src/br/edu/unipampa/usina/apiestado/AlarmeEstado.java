@@ -8,6 +8,7 @@ import java.time.Instant;
  */
 public record AlarmeEstado(
     String id,
+    String reatorId,
     long sensorId,
     String severidade,
     String mensagem,
@@ -20,13 +21,15 @@ public record AlarmeEstado(
 ) {
     public AlarmeEstado comReconhecimento(String operador) {
         return new AlarmeEstado(
-            id, sensorId, severidade, mensagem, "RECONHECIDO", criadoEm, operador, solucao, resolvidoEm, resolvidoPor
+            id, reatorId, sensorId, severidade, mensagem, "RECONHECIDO", criadoEm, operador, solucao,
+            resolvidoEm, resolvidoPor
         );
     }
 
     public AlarmeEstado comResolucao(Instant momento, String responsavel, String solucao) {
         return new AlarmeEstado(
-            id, sensorId, severidade, mensagem, "RESOLVIDO", criadoEm, operador, solucao, momento, responsavel
+            id, reatorId, sensorId, severidade, mensagem, "RESOLVIDO", criadoEm, operador, solucao,
+            momento, responsavel
         );
     }
 }

@@ -139,11 +139,24 @@ public final class TestesMvp {
 
         // 10. CT-RNF09-01: Persistencia segura e continuidade multi-sessao
         int totalAntes = registro.consultar().size();
+        registro.close(); // simula o processo anterior encerrando antes do proximo abrir o mesmo log
         RegistroAuditoria segundaSessao = new RegistroAuditoria(logTeste);
         exigir(segundaSessao.consultar().size() == totalAntes,
             "CT-RNF09-01: Reinicializacao deve recuperar todas as " + totalAntes + " entradas.");
         exigir(segundaSessao.verificarIntegridadeArquivo(),
             "CT-RNF09-01: Arquivo carregado na nova sessao deve ser integro.");
+
+        // 10b. Trava contra 2 processos escrevendo ao mesmo tempo (causa raiz do incidente de 09/11)
+        boolean bloqueouSegundoEscritor;
+        try {
+            new RegistroAuditoria(logTeste);
+            bloqueouSegundoEscritor = false;
+        } catch (IllegalStateException esperado) {
+            bloqueouSegundoEscritor = true;
+        }
+        exigir(bloqueouSegundoEscritor,
+            "LOCK-01: Abrir o mesmo log de auditoria 2x ao mesmo tempo deve falhar (nao corromper a cadeia).");
+        segundaSessao.close();
 
         // 11. RNF-03 / RNF-05: Deteccao comprovada de Adulteracao fisica (Tamper Check)
         Path logAdulterado = Path.of("dados", "teste-tamper.log");

@@ -22,14 +22,16 @@ Em [`../marco1/diagramas/`](../marco1/diagramas/):
 | `classes-projeto-mvp.puml` / `classes-projeto-mvp.png` | Classes do núcleo |
 | `seq-uc01-medicao.puml` / `seq-uc01-medicao.png` | Fluxo medição |
 | `seq-uc02-alarme.puml` / `seq-uc02-alarme.png` | Fluxo alarme |
+| `seq-observer-v2-push.puml` / `seq-observer-v2-push.png` | Push de estado via SSE (Observer V2) |
+| `seq-uc04-acesso.puml` / `seq-uc04-acesso.png` | UC04 — acesso físico (RF08) |
+| `er-nucleo-mvp.puml` | Modelo ER do núcleo (ligado a `08-mapeamento-relacional-mvp.md`) |
 
-## Não essenciais (legado / arquivo)
+## Legado (removido da árvore de trabalho, 16/11)
 
-| Item | Destino |
-|------|---------|
-| Astah APS completo | [`astah/`](astah/) — referência histórica, **não** entrega ativa |
-| `er-nucleo-mvp.puml` | Opcional; mover para `arquivo/` se não for usado na apresentação |
-| PDF APS completo | [`../legado-aps/`](../legado-aps/) |
+Astah APS completo (`astah/`) e o PDF APS completo (`legado-aps/`) eram só
+referência histórica, já descritos como não-essenciais aqui mesmo. Continuam
+no histórico do git (`git log --all -- docs/diagramas/astah docs/legado-aps`)
+se precisar consultar de novo.
 
 ## Regra
 

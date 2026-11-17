@@ -23,11 +23,10 @@ Mapa da pasta `docs/` — hub de engenharia, planejamento, UI e entregas semanai
 | [`ui/`](ui/) | Idealização Opção A, protótipos HTML (Figma fora de escopo) |
 | [`implementacao/`](implementacao/) | Rastreabilidade implementação × requisitos |
 | [`analise/`](analise/) | Notas de análise / lacunas doc × código |
-| [`semanas/`](semanas/) | Relatórios individuais + RESUMO-MERGE |
+| [`semanas/`](semanas/) | Relatórios individuais recentes + [`HISTORICO-SEMANAS-00-04.md`](semanas/HISTORICO-SEMANAS-00-04.md) (pré-Marco 1) |
 | [`requisitos/`](requisitos/) | Ponte para RF/RNF/MoSCoW |
 | [`arquitetura/`](arquitetura/) | Ponte para EDA |
 | [`diagramas/`](diagramas/) | PlantUML / exports |
-| [`legado-aps/`](legado-aps/) | Material histórico da APS |
 
 ## Planos (evitar duplicar conteúdo)
 

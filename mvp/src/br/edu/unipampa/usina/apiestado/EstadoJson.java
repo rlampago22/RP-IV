@@ -18,9 +18,62 @@ public final class EstadoJson {
         json.append("\"sensores\":").append(sensores(estado.sensores())).append(',');
         json.append("\"contadores\":").append(contadores(estado.contadores())).append(',');
         json.append("\"alarmes\":").append(alarmes(estado.alarmes())).append(',');
-        json.append("\"eventos\":").append(eventos(estado.eventos()));
+        json.append("\"eventos\":").append(eventos(estado.eventos())).append(',');
+        json.append("\"reatores\":").append(reatores(estado.reatores()));
         json.append('}');
         return json.toString();
+    }
+
+    /**
+     * Painel de monitoramento. A série vai como pares {@code [epochMillis, valor]} em vez de
+     * objetos: são 5 reatores × 4 sensores × até 60 pontos em cada push, e o par corta o tamanho
+     * do payload pela metade sem perder o instante de cada ponto.
+     */
+    private static String reatores(List<ReatorEstado> reatores) {
+        StringBuilder json = new StringBuilder("[");
+        for (int i = 0; i < reatores.size(); i++) {
+            ReatorEstado reator = reatores.get(i);
+            if (i > 0) {
+                json.append(',');
+            }
+            json.append('{')
+                .append("\"id\":").append(str(reator.id())).append(',')
+                .append("\"nivel\":").append(str(reator.nivel().name())).append(',')
+                .append("\"atualizadoEm\":").append(reator.atualizadoEm() == null ? "null" : str(reator.atualizadoEm().toString())).append(',')
+                .append("\"alarmesAtivos\":").append(reator.alarmesAtivos()).append(',')
+                .append("\"sensores\":[");
+            for (int j = 0; j < reator.sensores().size(); j++) {
+                SensorReatorEstado sensor = reator.sensores().get(j);
+                if (j > 0) {
+                    json.append(',');
+                }
+                json.append('{')
+                    .append("\"id\":").append(sensor.id()).append(',')
+                    .append("\"tipo\":").append(str(sensor.tipo())).append(',')
+                    .append("\"unidade\":").append(str(sensor.unidade())).append(',')
+                    .append("\"valor\":").append(sensor.valor()).append(',')
+                    .append("\"limiteMinimo\":").append(sensor.limiteMinimo()).append(',')
+                    .append("\"limiteMaximo\":").append(sensor.limiteMaximo()).append(',')
+                    .append("\"emAtencao\":").append(sensor.emAtencao()).append(',')
+                    .append("\"atualizadoEm\":").append(str(sensor.atualizadoEm().toString())).append(',')
+                    .append("\"serie\":").append(serie(sensor.serie()))
+                    .append('}');
+            }
+            json.append("]}");
+        }
+        return json.append(']').toString();
+    }
+
+    private static String serie(List<Amostra> serie) {
+        StringBuilder json = new StringBuilder("[");
+        for (int i = 0; i < serie.size(); i++) {
+            Amostra amostra = serie.get(i);
+            if (i > 0) {
+                json.append(',');
+            }
+            json.append('[').append(amostra.instante().toEpochMilli()).append(',').append(amostra.valor()).append(']');
+        }
+        return json.append(']').toString();
     }
 
     private static String sensores(List<SensorEstado> sensores) {
@@ -70,6 +123,7 @@ public final class EstadoJson {
             }
             json.append('{')
                 .append("\"id\":").append(str(alarme.id())).append(',')
+                .append("\"reatorId\":").append(str(alarme.reatorId())).append(',')
                 .append("\"sensorId\":").append(alarme.sensorId()).append(',')
                 .append("\"severidade\":").append(str(alarme.severidade())).append(',')
                 .append("\"mensagem\":").append(str(alarme.mensagem())).append(',')

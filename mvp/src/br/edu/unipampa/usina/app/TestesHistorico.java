@@ -231,7 +231,7 @@ public final class TestesHistorico {
 
         // 11. Cabecalho gravado uma unica vez.
         long cabecalhos = lerLinhas(arquivo).stream()
-            .filter(l -> l.startsWith("instante"))
+            .filter(l -> l.startsWith("reator_id"))
             .count();
         exigir(cabecalhos == 1, "O cabecalho CSV deve aparecer exatamente uma vez.");
     }
