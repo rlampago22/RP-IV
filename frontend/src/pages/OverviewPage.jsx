@@ -125,7 +125,7 @@ function Contadores({ contadores, abertos }) {
   )
 }
 
-function Acoes({ tempoReal, alarmes, iniciarTempoReal, pausarTempoReal, reconhecerAlarme, resolverAlarme, mostrarReator }) {
+function Acoes({ tempoReal, travado, alarmes, iniciarTempoReal, pausarTempoReal, reconhecerAlarme, resolverAlarme, mostrarReator }) {
   const alarmePendenteReconhecer = alarmes.find((a) => a.status === 'ATIVO')
   const alarmePendenteResolver = alarmes.find((a) => a.status === 'RECONHECIDO')
   const sufixo = (alarme) => (mostrarReator && alarme ? ` · ${alarme.reatorId ?? 'R-01'}` : '')
@@ -136,6 +136,8 @@ function Acoes({ tempoReal, alarmes, iniciarTempoReal, pausarTempoReal, reconhec
         className="action-btn2"
         style={{ background: '#0f766e' }}
         onClick={() => (tempoReal ? pausarTempoReal() : iniciarTempoReal())}
+        disabled={!tempoReal && travado}
+        title={!tempoReal && travado ? 'Protocolo de contingência ativo: religar o tempo real fica travado até a emergência ser encerrada.' : undefined}
       >
         <IconPlay size={14} />
         {tempoReal ? 'Pausar Tempo Real' : 'Iniciar Tempo Real'}
@@ -327,7 +329,7 @@ export default function OverviewPage() {
   const [reator, selecionar] = useReatorSelecionado()
   const { status, tempoReal, sensores, contadores, alarmes, eventos } = estado
   const reatores = estado.reatores ?? []
-  const acoes = { tempoReal, iniciarTempoReal, pausarTempoReal, reconhecerAlarme, resolverAlarme }
+  const acoes = { tempoReal, travado: Boolean(estado.contingencia?.ativa), iniciarTempoReal, pausarTempoReal, reconhecerAlarme, resolverAlarme }
 
   const reatorAtual = reator !== TODOS ? reatores.find((r) => r.id === reator) : null
   const resumo = reatores.length > 0 && !reatorAtual

@@ -196,6 +196,8 @@ export default function MonitoramentoPage() {
           className="action-btn2"
           style={{ background: '#0f766e' }}
           onClick={() => (estado.tempoReal ? pausarTempoReal() : iniciarTempoReal())}
+          disabled={!estado.tempoReal && Boolean(estado.contingencia?.ativa)}
+          title={!estado.tempoReal && estado.contingencia?.ativa ? 'Protocolo de contingência ativo: religar o tempo real fica travado até a emergência ser encerrada.' : undefined}
         >
           <IconPlay size={14} />
           {estado.tempoReal ? 'Pausar Tempo Real' : 'Iniciar Tempo Real'}

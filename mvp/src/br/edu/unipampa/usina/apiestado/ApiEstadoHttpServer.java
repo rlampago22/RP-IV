@@ -144,7 +144,10 @@ public final class ApiEstadoHttpServer {
             responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
             return;
         }
-        estado.definirTempoReal(ativo);
+        if (!estado.definirTempoReal(ativo)) {
+            responderBloqueioContingencia(exchange);
+            return;
+        }
         responder(exchange, 200, EstadoJson.escrever(estado.snapshot()));
     }
 
@@ -162,6 +165,11 @@ public final class ApiEstadoHttpServer {
         }
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
+            return;
+        }
+
+        if (estado.isContingenciaAtiva()) {
+            responderBloqueioContingencia(exchange);
             return;
         }
 
@@ -200,6 +208,10 @@ public final class ApiEstadoHttpServer {
         }
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
+            return;
+        }
+        if (estado.isContingenciaAtiva()) {
+            responderBloqueioContingencia(exchange);
             return;
         }
         ReatorFacade alvo = alvoDoCenario(exchange);
@@ -608,6 +620,20 @@ public final class ApiEstadoHttpServer {
 
     private static String jsonTexto(String valor) {
         return "\"" + (valor == null ? "" : valor.replace("\\", "\\\\").replace("\"", "\\\"")) + "\"";
+    }
+
+    /**
+     * RF10 / #99: com protocolo de contingência ativo as operações de rotina (cenários, anomalia de
+     * demonstração, ligar o tempo real) ficam travadas — 423 Locked, dizendo qual protocolo trava.
+     * Consultas (GET) e o tratamento de alarmes continuam liberados.
+     */
+    private void responderBloqueioContingencia(HttpExchange exchange) throws IOException {
+        String motivo = estado.contingenciasAtivas().stream()
+            .map(c -> c.nome() + " (emergencia #" + c.emergenciaId() + ", ativado por " + c.ativadoPor() + ")")
+            .reduce((a, b) -> a + "; " + b)
+            .orElse("protocolo de contingencia");
+        responder(exchange, 423, "{\"erro\":\"protocolo de contingencia ativo\",\"bloqueadoPor\":"
+            + jsonTexto(motivo) + "}");
     }
 
     private boolean comCorsEPreflight(HttpExchange exchange, String metodoPermitido) throws IOException {

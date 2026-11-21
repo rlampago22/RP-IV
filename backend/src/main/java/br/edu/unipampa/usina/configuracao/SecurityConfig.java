@@ -37,6 +37,9 @@ public class SecurityConfig {
                 // Ponte interna mvp (8080) -> Spring (8081): o processo do núcleo não tem
                 // sessão. O próprio controller recusa chamada que não venha de loopback.
                 .requestMatchers(HttpMethod.POST, "/api/eventos/publicar").permitAll()
+                // Mão inversa (#99): o núcleo consulta o protocolo de contingência ativo. Só leitura;
+                // o controller recusa quem não vem de loopback ou manda Origin (navegador).
+                .requestMatchers(HttpMethod.GET, "/api/interno/contingencia").permitAll()
                 .requestMatchers("/api/auth/me", "/api/auth/logout").authenticated()
                 .anyRequest().authenticated())
             .build();

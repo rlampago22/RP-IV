@@ -58,6 +58,10 @@ if ($ExportarAuditoria) {
         throw 'A suite da API de estado falhou.'
     }
     & java '-Dfile.encoding=UTF-8' -cp $classpath br.edu.unipampa.usina.app.TestesReatores
+    if ($LASTEXITCODE -ne 0) {
+        throw 'A suite dos 5 reatores falhou.'
+    }
+    & java '-Dfile.encoding=UTF-8' -cp $classpath br.edu.unipampa.usina.app.TestesContingencia
 } else {
     Write-Host 'Executando demonstração...' -ForegroundColor Cyan
     & java '-Dfile.encoding=UTF-8' -cp $classpath br.edu.unipampa.usina.app.DemoMvp
