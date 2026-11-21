@@ -5,6 +5,7 @@ import br.edu.unipampa.usina.alarmes.AlarmeFactory;
 import br.edu.unipampa.usina.alarmes.AvaliadorFaixaSegura;
 import br.edu.unipampa.usina.apiestado.ApiEstadoHttpServer;
 import br.edu.unipampa.usina.apiestado.EncaminhadorEventosSpring;
+import br.edu.unipampa.usina.apiestado.EncaminhadorHistoricoSpring;
 import br.edu.unipampa.usina.apiestado.EstadoAgregador;
 import br.edu.unipampa.usina.auditorialogs.AuditoriaSubscriber;
 import br.edu.unipampa.usina.auditorialogs.RegistroAuditoria;
@@ -42,7 +43,7 @@ public final class ApiEstadoMain {
 
         RegistroHistorico historico = new RegistroHistorico(Path.of("dados", "historico-operacional.csv"));
         OperadorDeServico operadorDeServico = new OperadorDeServico();
-        new HistoricoSubscriber(eventBus, historico, operadorDeServico);
+        new HistoricoSubscriber(eventBus, historico, operadorDeServico, new EncaminhadorHistoricoSpring());
 
         AlarmeFacade alarmeFacade = new AlarmeFacade(eventBus, new AvaliadorFaixaSegura(), new AlarmeFactory());
         AcessoFacade acesso = new AcessoFacade(eventBus);

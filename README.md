@@ -52,10 +52,27 @@ RP-IV/
 
 ## Como rodar
 
+### Banco de dados (Postgres compartilhado do time)
+
+Desde 21/11 o histórico operacional (e, aos poucos, as outras tabelas — reator,
+auditoria) fica em Postgres de verdade, não mais só em CSV/log local. Suba o
+container uma vez, antes do `backend/`:
+
+```bash
+cp .env.example .env        # ajuste a senha
+docker compose up -d        # sobe o Postgres em localhost:5432
+```
+
+Depois, aponte o `backend/` pra esse mesmo banco (`backend/.env`, perfil
+`postgres` — veja [`backend/README.md`](backend/README.md)). Sem o Postgres
+no ar, o `backend/` continua funcionando no perfil H2 padrão, mas as rotas de
+histórico do `mvp/` caem no CSV local automaticamente (ver
+[`docs/api-estado-contrato.md`](docs/api-estado-contrato.md), seção 5).
+
 ### Como rodar (Must expandido)
 
 ```bat
-REM 1) Auth (porta 8081, H2)
+REM 1) Auth + banco (porta 8081, Postgres se configurado, senão H2)
 cd backend
 set APP_BOOTSTRAP_PASSWORD=troque-esta-senha
 mvn spring-boot:run
