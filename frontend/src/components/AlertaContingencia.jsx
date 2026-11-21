@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useEstado } from '../state/EstadoContext.jsx'
 import { avisoDoProtocolo } from '../data/contingencia.js'
-import { falar, silenciar, tocarSirene } from '../services/alertaSonoro.js'
+import { silenciar, tocarAnuncio, tocarSirene } from '../services/alertaSonoro.js'
 import { IconAlertTriangle } from './icons.jsx'
 
 /** Tempo mínimo na tela; com som, fica até o anúncio terminar (com teto). */
 const MINIMO_MS = 6000
-const MAXIMO_MS = 15000
+const MAXIMO_MS = 22000
 const FOLGA_APOS_FALA_MS = 1200
 
 const formatarHora = (iso) =>
@@ -53,7 +53,7 @@ export default function AlertaContingencia() {
     const teto = setTimeout(fechar, MAXIMO_MS)
     let aposFala = null
     tocarSirene()
-      .then(() => !encerrado && falar(avisoDoProtocolo(alerta.protocolo, alerta.nome).fala))
+      .then(() => !encerrado && tocarAnuncio(avisoDoProtocolo(alerta.protocolo, alerta.nome).audio))
       .then(() => {
         if (encerrado) return
         const restante = Math.max(MINIMO_MS - (Date.now() - abertoEm), FOLGA_APOS_FALA_MS)
