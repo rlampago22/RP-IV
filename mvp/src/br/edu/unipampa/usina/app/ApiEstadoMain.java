@@ -37,7 +37,7 @@ public final class ApiEstadoMain {
 
     public static void main(String[] args) throws IOException {
         EventBus eventBus = new EventBus();
-        RegistroAuditoria registro = new RegistroAuditoria(Path.of("dados", "auditoria.log"));
+        RegistroAuditoria registro = RegistroAuditoria.abrirPadrao();
         new AuditoriaSubscriber(eventBus, registro);
 
         RegistroHistorico historico = new RegistroHistorico(Path.of("dados", "historico-operacional.csv"));

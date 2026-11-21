@@ -19,7 +19,7 @@ Fonte UML: [`marco1/diagramas/componentes-logicos-mvp.puml`](marco1/diagramas/co
 | Auth Spring | Login/sessão/papéis (RF07) + suporte a registro de acesso (RF08) |
 | React | Login + telas T01–T05 Opção A (`EstadoContext`) |
 
-A auditoria de domínio permanece em `mvp/dados/auditoria.log` (SHA-256). Credenciais/auth usam o schema do `backend/`.
+A auditoria de domínio fica na tabela `nucleo.auditoria_evento` (cadeia SHA-256, migração `V6` do `backend/`), no mesmo banco das credenciais/auth; o `mvp/dados/auditoria.log` antigo é importado uma vez, se estiver íntegro (issue #99).
 
 Telas: ver [`ui/idealizacao-telas.md`](ui/idealizacao-telas.md).
 

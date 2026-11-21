@@ -158,9 +158,9 @@ export default function AuditoriaPage() {
         )}
 
         <p className="scada-note" style={{ marginTop: 14 }}>
-          Arquivo físico: <code>mvp/dados/auditoria.log</code> (cadeia de hash SHA-256 encadeada,
-          verificável com <code>mvp/3-ABRIR-LOG-AUDITORIA.bat</code>). O filtro acima só esconde
-          medições de rotina nesta tela — nada é removido do log.
+          Gravado no banco: tabela <code>nucleo.auditoria_evento</code> (cadeia de hash SHA-256 encadeada;
+          cópia em texto com <code>mvp/3-ABRIR-LOG-AUDITORIA.bat</code>). O filtro acima só esconde
+          medições de rotina nesta tela — nada é removido da trilha.
         </p>
       </div>
     </section>

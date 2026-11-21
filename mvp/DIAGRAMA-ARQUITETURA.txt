@@ -16,7 +16,7 @@ ARQUITETURA E FLUXOS DE EVENTOS DO MVP (EDA / MOSCOW MUST)
    [EventBus (InfraestruturaEventos - EDA)]
           |
           +---> [ObservacaoRegistrada]  (Fluxo Alternativo 1 - Atenção Preventiva)
-          |        └──> [AuditoriaSubscriber] --> dados/auditoria.log
+          |        └──> [AuditoriaSubscriber] --> banco: nucleo.auditoria_evento
           |
           +---> [FalhaSensorDetectada]  (Fluxo de Exceções - Alerta Manutenção)
           |        └──> [AuditoriaSubscriber] --> Notifica Equipe Técnica

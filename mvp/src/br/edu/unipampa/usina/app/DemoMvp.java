@@ -26,7 +26,7 @@ public final class DemoMvp {
         System.out.println("================================================================================");
 
         EventBus eventBus = new EventBus();
-        RegistroAuditoria registro = new RegistroAuditoria(Path.of("dados", "auditoria.log"));
+        RegistroAuditoria registro = RegistroAuditoria.abrirPadrao();
         new AuditoriaSubscriber(eventBus, registro);
         AlarmeFacade alarmes = new AlarmeFacade(
             eventBus,
@@ -74,9 +74,9 @@ public final class DemoMvp {
         System.out.println("\n============================= RESUMO DA EXECUCAO =============================");
         System.out.println("Medicoes registradas no historico : " + reator.consultarHistorico().size());
         System.out.println("Alarmes processados no ciclo      : " + alarmes.consultarAlarmes().size());
-        System.out.println("Eventos auditados na sessao/log   : " + registro.consultar().size());
-        System.out.println("Integridade fisica do arquivo     : " + (registro.verificarIntegridadeArquivo() ? "OK (SHA-256 INTEGRA)" : "FALHA"));
-        System.out.println("Arquivo append-only persistido    : " + registro.getArquivo());
+        System.out.println("Eventos auditados (total no banco): " + registro.consultar().size());
+        System.out.println("Integridade da cadeia no banco    : " + (registro.verificarIntegridade() ? "OK (SHA-256 INTEGRA)" : "FALHA"));
+        System.out.println("Trilha append-only persistida em  : " + registro.descricaoDestino());
         System.out.println("================================================================================");
     }
 }

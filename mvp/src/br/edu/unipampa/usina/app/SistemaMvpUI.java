@@ -105,8 +105,7 @@ public final class SistemaMvpUI extends JFrame {
         DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
 
     private final EventBus eventBus = new EventBus();
-    private final RegistroAuditoria auditoria =
-        new RegistroAuditoria(Path.of("dados", "auditoria.log"));
+    private final RegistroAuditoria auditoria = RegistroAuditoria.abrirPadrao();
     private final AlarmeFacade alarmes;
     private final ReatorFacade reator;
 
@@ -671,7 +670,7 @@ public final class SistemaMvpUI extends JFrame {
             );
         }
 
-        boolean integra = auditoria.verificarIntegridadeArquivo();
+        boolean integra = auditoria.verificarIntegridade();
         modeloEventos.addRow(new Object[] {
             HORA.format(evento.ocorridoEm()),
             evento.tipo(),
@@ -688,7 +687,7 @@ public final class SistemaMvpUI extends JFrame {
         totalMedicoes.setText(Integer.toString(reator.consultarHistorico().size()));
         totalAlarmes.setText(Integer.toString(alarmes.consultarAlarmes().size()));
         totalAuditoria.setText(Integer.toString(auditoria.consultar().size()));
-        boolean ok = auditoria.verificarIntegridadeArquivo();
+        boolean ok = auditoria.verificarIntegridade();
         integridade.setText(ok ? "OK" : "FALHA");
         integridade.setForeground(ok ? ACCENT_EMERALD : ACCENT_CRIMSON);
 
@@ -706,12 +705,14 @@ public final class SistemaMvpUI extends JFrame {
 
     private void abrirLog(ActionEvent ignored) {
         try {
-            if (!java.nio.file.Files.exists(auditoria.getArquivo())) {
+            if (auditoria.consultar().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Registre uma leitura antes de abrir o log.", "Auditoria Vazia", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            Desktop.getDesktop().open(auditoria.getArquivo().toFile());
-        } catch (IOException error) {
+            // A trilha vive no banco; exporta uma cópia em texto só para leitura.
+            Path copia = auditoria.exportar(Path.of("dados", "auditoria-exportada.txt"));
+            Desktop.getDesktop().open(copia.toFile());
+        } catch (IOException | IllegalStateException error) {
             JOptionPane.showMessageDialog(this, error.getMessage(), "Falha ao abrir log", JOptionPane.ERROR_MESSAGE);
         }
     }

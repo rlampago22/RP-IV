@@ -290,8 +290,8 @@ public final class ApiEstadoHttpServer {
     }
 
     /**
-     * T04: {@code GET /api/auditoria/integridade} recalcula a cadeia SHA-256 do arquivo
-     * {@code dados/auditoria.log} (verificação física) e informa se está íntegra.
+     * T04: {@code GET /api/auditoria/integridade} recalcula a cadeia SHA-256 gravada na
+     * tabela {@code nucleo.auditoria_evento} do banco e informa se está íntegra.
      */
     private void tratarIntegridadeAuditoria(HttpExchange exchange) throws IOException {
         if (comCorsEPreflight(exchange, "GET")) {
@@ -305,7 +305,7 @@ public final class ApiEstadoHttpServer {
             responder(exchange, 503, "{\"erro\":\"auditoria nao configurada\"}");
             return;
         }
-        boolean integra = auditoria.verificarIntegridadeArquivo();
+        boolean integra = auditoria.verificarIntegridade();
         var entradas = auditoria.consultar();
         String ultimoHash = entradas.isEmpty() ? "" : entradas.get(entradas.size() - 1).hashCurto();
         responder(

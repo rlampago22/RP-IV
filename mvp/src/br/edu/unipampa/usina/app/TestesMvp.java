@@ -10,14 +10,19 @@ import br.edu.unipampa.usina.controlereator.MedicaoReator;
 import br.edu.unipampa.usina.controlereator.ReatorFacade;
 import br.edu.unipampa.usina.controlereator.Sensor;
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
+import br.edu.unipampa.usina.infraestruturaeventos.EventoDominio;
 import br.edu.unipampa.usina.infraestruturaeventos.MedicaoRegistrada;
 import br.edu.unipampa.usina.infraestruturaeventos.ObservacaoRegistrada;
 import br.edu.unipampa.usina.infraestruturaeventos.FalhaSensorDetectada;
+import br.edu.unipampa.usina.persistencia.ConexaoBanco;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,11 +40,11 @@ public final class TestesMvp {
         System.out.println(" Alinhado ao documento oficial de 69 paginas e especificacao MoSCoW");
         System.out.println("================================================================================");
 
-        Path logTeste = Path.of("dados", "teste-auditoria-suite.log");
-        Files.deleteIfExists(logTeste);
+        // Banco H2 só em memória: a suíte nunca escreve na auditoria real do sistema.
+        ConexaoBanco bancoTeste = ConexaoBanco.emMemoria("testes-mvp-" + System.nanoTime());
 
         EventBus eventBus = new EventBus();
-        RegistroAuditoria registro = new RegistroAuditoria(logTeste);
+        RegistroAuditoria registro = new RegistroAuditoria(bancoTeste);
         new AuditoriaSubscriber(eventBus, registro);
 
         AvaliadorFaixaSegura avaliador = new AvaliadorFaixaSegura();
@@ -133,47 +138,71 @@ public final class TestesMvp {
         reator.receberLeitura(4L, 1100.0); // Leitura do sensor de fluxo de resfriamento
         exigir(true, "CT-RNF04-01: Erro em consumidor nao interrompeu o produtor.");
 
-        // 9. CT-RNF05-01: Auditabilidade e Encadeamento SHA-256
-        exigir(registro.verificarIntegridade(), "CT-RNF05-01: Cadeia SHA-256 em memoria deve ser integra.");
-        exigir(registro.verificarIntegridadeArquivo(), "CT-RNF05-01: Cadeia SHA-256 no arquivo fisico deve ser integra.");
+        // 9. CT-RNF05-01: Auditabilidade e Encadeamento SHA-256 (agora gravado no banco)
+        exigir(!registro.consultar().isEmpty(), "CT-RNF05-01: Eventos auditados devem estar gravados no banco.");
+        exigir(registro.verificarIntegridade(), "CT-RNF05-01: Cadeia SHA-256 gravada no banco deve ser integra.");
 
         // 10. CT-RNF09-01: Persistencia segura e continuidade multi-sessao
         int totalAntes = registro.consultar().size();
-        registro.close(); // simula o processo anterior encerrando antes do proximo abrir o mesmo log
-        RegistroAuditoria segundaSessao = new RegistroAuditoria(logTeste);
+        registro.close(); // simula o processo anterior encerrando antes do proximo abrir o mesmo banco
+        RegistroAuditoria segundaSessao = new RegistroAuditoria(bancoTeste);
         exigir(segundaSessao.consultar().size() == totalAntes,
-            "CT-RNF09-01: Reinicializacao deve recuperar todas as " + totalAntes + " entradas.");
-        exigir(segundaSessao.verificarIntegridadeArquivo(),
-            "CT-RNF09-01: Arquivo carregado na nova sessao deve ser integro.");
+            "CT-RNF09-01: Reinicializacao deve recuperar todas as " + totalAntes + " entradas do banco.");
+        exigir(segundaSessao.verificarIntegridade(),
+            "CT-RNF09-01: Trilha lida na nova sessao deve ser integra.");
 
-        // 10b. Trava contra 2 processos escrevendo ao mesmo tempo (causa raiz do incidente de 09/11)
-        boolean bloqueouSegundoEscritor;
-        try {
-            new RegistroAuditoria(logTeste);
-            bloqueouSegundoEscritor = false;
-        } catch (IllegalStateException esperado) {
-            bloqueouSegundoEscritor = true;
+        // 10b. Dois escritores ao mesmo tempo (causa raiz do incidente de 09/11 no arquivo): no banco a
+        // sequencia e chave primaria, entao a cadeia continua integra em vez de bifurcar.
+        RegistroAuditoria outroProcesso = new RegistroAuditoria(bancoTeste);
+        int porEscritor = 40;
+        Thread escritorA = new Thread(() -> registrarVarios(segundaSessao, "A", porEscritor));
+        Thread escritorB = new Thread(() -> registrarVarios(outroProcesso, "B", porEscritor));
+        escritorA.start();
+        escritorB.start();
+        juntar(escritorA);
+        juntar(escritorB);
+        exigir(segundaSessao.consultar().size() == totalAntes + 2 * porEscritor,
+            "CONC-01: 2 escritores simultaneos devem gravar todas as " + (2 * porEscritor) + " entradas.");
+        exigir(segundaSessao.verificarIntegridade(),
+            "CONC-01: Cadeia SHA-256 deve continuar integra com 2 escritores simultaneos.");
+        outroProcesso.close();
+
+        // 10c. Migracao do log antigo (dados/auditoria.log) para o banco, com os mesmos hashes
+        Path logExportado = Files.createTempFile("auditoria-exportada", ".log");
+        segundaSessao.exportar(logExportado);
+        try (RegistroAuditoria bancoNovo = new RegistroAuditoria(ConexaoBanco.emMemoria("testes-import-" + System.nanoTime()))) {
+            int importadas = bancoNovo.importarLogLegado(logExportado);
+            exigir(importadas == segundaSessao.consultar().size() && bancoNovo.verificarIntegridade(),
+                "MIGR-01: Log em arquivo integro deve ser importado inteiro e com a cadeia valida.");
+            exigir(bancoNovo.importarLogLegado(logExportado) == 0,
+                "MIGR-01: Importacao so acontece com a tabela vazia (rodar de novo nao duplica).");
         }
-        exigir(bloqueouSegundoEscritor,
-            "LOCK-01: Abrir o mesmo log de auditoria 2x ao mesmo tempo deve falhar (nao corromper a cadeia).");
+        List<String> linhas = Files.readAllLines(logExportado, StandardCharsets.UTF_8);
+        linhas.set(0, linhas.get(0).replace("valor=", "valor=9"));
+        Files.write(logExportado, linhas, StandardCharsets.UTF_8);
+        try (RegistroAuditoria bancoNovo = new RegistroAuditoria(ConexaoBanco.emMemoria("testes-import-adult-" + System.nanoTime()))) {
+            exigir(bancoNovo.importarLogLegado(logExportado) == 0 && bancoNovo.consultar().isEmpty(),
+                "MIGR-02: Log antigo com a cadeia quebrada NAO deve ser importado.");
+        }
+        Files.deleteIfExists(logExportado);
+
+        // 11. RNF-03 / RNF-05: Deteccao comprovada de adulteracao direto no banco (Tamper Check)
+        try (Connection sql = bancoTeste.abrir(); Statement comando = sql.createStatement()) {
+            comando.executeUpdate("UPDATE " + RegistroAuditoria.TABELA
+                + " SET resumo = CONCAT(resumo, '.') WHERE sequencia = 2");
+            exigir(!segundaSessao.verificarIntegridade(),
+                "RNF-03: Alterar 1 caractere de uma linha no banco DEVE ser detectado como FALHA.");
+            comando.executeUpdate("UPDATE " + RegistroAuditoria.TABELA
+                + " SET resumo = SUBSTRING(resumo, 1, CHAR_LENGTH(resumo) - 1) WHERE sequencia = 2");
+            exigir(segundaSessao.verificarIntegridade(),
+                "RNF-03: Desfazendo a alteracao a cadeia volta a ser integra.");
+            comando.executeUpdate("DELETE FROM " + RegistroAuditoria.TABELA + " WHERE sequencia = 3");
+            exigir(!segundaSessao.verificarIntegridade(),
+                "RNF-03: Apagar uma linha do banco DEVE ser detectado como FALHA.");
+        } catch (SQLException error) {
+            throw new AssertionError("Falha ao simular adulteracao no banco: " + error.getMessage(), error);
+        }
         segundaSessao.close();
-
-        // 11. RNF-03 / RNF-05: Deteccao comprovada de Adulteracao fisica (Tamper Check)
-        Path logAdulterado = Path.of("dados", "teste-tamper.log");
-        Files.copy(logTeste, logAdulterado, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-        List<String> linhas = Files.readAllLines(logAdulterado, StandardCharsets.UTF_8);
-        if (!linhas.isEmpty()) {
-            // Modifica um byte/caractere em uma linha existente
-            String linhaAlterada = linhas.get(0).replace("310.5", "999.9");
-            linhas.set(0, linhaAlterada);
-            Files.write(logAdulterado, linhas, StandardCharsets.UTF_8);
-
-            RegistroAuditoria auditoriaAdulterada = new RegistroAuditoria(logAdulterado);
-            exigir(!auditoriaAdulterada.verificarIntegridadeArquivo(),
-                "RNF-03: A alteracao fisica de 1 caractere no log DEVE ser detectada como FALHA.");
-        }
-        Files.deleteIfExists(logAdulterado);
-        Files.deleteIfExists(logTeste);
 
         // 12. Histórico curto consultável (S3 / Bernardo — issue #45)
         List<MedicaoReator> porTemp = reator.consultarHistorico(1L);
@@ -194,6 +223,23 @@ public final class TestesMvp {
             throw new AssertionError(mensagem);
         }
         System.out.println("[OK] " + mensagem);
+    }
+
+    private record EventoTeste(String tipo, Instant ocorridoEm, String resumo) implements EventoDominio {}
+
+    private static void registrarVarios(RegistroAuditoria destino, String escritor, int quantidade) {
+        for (int i = 1; i <= quantidade; i++) {
+            destino.registrar(new EventoTeste("TESTE_CONCORRENCIA", Instant.now(), "escritor=" + escritor + " n=" + i));
+        }
+    }
+
+    private static void juntar(Thread thread) {
+        try {
+            thread.join();
+        } catch (InterruptedException error) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("Teste interrompido.", error);
+        }
     }
 
     private static void exigirEstadoIlegal(Runnable acao, String mensagem) {
