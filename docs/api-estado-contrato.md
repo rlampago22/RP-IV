@@ -47,7 +47,7 @@ A migração `mvp/` → `backend/` (Maven/Gradle) é indicada em [`backend-java.
 | `POST` | `/api/demo/anomalia` | Alias do roteiro T03: mesmo efeito de `/api/cenarios/critico` |
 | `POST` | `/api/alarmes/{id}/reconhecer` | Publica `AlarmeReconhecido` (corpo JSON opcional: `operador`, `justificativa`; default UI Web) |
 | `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` (corpo JSON opcional: `operador`/`responsavel`, `solucao`) e devolve o sensor do alarme ao ponto normal (nova `MedicaoRegistrada`) |
-| `GET` | `/api/auditoria/integridade` | Recalcula a cadeia SHA-256 de `dados/auditoria.log`: `{"integra":true,"entradas":N,"ultimoHash":"..."}` (503 se a auditoria não estiver configurada) |
+| `GET` | `/api/auditoria/integridade` | Recalcula a cadeia SHA-256 gravada na tabela `nucleo.auditoria_evento` do banco: `{"integra":true,"entradas":N,"ultimoHash":"..."}` (503 se a auditoria não estiver configurada) |
 | `POST` | `/api/acesso/solicitar` | UC04/RF08 — corpo `{credencial, area}`; retorna `RegistroAcesso` e publica `ACESSO_REGISTRADO` |
 | `GET` | `/api/acesso/registros` | Lista registros de acesso da sessão |
 | `GET` | `/api/historico` | **RF16** — consulta filtrada do histórico operacional (ver seção 5) |
@@ -95,7 +95,9 @@ Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, p
       "status": "ATIVO",
       "criadoEm": "2026-09-20T20:38:01.000Z",
       "operador": null,
-      "solucao": null
+      "solucao": null,
+      "resolvidoEm": null,
+      "resolvidoPor": null
     }
   ],
   "eventos": [
@@ -141,7 +143,7 @@ Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, p
 | `contadores.medicoes` | `int` | Total de `MedicaoRegistrada` desde o start do processo |
 | `contadores.alarmes` | `int` | Total de `AlarmeEmitido` (não decresce ao resolver) |
 | `contadores.auditoria` | `int` | Total de eventos de qualquer tipo publicados no bus (equivalente ao que `AuditoriaSubscriber` grava) |
-| `alarmes[]` | array | Todos os alarmes emitidos na sessão, **de todos os reatores**, com `reatorId` de origem e `status` `ATIVO \| RECONHECIDO \| RESOLVIDO`; `operador`/`solucao` só preenchidos após reconhecer/resolver |
+| `alarmes[]` | array | Todos os alarmes emitidos na sessão, **de todos os reatores**, com `reatorId` de origem e `status` `ATIVO \| RECONHECIDO \| RESOLVIDO`; `criadoEm` registra o disparo, `operador`/`solucao` registram o reconhecimento/solução e `resolvidoEm`/`resolvidoPor` são preenchidos ao resolver |
 | `eventos[]` | array | Timeline dos últimos 20 eventos do bus, mais recente primeiro (`MEDICAO_REGISTRADA`, `OBSERVACAO_REGISTRADA`, `FALHA_SENSOR_DETECTADA`, `ALARME_EMITIDO`, `ALARME_RECONHECIDO`, `ALARME_RESOLVIDO` — os 6 eventos obrigatórios de [`ui/direcao-opcao-a.md`](ui/direcao-opcao-a.md)) |
 | `reatores[]` | array | Os 5 reatores (RF19–RF21), ordenados por `id`. Alimenta a aba Monitoramento |
 | `reatores[].nivel` | `"ESTAVEL" \| "ATENCAO" \| "CRITICO"` | Lâmpada do reator, pela **leitura atual**: `CRITICO` se algum sensor está fora do limite seguro; senão `ATENCAO` se algum gerou observação na última leitura; senão `ESTAVEL`. Não depende do ciclo do alarme — volta ao verde quando a leitura volta |
@@ -152,13 +154,13 @@ Todas as respostas (exceto erro de rota) devolvem o snapshot completo em JSON, p
 
 Os eventos `MEDICAO_REGISTRADA`, `OBSERVACAO_REGISTRADA`, `FALHA_SENSOR_DETECTADA` e `ALARME_EMITIDO` carregam `reatorId` (`R-01` a `R-05`) e o `resumo` começa com `reator=R-0X`. Os ids de sensor (1 a 4) se repetem em todos os reatores, então a chave de um sensor é sempre reator + sensor. Construtores sem reator assumem `R-01`, para o código anterior a 5 reatores continuar funcionando.
 
-O histórico operacional (seção 5) continua sobre o **R-01**. Os cenários vão para o R-01 quando chamados sem `?reator=` (seção 3).
+O histórico operacional (seção 5) cobre os 5 reatores desde 16/11 (cada um com seu próprio ciclo de leitura — ver `?reator=` na seção 5); antes disso só registrava o R-01. Os cenários vão para o R-01 quando chamados sem `?reator=` (seção 3).
 
 Para subir uma segunda instância sem disputar a porta: `-Dusina.api.porta=18080` (padrão 8080) e `-Dusina.push.destino=...` para não empurrar para o Spring da instância principal.
 
 ## 5. Consulta do histórico operacional (`GET /api/historico`) — RF16
 
-Fonte: `mvp/src/.../historicooperacional/`. O `HistoricoSubscriber` grava uma linha a cada **ciclo completo** dos 4 sensores RF-1 do reator principal (R-01) em `mvp/dados/historico-operacional.csv` (append-only, recuperável entre sessões — RNF09). A rota consulta esse arquivo.
+Fonte: `mvp/src/.../historicooperacional/`. O `HistoricoSubscriber` grava uma linha por reator a cada **ciclo completo** dos 4 sensores RF-1 daquele reator, em `mvp/dados/historico-operacional.csv` (append-only, recuperável entre sessões — RNF09). A rota consulta esse arquivo; `?reator=R-0X` filtra para um reator (sem o parâmetro, traz os 5). Linhas gravadas antes de 16/11 (sem a coluna `reator_id`) são lidas como R-01, que é o que de fato eram.
 
 > **Por que snapshot por ciclo, e não uma linha por medição:** uma `MedicaoRegistrada` pertence a um sensor só. No modelo por medição, filtrar "temperatura entre X e Y **e** pressão entre W e Z" retornaria sempre vazio. Gravando os 4 parâmetros do mesmo ciclo numa linha, o filtro combinado passa a fazer sentido.
 
@@ -172,6 +174,7 @@ Fonte: `mvp/src/.../historicooperacional/`. O `HistoricoSubscriber` grava uma li
 | `radiacaoMin` / `radiacaoMax` | decimal | Faixa em mSv/h |
 | `fluxoMin` / `fluxoMax` | decimal | Faixa em m³/h |
 | `operador` | texto | Casa por trecho, sem distinguir maiúsculas |
+| `reator` | `R-01`..`R-05` | Sem o parâmetro, traz os 5 reatores |
 | `limite` | int | Padrão 500, teto 5000 |
 
 Critério malformado (faixa não numérica, data fora do ISO-8601, faixa ou período invertidos) devolve **HTTP 400** com `{"erro":"..."}` — nunca 500, e nunca um resultado vazio silencioso que o operador leria como "não há registros".
@@ -189,10 +192,12 @@ Critério malformado (faixa não numérica, data fora do ISO-8601, faixa ou per�
     "pressao": { "min": null, "max": null },
     "radiacao": { "min": null, "max": null },
     "fluxo": { "min": null, "max": null },
-    "operador": null
+    "operador": null,
+    "reatorId": null
   },
   "registros": [
     {
+      "reatorId": "R-01",
       "instante": "2026-10-05T14:04:17.383Z",
       "temperatura": 312.0, "pressao": 155.17,
       "radiacao": 2.41, "fluxoResfriamento": 1102.14,
@@ -307,5 +312,4 @@ O script compila e roda todos os suites em sequência, abortando no primeiro que
 | `TestesApiAlarmes` | Ciclo HTTP do alarme: anomalia → reconhecer → resolver |
 | `TestesHistorico` | Amostragem por ciclo, status derivado, operador de serviço e recuperação após reinício (RNF09) |
 | `TestesApiHistorico` | `GET /api/historico`: período, faixas, combinação **E**, operador, limite/truncamento, HTTP 400 em critério inválido, e as rotas de turno |
-| `TestesReatores` | 5 reatores: estado separado por reator, lâmpada verde/amarela/vermelha, alarme com reator de origem, série com teto de 60 pontos, campos do R-01 preservados, histórico isolado no R-01 e cenário via HTTP com `?reator=` (só o reator alvo muda, tempo real segue ligado, 404 para reator inexistente, sem parâmetro mantém o comportamento antigo) |
-
+| `TestesReatores` | 5 reatores: estado separado por reator, lâmpada verde/amarela/vermelha, alarme com reator de origem, série com teto de 60 pontos, campos do R-01 preservados, histórico com linha própria por reator (não mais isolado no R-01) e cenário via HTTP com `?reator=` (só o reator alvo muda, tempo real segue ligado, 404 para reator inexistente, sem parâmetro mantém o comportamento antigo) |

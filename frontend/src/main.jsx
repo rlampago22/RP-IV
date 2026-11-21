@@ -14,10 +14,13 @@ import MonitoramentoPage from './pages/MonitoramentoPage.jsx'
 import SegurancaPage from './pages/SegurancaPage.jsx'
 import CelularSimuladoPage from './pages/CelularSimuladoPage.jsx'
 import EmergenciaPage from './pages/EmergenciaPage.jsx'
+import FaixaEmergencia from './components/FaixaEmergencia.jsx'
+import AlertaContingencia from './components/AlertaContingencia.jsx'
 import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
 import { HistoricoProvider } from './state/HistoricoContext.jsx'
 import { buscaDoReator } from './state/reatorSelecionado.js'
 import { authApi } from './services/authApi.js'
+import ConfirmacaoAlarme from './components/ConfirmacaoAlarme.jsx'
 import {
   AtomLogo,
   IconGrid,
@@ -56,6 +59,10 @@ const BADGE_TEXTO = {
  * reator das abas — é o lugar que sempre mostra a usina inteira.
  */
 function seloDaUsina(estado) {
+  // RF10 / #99: protocolo de contingência ativo manda no selo, acima do nível dos reatores.
+  if (estado.contingencia?.ativa) {
+    return { texto: '● CONTINGÊNCIA ATIVA', classe: ' crit contingencia' }
+  }
   const reatores = estado.reatores ?? []
   if (reatores.length === 0) {
     return { texto: BADGE_TEXTO[estado.status] ?? estado.status, classe: BADGE_CLASSE[estado.status] ?? '' }
@@ -151,6 +158,7 @@ function App() {
 
 function Shell({ usuario, onLogout }) {
   const { estado, origemMock, erroApi, reconhecerAlarme } = useEstado()
+  const [acaoPendente, setAcaoPendente] = useState(null)
   const { search } = useLocation()
   const buscaMenu = buscaDoReator(search)
   const selo = seloDaUsina(estado)
@@ -224,13 +232,16 @@ function Shell({ usuario, onLogout }) {
         </div>
       )}
 
+      <FaixaEmergencia />
+      <AlertaContingencia />
+
       {alarmeAtivo && (
         <div className="scada-banner">
           <span>ALARME ATIVO — {alarmeAtivo.mensagem}</span>
           <button
             type="button"
             className="scada-btn scada-btn-amber"
-            onClick={() => reconhecerAlarme(alarmeAtivo.id)}
+            onClick={() => setAcaoPendente({ tipo: 'reconhecer', alarme: alarmeAtivo })}
           >
             Validar / Reconhecer
           </button>
@@ -251,6 +262,15 @@ function Shell({ usuario, onLogout }) {
           <Route path="/seguranca" element={<SegurancaPage usuario={usuario} />} />
         </Routes>
       </main>
+      <ConfirmacaoAlarme
+        acao={acaoPendente}
+        onCancelar={() => setAcaoPendente(null)}
+        onConfirmar={() => {
+          const alarme = acaoPendente.alarme
+          setAcaoPendente(null)
+          reconhecerAlarme(alarme.id)
+        }}
+      />
     </div>
   )
 }

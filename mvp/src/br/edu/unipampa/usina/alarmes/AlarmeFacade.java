@@ -110,7 +110,7 @@ public final class AlarmeFacade implements IEventSubscriber {
 
     public synchronized boolean resolverAlarme(String alarmeId, String responsavel, String solucao) {
         Optional<Alarme> encontrado = alarmes.stream()
-            .filter(a -> a.getId().equalsIgnoreCase(alarmeId) && !a.isResolvido())
+            .filter(a -> a.getId().equalsIgnoreCase(alarmeId) && a.isReconhecido())
             .findFirst();
         if (encontrado.isPresent()) {
             Alarme a = encontrado.get();

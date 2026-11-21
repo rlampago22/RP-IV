@@ -60,10 +60,27 @@ const PADROES = [
     }),
   },
   {
+    tipo: 'PROTOCOLO_CONTINGENCIA_ATIVADO',
+    regex: /emergencia=(\d+) protocolo=(\S+) nome="([^"]*)" ativadoPor="([^"]*)"/,
+    montar: ([, emergencia, , nome, ativadoPor]) => ({
+      titulo: 'Protocolo de contingência ativado',
+      descricao: `${nome} (emergência #${emergencia}) por ${ativadoPor}. Operações de rotina travadas.`,
+    }),
+  },
+  {
+    tipo: 'PROTOCOLO_CONTINGENCIA_ENCERRADO',
+    regex: /emergencia=(\d+) protocolo=(\S+) encerradoPor="([^"]*)"/,
+    montar: ([, emergencia, , encerradoPor]) => ({
+      titulo: 'Protocolo de contingência encerrado',
+      descricao: `Emergência #${emergencia} encerrada por ${encerradoPor}. Operação normal liberada.`,
+    }),
+  },
+  {
     tipo: 'ACESSO_REGISTRADO',
     regex: /acesso registro=(\S+) credencial="([^"]*)" area="([^"]*)" resultado=(\S+)/,
     montar: ([, , credencial, area, resultado]) => ({
-      titulo: resultado === 'SUCESSO' ? 'Acesso autorizado' : 'Acesso negado',
+      titulo: resultado === 'SUCESSO' ? 'Acesso autorizado'
+        : resultado === 'BLOQUEADO_CONTINGENCIA' ? 'Acesso bloqueado (contingência)' : 'Acesso negado',
       descricao: `Crachá ${credencial} em ${area}.`,
     }),
   },
@@ -101,6 +118,8 @@ const META_TIPO = {
   ALARME_RECONHECIDO: { cor: 'var(--warn)', importante: true },
   ALARME_RESOLVIDO: { cor: 'var(--ok)', importante: true },
   ACESSO_REGISTRADO: { cor: 'var(--ok)', importante: true },
+  PROTOCOLO_CONTINGENCIA_ATIVADO: { cor: 'var(--crit)', importante: true },
+  PROTOCOLO_CONTINGENCIA_ENCERRADO: { cor: 'var(--ok)', importante: true },
   FALHA_SENSOR_DETECTADA: { cor: 'var(--purple)', importante: true },
   OBSERVACAO_REGISTRADA: { cor: 'var(--sky)', importante: false },
   MEDICAO_REGISTRADA: { cor: 'var(--dim)', importante: false },

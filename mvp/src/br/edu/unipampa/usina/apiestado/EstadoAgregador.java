@@ -9,6 +9,8 @@ import br.edu.unipampa.usina.infraestruturaeventos.FalhaSensorDetectada;
 import br.edu.unipampa.usina.infraestruturaeventos.IEventSubscriber;
 import br.edu.unipampa.usina.infraestruturaeventos.MedicaoRegistrada;
 import br.edu.unipampa.usina.infraestruturaeventos.ObservacaoRegistrada;
+import br.edu.unipampa.usina.infraestruturaeventos.ProtocoloContingenciaAtivado;
+import br.edu.unipampa.usina.infraestruturaeventos.ProtocoloContingenciaEncerrado;
 
 import java.time.Instant;
 import java.util.ArrayDeque;
@@ -47,6 +49,8 @@ public final class EstadoAgregador implements IEventSubscriber {
     private final AtomicInteger totalAlarmes = new AtomicInteger();
     private final AtomicInteger totalAuditoria = new AtomicInteger();
     private final AtomicBoolean tempoReal = new AtomicBoolean(false);
+    /** RF10 / #99: protocolos de contingência em vigor, por emergência. Vazio = operação normal. */
+    private final Map<Long, ContingenciaEstado> contingencias = new LinkedHashMap<>();
 
     /** Estado mutável de um reator — só existe dentro do agregador, sob o lock dele. */
     private static final class EstadoDoReator {
@@ -92,17 +96,35 @@ public final class EstadoAgregador implements IEventSubscriber {
                 "ATIVO",
                 emitido.ocorridoEm(),
                 null,
+                null,
+                null,
                 null
             ));
         } else if (evento instanceof AlarmeReconhecido reconhecido) {
             alarmes.computeIfPresent(
                 reconhecido.alarmeId(),
-                (id, atual) -> atual.comStatus("RECONHECIDO", reconhecido.operador(), null)
+                (id, atual) -> atual.comReconhecimento(reconhecido.operador())
             );
+        } else if (evento instanceof ProtocoloContingenciaAtivado ativado) {
+            contingencias.put(ativado.emergenciaId(), new ContingenciaEstado(
+                ativado.emergenciaId(),
+                ativado.protocolo(),
+                ativado.nomeProtocolo(),
+                ativado.ativadoPor(),
+                ativado.ocorridoEm()
+            ));
+            // Corte: a simulação em tempo real para na hora e só volta depois do encerramento.
+            tempoReal.set(false);
+        } else if (evento instanceof ProtocoloContingenciaEncerrado encerrado) {
+            contingencias.remove(encerrado.emergenciaId());
         } else if (evento instanceof AlarmeResolvido resolvido) {
             alarmes.computeIfPresent(
                 resolvido.alarmeId(),
-                (id, atual) -> atual.comStatus("RESOLVIDO", atual.operador(), resolvido.solucao())
+                (id, atual) -> atual.comResolucao(
+                    resolvido.ocorridoEm(),
+                    resolvido.responsavel(),
+                    resolvido.solucao()
+                )
             );
         }
     }
@@ -118,8 +140,27 @@ public final class EstadoAgregador implements IEventSubscriber {
         }
     }
 
-    public void definirTempoReal(boolean ativo) {
+    /**
+     * Liga/pausa a simulação em tempo real. Ligar é recusado enquanto houver protocolo de
+     * contingência ativo (pausar sempre pode).
+     *
+     * @return {@code false} se o pedido foi recusado pelo modo de contingência
+     */
+    public synchronized boolean definirTempoReal(boolean ativo) {
+        if (ativo && !contingencias.isEmpty()) {
+            return false;
+        }
         tempoReal.set(ativo);
+        return true;
+    }
+
+    /** RF10 / #99: há protocolo de contingência em vigor (operações de rotina travadas). */
+    public synchronized boolean isContingenciaAtiva() {
+        return !contingencias.isEmpty();
+    }
+
+    public synchronized List<ContingenciaEstado> contingenciasAtivas() {
+        return List.copyOf(contingencias.values());
     }
 
     public boolean isTempoRealAtivo() {
@@ -135,7 +176,8 @@ public final class EstadoAgregador implements IEventSubscriber {
             new Contadores(totalMedicoes.get(), totalAlarmes.get(), totalAuditoria.get()),
             List.copyOf(alarmes.values()),
             List.copyOf(timeline),
-            estadoDosReatores()
+            estadoDosReatores(),
+            List.copyOf(contingencias.values())
         );
     }
 

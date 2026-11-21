@@ -10,7 +10,7 @@
  *   atualizadoEm: string (ISO-8601),
  *   sensores: { id, tipo, unidade, valor, limiteMinimo, limiteMaximo, atualizadoEm, historico }[],
  *   contadores: { medicoes, alarmes, auditoria },
- *   alarmes: { id, sensorId, severidade, mensagem, status, criadoEm, operador, solucao }[],
+ *   alarmes: { id, sensorId, severidade, mensagem, status, criadoEm, operador, solucao, resolvidoEm, resolvidoPor }[],
  *   eventos: { ocorridoEm, tipo, resumo }[],
  *   reatores: { id, nivel, atualizadoEm, alarmesAtivos,
  *               sensores: { id, tipo, unidade, valor, limiteMinimo, limiteMaximo,
@@ -126,6 +126,13 @@ function aplicarSeedMock(base) {
 
 async function chamar(caminho, opcoes) {
   const resposta = await fetch(`${API_BASE_URL}${caminho}`, opcoes)
+  if (resposta.status === 423) {
+    // RF10 / #99: protocolo de contingência ativo trava as operações de rotina.
+    const corpo = await resposta.json().catch(() => ({}))
+    const erro = new Error(`Operação travada pelo protocolo de contingência ativo: ${corpo.bloqueadoPor ?? 'emergência em andamento'}.`)
+    erro.travadoPorContingencia = true
+    throw erro
+  }
   if (!resposta.ok) {
     throw new Error(`API estado respondeu ${resposta.status} em ${caminho}`)
   }
@@ -215,4 +222,3 @@ export function solicitarAcesso(credencial, area) {
 export function listarAcessos() {
   return chamar('/api/acesso/registros')
 }
-

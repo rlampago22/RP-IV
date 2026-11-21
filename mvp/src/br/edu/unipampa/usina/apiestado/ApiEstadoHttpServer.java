@@ -160,7 +160,10 @@ public final class ApiEstadoHttpServer {
             responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
             return;
         }
-        estado.definirTempoReal(ativo);
+        if (!estado.definirTempoReal(ativo)) {
+            responderBloqueioContingencia(exchange);
+            return;
+        }
         responder(exchange, 200, EstadoJson.escrever(estado.snapshot()));
     }
 
@@ -178,6 +181,11 @@ public final class ApiEstadoHttpServer {
         }
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
+            return;
+        }
+
+        if (estado.isContingenciaAtiva()) {
+            responderBloqueioContingencia(exchange);
             return;
         }
 
@@ -216,6 +224,10 @@ public final class ApiEstadoHttpServer {
         }
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
+            return;
+        }
+        if (estado.isContingenciaAtiva()) {
+            responderBloqueioContingencia(exchange);
             return;
         }
         ReatorFacade alvo = alvoDoCenario(exchange);
@@ -269,7 +281,8 @@ public final class ApiEstadoHttpServer {
             String operador = lerCampoJson(corpo, "operador", "Operador de Reator (UI Web)");
             String justificativa = lerCampoJson(corpo, "justificativa", "Reconhecido via T01 Overview");
             boolean ok = alarmes.reconhecerAlarme(reconhecer.group(1), operador, justificativa);
-            responder(exchange, ok ? 200 : 404, EstadoJson.escrever(estado.snapshot()));
+            responder(exchange, ok ? 200 : statusFalhaAcaoAlarme(reconhecer.group(1)),
+                EstadoJson.escrever(estado.snapshot()));
             return;
         }
 
@@ -288,20 +301,25 @@ public final class ApiEstadoHttpServer {
                 .orElse(null);
             boolean ok = alarmes.resolverAlarme(alarmeId, responsavel, solucao);
             if (ok && sensorDoAlarme != null) {
-                // "Parâmetros normalizados": o sensor volta ao ponto normal, para as leituras
-                // exibidas acompanharem o status do reator (antes ficavam em 372 °C com status ESTÁVEL).
                 CenariosMedicao.normalizarSensor(reator, sensorDoAlarme);
             }
-            responder(exchange, ok ? 200 : 404, EstadoJson.escrever(estado.snapshot()));
+            responder(exchange, ok ? 200 : statusFalhaAcaoAlarme(alarmeId),
+                EstadoJson.escrever(estado.snapshot()));
             return;
         }
 
         responder(exchange, 404, "{\"erro\":\"rota nao encontrada\"}");
     }
 
+    private int statusFalhaAcaoAlarme(String alarmeId) {
+        boolean existe = alarmes.consultarAlarmes().stream()
+            .anyMatch(alarme -> alarme.getId().equalsIgnoreCase(alarmeId));
+        return existe ? 409 : 404;
+    }
+
     /**
-     * T04: {@code GET /api/auditoria/integridade} recalcula a cadeia SHA-256 do arquivo
-     * {@code dados/auditoria.log} (verificação física) e informa se está íntegra.
+     * T04: {@code GET /api/auditoria/integridade} recalcula a cadeia SHA-256 gravada na
+     * tabela {@code nucleo.auditoria_evento} do banco e informa se está íntegra.
      */
     private void tratarIntegridadeAuditoria(HttpExchange exchange) throws IOException {
         if (comCorsEPreflight(exchange, "GET")) {
@@ -315,7 +333,7 @@ public final class ApiEstadoHttpServer {
             responder(exchange, 503, "{\"erro\":\"auditoria nao configurada\"}");
             return;
         }
-        boolean integra = auditoria.verificarIntegridadeArquivo();
+        boolean integra = auditoria.verificarIntegridade();
         var entradas = auditoria.consultar();
         String ultimoHash = entradas.isEmpty() ? "" : entradas.get(entradas.size() - 1).hashCurto();
         responder(
@@ -667,6 +685,20 @@ public final class ApiEstadoHttpServer {
 
     private static String jsonTexto(String valor) {
         return "\"" + (valor == null ? "" : valor.replace("\\", "\\\\").replace("\"", "\\\"")) + "\"";
+    }
+
+    /**
+     * RF10 / #99: com protocolo de contingência ativo as operações de rotina (cenários, anomalia de
+     * demonstração, ligar o tempo real) ficam travadas — 423 Locked, dizendo qual protocolo trava.
+     * Consultas (GET) e o tratamento de alarmes continuam liberados.
+     */
+    private void responderBloqueioContingencia(HttpExchange exchange) throws IOException {
+        String motivo = estado.contingenciasAtivas().stream()
+            .map(c -> c.nome() + " (emergencia #" + c.emergenciaId() + ", ativado por " + c.ativadoPor() + ")")
+            .reduce((a, b) -> a + "; " + b)
+            .orElse("protocolo de contingencia");
+        responder(exchange, 423, "{\"erro\":\"protocolo de contingencia ativo\",\"bloqueadoPor\":"
+            + jsonTexto(motivo) + "}");
     }
 
     private boolean comCorsEPreflight(HttpExchange exchange, String metodoPermitido) throws IOException {

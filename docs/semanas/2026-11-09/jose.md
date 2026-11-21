@@ -21,9 +21,9 @@ Os três asserts em `TestesApiEstado` tornam visível que os eventos publicados 
 
 O fluxo de aceite é: cenário crítico → `ALARME_EMITIDO` → snapshot SSE → `estadoObservavel.publicar(snapshot)` → `update()` do observador React → banner T01 e lista T03 atualizados sem aguardar polling.
 
-**Dependência de integração:** na branch `jose` deste checkout, a V1 do observável e a V2 SSE ainda não estão incorporadas. As PRs [#82](https://github.com/rlampago22/RP-IV/pull/82) e [#83](https://github.com/rlampago22/RP-IV/pull/83) estão abertas; a #83 depende da #82. Portanto, o smoke test visual do push permanece pendente até essas mudanças chegarem à branch de integração e serem sincronizadas aqui. Não atribuo ao código desta branch uma validação que ainda não foi executada.
+As PRs [#82](https://github.com/rlampago22/RP-IV/pull/82) e [#83](https://github.com/rlampago22/RP-IV/pull/83) foram integradas em `desenvolvimento` e incorporadas nesta branch. O smoke test visual do push em T01/T03 ainda precisa ser executado com os três serviços ativos; os testes automatizados do núcleo não substituem essa validação no navegador.
 
-Após a integração, validar com os três serviços ativos: login, abrir T01 e T03, disparar o cenário crítico e confirmar o banner/lista atualizados pelo `update()`; reconhecer e resolver o alarme e confirmar as transições também sem espera pelo próximo ciclo de polling.
+Para validar: login, abrir T01 e T03, disparar o cenário crítico e confirmar o banner/lista atualizados pelo `update()`; reconhecer e resolver o alarme e confirmar as transições também sem espera pelo próximo ciclo de polling.
 
 ## 4. Evidência e DoD
 
@@ -32,13 +32,20 @@ Após a integração, validar com os três serviços ativos: login, abrir T01 e 
 - [x] `.\mvp\executar-mvp.ps1 -Testar`: suíte Must, ciclo HTTP de alarme, RF08, histórico e consulta HTTP passaram.
 - [x] `TestesApiEstado`: asserts dos três eventos de alarme passaram.
 - [x] `npm run build` em `frontend/`: build Vite concluído.
-- [ ] Smoke test visual SSE depois da integração das PRs #82 e #83.
+- [ ] Smoke test visual SSE com T01/T03 após a integração das PRs #82 e #83.
 - [ ] PR da branch `jose` para `desenvolvimento`.
 
 ## 5. Bloqueios
 
-- Smoke test SSE depende da integração das PRs #82 (Observer V1) e #83 (push V2). A #83 deve entrar depois da #82.
+- O smoke test visual ainda depende de executar a stack completa (backend Spring, API do MVP e frontend) em um ambiente com Maven disponível.
 
 ## 6. Próxima ação
 
-- Sincronizar com `desenvolvimento` quando a V1/V2 for integrada e executar o cenário crítico com o navegador, confirmando o `update()` nas telas T01/T03.
+- Executar o cenário crítico no navegador com os três serviços ativos, confirmar o `update()` em T01/T03 e registrar o resultado.
+
+## Complemento de validação (16/11/2026)
+
+- O domínio agora restringe as transições a `ATIVO → RECONHECIDO → RESOLVIDO`; chamadas fora de ordem ou repetidas são recusadas.
+- A API diferencia alarme inexistente (`404`) de transição inválida (`409`).
+- `.\mvp\executar-mvp.ps1 -Testar` passou, incluindo testes das transições inválidas no domínio e via HTTP.
+- O smoke test visual SSE continua pendente: Maven não está disponível neste ambiente para iniciar o backend Spring, necessário para autenticação e para o canal SSE.
