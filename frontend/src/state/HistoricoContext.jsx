@@ -30,6 +30,9 @@ export function HistoricoProvider({ children }) {
   const [anexarGraficos, setAnexarGraficos] = useState(false)
   const [erro, setErro] = useState(null)
   const [carregando, setCarregando] = useState(false)
+  // Reator da busca mais recente (RF16/RF17 por reator) — guardado aqui, e não só no componente,
+  // porque pesquisarDetalhe/limparFaixas repetem a mesma busca sem o chamador informar de novo.
+  const [reatorAtivo, setReatorAtivo] = useState(null)
 
   function alterarPeriodo(campo, valor) {
     setPeriodo((atual) => ({ ...atual, [campo]: valor }))
@@ -39,11 +42,12 @@ export function HistoricoProvider({ children }) {
     setFaixas((atual) => ({ ...atual, [campo]: valor }))
   }
 
-  async function pesquisarSaidas() {
+  async function pesquisarSaidas(reator) {
+    setReatorAtivo(reator ?? null)
     setCarregando(true)
     setErro(null)
     try {
-      setSaidas(await buscarDias(periodo))
+      setSaidas(await buscarDias(periodo, reator))
     } catch (falha) {
       setErro(falha.message)
       setSaidas(null)
@@ -58,14 +62,15 @@ export function HistoricoProvider({ children }) {
     setErro(null)
   }
 
-  async function abrirSaida(saida, faixasIniciais = FAIXAS_VAZIAS) {
+  async function abrirSaida(saida, faixasIniciais = FAIXAS_VAZIAS, reator = reatorAtivo) {
+    setReatorAtivo(reator ?? null)
     setSelecionada(saida)
     setFaixas(faixasIniciais)
     setRelatorioAberto(false)
     setErro(null)
     setCarregando(true)
     try {
-      setDetalhe(await buscarDetalhe(saida, faixasIniciais))
+      setDetalhe(await buscarDetalhe(saida, faixasIniciais, reator))
       setFaixasAplicadas(faixasIniciais)
     } catch (falha) {
       setErro(falha.message)
@@ -79,7 +84,7 @@ export function HistoricoProvider({ children }) {
     setCarregando(true)
     setErro(null)
     try {
-      setDetalhe(await buscarDetalhe(selecionada, faixas))
+      setDetalhe(await buscarDetalhe(selecionada, faixas, reatorAtivo))
       setFaixasAplicadas(faixas)
     } catch (falha) {
       setErro(falha.message)
@@ -89,7 +94,7 @@ export function HistoricoProvider({ children }) {
   }
 
   function limparFaixas() {
-    abrirSaida(selecionada, FAIXAS_VAZIAS)
+    abrirSaida(selecionada, FAIXAS_VAZIAS, reatorAtivo)
   }
 
   function voltarParaSaidas() {
@@ -107,6 +112,7 @@ export function HistoricoProvider({ children }) {
     faixas,
     detalhe,
     faixasAplicadas,
+    reatorAtivo,
     relatorioAberto,
     graficosAbertos,
     anexarGraficos,
