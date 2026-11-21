@@ -1,4 +1,5 @@
 import { useEstado } from '../state/EstadoContext.jsx'
+import PainelContingencia from '../components/PainelContingencia.jsx'
 import { interpretarEvento, reatorDoEvento } from '../data/eventos.js'
 import {
   IconThermometer,
@@ -381,6 +382,7 @@ export default function OverviewPage() {
 
   return (
     <section>
+      <PainelContingencia />
       <p className="scada-kicker">
         PAINEL DE SUPERVISÃO CENTRAL • {resumo ? `USINA · ${reatores.length} REATORES` : reatorAtual?.id ?? 'R-01'}
       </p>
