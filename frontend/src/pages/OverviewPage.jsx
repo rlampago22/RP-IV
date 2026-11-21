@@ -131,17 +131,21 @@ function Acoes({ tempoReal, travado, alarmes, iniciarTempoReal, pausarTempoReal,
   const sufixo = (alarme) => (mostrarReator && alarme ? ` · ${alarme.reatorId ?? 'R-01'}` : '')
   return (
     <div style={{ marginTop: 'auto', paddingTop: 14, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-      <button
-        type="button"
-        className="action-btn2"
-        style={{ background: '#0f766e' }}
-        onClick={() => (tempoReal ? pausarTempoReal() : iniciarTempoReal())}
-        disabled={!tempoReal && travado}
+      <span
         title={!tempoReal && travado ? 'Protocolo de contingência ativo: religar o tempo real fica travado até a emergência ser encerrada.' : undefined}
+        style={{ display: 'inline-flex', cursor: !tempoReal && travado ? 'not-allowed' : undefined }}
       >
-        <IconPlay size={14} />
-        {tempoReal ? 'Pausar Tempo Real' : 'Iniciar Tempo Real'}
-      </button>
+        <button
+          type="button"
+          className="action-btn2"
+          style={{ background: '#0f766e', pointerEvents: !tempoReal && travado ? 'none' : undefined }}
+          onClick={() => (tempoReal ? pausarTempoReal() : iniciarTempoReal())}
+          disabled={!tempoReal && travado}
+        >
+          <IconPlay size={14} />
+          {tempoReal ? 'Pausar Tempo Real' : 'Iniciar Tempo Real'}
+        </button>
+      </span>
       <button
         type="button"
         className="action-btn2"

@@ -191,17 +191,21 @@ export default function MonitoramentoPage() {
           <span><Lampada nivel="ATENCAO" /> {contagem.ATENCAO ?? 0} atenção</span>
           <span><Lampada nivel="CRITICO" /> {contagem.CRITICO ?? 0} crítico</span>
         </div>
-        <button
-          type="button"
-          className="action-btn2"
-          style={{ background: '#0f766e' }}
-          onClick={() => (estado.tempoReal ? pausarTempoReal() : iniciarTempoReal())}
-          disabled={!estado.tempoReal && Boolean(estado.contingencia?.ativa)}
+        <span
           title={!estado.tempoReal && estado.contingencia?.ativa ? 'Protocolo de contingência ativo: religar o tempo real fica travado até a emergência ser encerrada.' : undefined}
+          style={{ display: 'inline-flex', cursor: !estado.tempoReal && estado.contingencia?.ativa ? 'not-allowed' : undefined }}
         >
-          <IconPlay size={14} />
-          {estado.tempoReal ? 'Pausar Tempo Real' : 'Iniciar Tempo Real'}
-        </button>
+          <button
+            type="button"
+            className="action-btn2"
+            style={{ background: '#0f766e', pointerEvents: !estado.tempoReal && estado.contingencia?.ativa ? 'none' : undefined }}
+            onClick={() => (estado.tempoReal ? pausarTempoReal() : iniciarTempoReal())}
+            disabled={!estado.tempoReal && Boolean(estado.contingencia?.ativa)}
+          >
+            <IconPlay size={14} />
+            {estado.tempoReal ? 'Pausar Tempo Real' : 'Iniciar Tempo Real'}
+          </button>
+        </span>
       </div>
 
       {reatores.length === 0 ? (
