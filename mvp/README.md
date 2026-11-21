@@ -42,7 +42,7 @@ Aplicação desktop local desenvolvida em Java (Zero External Dependencies) para
 | **Validar / Reconhecer Alerta** | Operador de Reator valida formalmente o alarme ativo no painel, alterando o status para `EM TRATAMENTO`. | **UC01** (Validação do Operador) |
 | **Normalizar / Encerrar** | Engenheiro de Segurança registra a normalização dos parâmetros e o reator retorna a `ESTÁVEL`. | **UC01** (Resolução de Alarme) |
 | **Registrar Leituras** | Envia manualmente para o barramento os valores ajustados nos seletores numéricos. | **RF-1** (Telemetria Flexível) |
-| **Abrir Log** | Abre o arquivo `dados/auditoria.log` persistido em modo append-only com cadeia SHA-256. | **RNF-03 / RNF-05** |
+| **Abrir Log** | Exporta a trilha de auditoria do banco (tabela `nucleo.auditoria_evento`, append-only com cadeia SHA-256) para `dados/auditoria-exportada.txt` e abre. | **RNF-03 / RNF-05** |
 
 ---
 
@@ -65,7 +65,7 @@ Aplicação desktop local desenvolvida em Java (Zero External Dependencies) para
      (Avalia Limiar)          │
              │                ▼
      (AlarmeEmitido)   RegistroAuditoria
-             │         (dados/auditoria.log)
+             │         (banco: nucleo.auditoria_evento)
              │         └── Cadeia SHA-256 com Persistência Multi-Sessão
              ▼             e Verificação Física Anti-Adulteração
      [Notificação:
@@ -74,7 +74,7 @@ Aplicação desktop local desenvolvida em Java (Zero External Dependencies) para
 ```
 
 - **Padrões de Projeto Aplicados:** Facade, Observer/Pub-Sub, Strategy, Factory.
-- **Limite atual:** o `EventBus` é síncrono e in-process; mensageria assíncrona, API HTTP e banco de medições/alarmes ainda não estão implementados.
+- **Limite atual:** o `EventBus` é síncrono e in-process; mensageria assíncrona e banco de medições/alarmes ainda não estão implementados. A auditoria já está no banco: tabela `nucleo.auditoria_evento`, no mesmo H2 do `backend/` (`backend/data/usina`) ou no banco de `USINA_DB_URL`; os scripts põem o driver H2 no classpath (`dependencias.ps1`).
 - **Persistência atual:** a auditoria é gravada em arquivo e detecta adulteração; o histórico de medições/alarmes permanece em memória durante a execução.
 - **Rastreabilidade Completa:** Consulte `BASE-NO-DOCUMENTO.md`.
 - **Roteiro para a Banca:** Consulte `ROTEIRO-APRESENTACAO.md`.

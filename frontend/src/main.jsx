@@ -14,6 +14,8 @@ import MonitoramentoPage from './pages/MonitoramentoPage.jsx'
 import SegurancaPage from './pages/SegurancaPage.jsx'
 import CelularSimuladoPage from './pages/CelularSimuladoPage.jsx'
 import EmergenciaPage from './pages/EmergenciaPage.jsx'
+import FaixaEmergencia from './components/FaixaEmergencia.jsx'
+import AlertaContingencia from './components/AlertaContingencia.jsx'
 import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
 import { HistoricoProvider } from './state/HistoricoContext.jsx'
 import { buscaDoReator } from './state/reatorSelecionado.js'
@@ -57,6 +59,10 @@ const BADGE_TEXTO = {
  * reator das abas — é o lugar que sempre mostra a usina inteira.
  */
 function seloDaUsina(estado) {
+  // RF10 / #99: protocolo de contingência ativo manda no selo, acima do nível dos reatores.
+  if (estado.contingencia?.ativa) {
+    return { texto: '● CONTINGÊNCIA ATIVA', classe: ' crit contingencia' }
+  }
   const reatores = estado.reatores ?? []
   if (reatores.length === 0) {
     return { texto: BADGE_TEXTO[estado.status] ?? estado.status, classe: BADGE_CLASSE[estado.status] ?? '' }
@@ -225,6 +231,9 @@ function Shell({ usuario, onLogout }) {
           Falha na API: {erroApi}
         </div>
       )}
+
+      <FaixaEmergencia />
+      <AlertaContingencia />
 
       {alarmeAtivo && (
         <div className="scada-banner">

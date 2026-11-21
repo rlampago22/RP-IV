@@ -47,7 +47,7 @@ A migração `mvp/` → `backend/` (Maven/Gradle) é indicada em [`backend-java.
 | `POST` | `/api/demo/anomalia` | Alias do roteiro T03: mesmo efeito de `/api/cenarios/critico` |
 | `POST` | `/api/alarmes/{id}/reconhecer` | Publica `AlarmeReconhecido` (corpo JSON opcional: `operador`, `justificativa`; default UI Web) |
 | `POST` | `/api/alarmes/{id}/resolver` | Publica `AlarmeResolvido` (corpo JSON opcional: `operador`/`responsavel`, `solucao`) e devolve o sensor do alarme ao ponto normal (nova `MedicaoRegistrada`) |
-| `GET` | `/api/auditoria/integridade` | Recalcula a cadeia SHA-256 de `dados/auditoria.log`: `{"integra":true,"entradas":N,"ultimoHash":"..."}` (503 se a auditoria não estiver configurada) |
+| `GET` | `/api/auditoria/integridade` | Recalcula a cadeia SHA-256 gravada na tabela `nucleo.auditoria_evento` do banco: `{"integra":true,"entradas":N,"ultimoHash":"..."}` (503 se a auditoria não estiver configurada) |
 | `POST` | `/api/acesso/solicitar` | UC04/RF08 — corpo `{credencial, area}`; retorna `RegistroAcesso` e publica `ACESSO_REGISTRADO` |
 | `GET` | `/api/acesso/registros` | Lista registros de acesso da sessão |
 | `GET` | `/api/historico` | **RF16** — consulta filtrada do histórico operacional (ver seção 5) |

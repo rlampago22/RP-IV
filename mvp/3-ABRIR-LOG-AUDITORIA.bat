@@ -1,8 +1,7 @@
 @echo off
+chcp 65001 >nul
 cd /d "%~dp0"
-if not exist "dados\auditoria.log" (
-  echo Execute primeiro o arquivo 1-EXECUTAR-MVP.bat.
-  pause
-  exit /b 1
-)
-start "" notepad.exe "dados\auditoria.log"
+rem A trilha de auditoria fica no banco (tabela nucleo.auditoria_evento). Este atalho exporta uma
+rem copia em texto para dados/auditoria-exportada.txt e abre no Bloco de Notas.
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0executar-mvp.ps1" -ExportarAuditoria
+if errorlevel 1 pause

@@ -18,9 +18,12 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Falha na compilação do MVP.'
 }
 
+. (Join-Path $PSScriptRoot 'dependencias.ps1')
+$classpath = Get-ClasspathMvp $saidaCompilacao
+
 Write-Host ''
 Write-Host 'Subindo API de estado em http://localhost:8080/api/estado ...' -ForegroundColor Cyan
 Write-Host 'Deixe esta janela aberta e rode "cd frontend; npm run dev" em outro terminal.' -ForegroundColor Yellow
 Write-Host 'Contrato JSON: docs/api-estado-contrato.md' -ForegroundColor DarkGray
 Write-Host ''
-& java '-Dfile.encoding=UTF-8' -cp $saidaCompilacao br.edu.unipampa.usina.app.ApiEstadoMain
+& java '-Dfile.encoding=UTF-8' -cp $classpath br.edu.unipampa.usina.app.ApiEstadoMain

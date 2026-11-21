@@ -69,3 +69,53 @@ Trabalho das semanas anteriores que entra nesta entrega:
 - Revisão do grupo sobre o que entrou no #69 (as correções do Marco 1 estavam aguardando o OK do grupo).
 - Alinhar com o Álvaro a mudança do RF18 de "pendente" para "implementado" no RF-RNF.
 - Usar a `ConfirmacaoBiometrica` no protocolo de contingência (RF09/RF10) quando ele existir.
+
+---
+
+## Atualização (20–21/11) — issue #99: auditoria em banco + protocolo de contingência ligado ao sistema
+
+Tarefa da divisão de 16/11 (`docs/semanas/2026-11-16/bernardo.md`): pedido do professor de sair do arquivo e
+usar banco, e terminar de ligar o protocolo de contingência ao resto do sistema.
+
+### O que foi feito
+
+- **Auditoria do núcleo em banco.** O `RegistroAuditoria` do `mvp/` saiu do `dados/auditoria.log` e passou a
+  gravar na tabela `nucleo.auditoria_evento`, no mesmo banco do `backend/` (H2 `backend/data/usina` com
+  `AUTO_SERVER`, ou Postgres por `USINA_DB_URL`). A cadeia SHA-256 é a mesma de antes, linha a linha.
+  - Migração Flyway `V6__criar_auditoria_nucleo.sql`; o núcleo também cria a tabela (`IF NOT EXISTS`) se subir
+    antes do backend. Schema próprio (`nucleo`) para o Flyway não achar o banco "não vazio".
+  - Dois processos gravando ao mesmo tempo (API + Swing) deixaram de corromper a cadeia (incidente de 09/11):
+    trava `SELECT ... FOR UPDATE` + `sequencia` como chave primária.
+  - O `auditoria.log` antigo é importado uma vez, com os mesmos hashes, se estiver íntegro (648 linhas importadas).
+  - `mvp/dependencias.ps1` põe o driver H2 no classpath (mesma versão do backend; baixa com conferência de SHA-256
+    se faltar). `persistencia/ConexaoBanco` pode ser reaproveitada nas leituras de sensor (#97).
+- **Protocolo de contingência ligado ao `EventBus`.** Ativar o protocolo na Central (com digital) agora trava o
+  núcleo, em vez de ficar isolado na aba Emergência.
+  - Backend: `GET /api/interno/contingencia` (só da própria máquina, sem `Origin`, só leitura).
+  - Núcleo: `SincronizadorContingencia` consulta a cada 1 s e publica `ProtocoloContingenciaAtivado` /
+    `ProtocoloContingenciaEncerrado`. Daí em diante é EDA: auditoria grava, push leva à tela e o
+    `EstadoAgregador` entra em modo de contingência.
+  - Modo de contingência: simulação em tempo real pausada; `423` em cenários, anomalia de demonstração e religar o
+    tempo real; novos acessos saem como `BLOQUEADO_CONTINGENCIA` (continuam auditados). Monitorar e tratar alarmes
+    seguem liberados. Central fora do ar não destrava (falha segura).
+- **Tela de contingência.** Painel vermelho na Visão Geral (protocolo, quem ativou, passos do roteiro, o que está
+  travado/liberado), selo "CONTINGÊNCIA ATIVA" no topo, faixa vermelha em todas as abas e alerta de tela cheia na
+  ativação, com sirene curta e anúncio falado formal por protocolo (voz neural grave com efeito de alto-falante,
+  gravada em `frontend/public/audio/contingencia/`; script `frontend/scripts/gerar-audio-contingencia.py`).
+
+### Entregue (DoD)
+
+- [x] Suítes do núcleo: **8/8** (nova `TestesContingencia`, 26 verificações; `TestesMvp` cobre 2 escritores
+  simultâneos, alteração e remoção de linha no banco e importação do log antigo)
+- [x] Backend: **33/33** (novo `ContingenciaInternaTest`, 3 casos); V6 aplicada pelo Flyway
+- [x] Ponta a ponta no banco real: 648 entradas importadas, cadeia íntegra; ativação real com a digital (emergência
+  #66) gravada na auditoria e travando cenários/tempo real; encerramento destravando
+- [x] `npm run build` do frontend sem erro
+- [x] PR → `desenvolvimento` fechando a #99
+
+### Bloqueios / observações
+
+- O schema definitivo de reator e leituras (#96/#97) ainda não existe; a tabela de auditoria ficou separada no
+  schema `nucleo` para não atrapalhar essas migrações.
+- O som do alerta depende de a pessoa já ter clicado na página (regra do navegador); sem isso o alerta aparece mudo.
+- Mergeado sem revisão de outro integrante, a pedido do Marcus, para entrar na versão oficial.

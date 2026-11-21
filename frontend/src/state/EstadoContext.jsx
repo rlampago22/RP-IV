@@ -127,6 +127,9 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
         return true
       }
       setErroApi(erro?.message || 'Falha na acao')
+      if (erro?.travadoPorContingencia) {
+        buscarEstado().then((dados) => estadoObservavel.publicar(dados)).catch(() => {})
+      }
       return false
     } finally {
       emVooRef.current = false

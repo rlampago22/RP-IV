@@ -19,5 +19,7 @@ public record EstadoSnapshot(
     Contadores contadores,
     List<AlarmeEstado> alarmes,
     List<EventoEstado> eventos,
-    List<ReatorEstado> reatores
+    List<ReatorEstado> reatores,
+    /** Protocolos de contingência em vigor (RF10 / #99); vazio = operação normal. */
+    List<ContingenciaEstado> contingencias
 ) {}

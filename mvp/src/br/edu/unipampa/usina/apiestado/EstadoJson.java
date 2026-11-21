@@ -19,9 +19,28 @@ public final class EstadoJson {
         json.append("\"contadores\":").append(contadores(estado.contadores())).append(',');
         json.append("\"alarmes\":").append(alarmes(estado.alarmes())).append(',');
         json.append("\"eventos\":").append(eventos(estado.eventos())).append(',');
-        json.append("\"reatores\":").append(reatores(estado.reatores()));
+        json.append("\"reatores\":").append(reatores(estado.reatores())).append(',');
+        json.append("\"contingencia\":").append(contingencia(estado.contingencias()));
         json.append('}');
         return json.toString();
+    }
+
+    /** RF10 / #99: {@code {"ativa":true,"protocolos":[{...}]}} — o front trava os botões de rotina. */
+    private static String contingencia(List<ContingenciaEstado> contingencias) {
+        StringBuilder json = new StringBuilder("{\"ativa\":").append(!contingencias.isEmpty()).append(",\"protocolos\":[");
+        for (int i = 0; i < contingencias.size(); i++) {
+            ContingenciaEstado c = contingencias.get(i);
+            if (i > 0) {
+                json.append(',');
+            }
+            json.append("{\"emergenciaId\":").append(c.emergenciaId())
+                .append(",\"protocolo\":").append(str(c.protocolo()))
+                .append(",\"nome\":").append(str(c.nome()))
+                .append(",\"ativadoPor\":").append(str(c.ativadoPor()))
+                .append(",\"ativadoEm\":").append(str(c.ativadoEm().toString()))
+                .append('}');
+        }
+        return json.append("]}").toString();
     }
 
     /**

@@ -1325,3 +1325,193 @@ button.scada-btn:disabled {
   color: var(--text);
   font: inherit;
 }
+
+/* ---- Protocolo de contingência (RF10 / #99) ---- */
+
+.scada-banner.contingencia-banner {
+  background: #450a0a;
+  border: 1px solid var(--crit);
+  color: #fee2e2;
+  animation: contingencia-borda 1.6s ease-in-out infinite;
+}
+.scada-badge.contingencia {
+  background: var(--crit);
+  color: #fff;
+  letter-spacing: 0.06em;
+  animation: contingencia-borda 1.6s ease-in-out infinite;
+}
+@keyframes contingencia-borda {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(239 68 68 / 0%); }
+  50% { box-shadow: 0 0 0 4px rgb(239 68 68 / 35%); }
+}
+
+.contingencia-painel {
+  margin-bottom: 20px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #450a0a 0%, #2a0a0d 100%);
+  border: 2px solid var(--crit);
+  color: #fee2e2;
+  animation: contingencia-borda 1.6s ease-in-out infinite;
+}
+.contingencia-painel-topo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.contingencia-painel-icone {
+  display: inline-flex;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--crit);
+  color: #fff;
+}
+.contingencia-painel-kicker {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: #fca5a5;
+}
+.contingencia-painel-titulo {
+  margin: 2px 0 0;
+  font-size: 22px;
+  color: #fff;
+}
+.contingencia-painel-btn {
+  margin-left: auto;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--crit);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.contingencia-painel-btn:hover { background: #dc2626; }
+.contingencia-painel-protocolo { margin-top: 14px; }
+.contingencia-painel-diretriz { margin: 0 0 6px; font-size: 15px; font-weight: 700; color: #fff; }
+.contingencia-painel-meta { margin: 0 0 8px; font-size: 13px; color: #fecaca; }
+.contingencia-painel-passos {
+  margin: 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 650;
+  color: #fff;
+}
+.contingencia-painel-regras {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+.contingencia-painel-regras > div {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgb(0 0 0 / 25%);
+  font-size: 13px;
+}
+.contingencia-painel-regras strong { color: #fff; }
+.contingencia-painel-regras span { color: #fecaca; }
+
+/* Alerta de tela cheia na ativação (5 s). Pulso a ~0,8 Hz: bem abaixo do limite de 3 piscadas
+   por segundo (WCAG 2.3.1), para não provocar crise em quem tem fotossensibilidade. */
+.alerta-contingencia {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(69 10 10 / 88%);
+  cursor: pointer;
+  animation: alerta-fundo 1.2s ease-in-out infinite, alerta-entra 0.25s ease-out;
+}
+.alerta-contingencia-caixa {
+  width: min(720px, 100%);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 32px 28px 22px;
+  border-radius: 18px;
+  border: 3px solid #fff;
+  background: #7f1d1d;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 20px 80px rgb(0 0 0 / 60%);
+}
+.alerta-contingencia-icone {
+  display: inline-flex;
+  animation: alerta-ordem 1.2s ease-in-out infinite;
+}
+.alerta-contingencia-kicker {
+  margin: 12px 0 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #fca5a5;
+}
+.alerta-contingencia-protocolo { margin: 0 0 16px; font-size: 13px; color: #fecaca; }
+.alerta-contingencia-ativado {
+  margin: 0;
+  font-size: clamp(15px, 2.2vw, 19px);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #fecaca;
+}
+.alerta-contingencia-ordem {
+  margin: 16px 0 12px;
+  font-size: clamp(26px, 5.2vw, 50px);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  animation: alerta-ordem 1.2s ease-in-out infinite;
+}
+.alerta-contingencia-diretriz {
+  margin: 0 auto 16px;
+  max-width: 560px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.alerta-contingencia-barra {
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 20%);
+  overflow: hidden;
+}
+.alerta-contingencia-barra span {
+  display: block;
+  width: 35%;
+  height: 100%;
+  background: #fff;
+  animation: alerta-transmitindo 1.6s ease-in-out infinite;
+}
+.alerta-contingencia-dica { margin: 10px 0 0; font-size: 12px; color: #fecaca; }
+
+@keyframes alerta-fundo {
+  0%, 100% { background: rgb(69 10 10 / 88%); }
+  50% { background: rgb(153 27 27 / 92%); }
+}
+@keyframes alerta-entra { from { opacity: 0; transform: scale(1.04); } }
+@keyframes alerta-ordem {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.97); }
+}
+@keyframes alerta-transmitindo { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .scada-banner.contingencia-banner,
+  .scada-badge.contingencia,
+  .contingencia-painel,
+  .alerta-contingencia,
+  .alerta-contingencia-icone,
+  .alerta-contingencia-ordem,
+  .alerta-contingencia-barra span { animation: none; }
+}

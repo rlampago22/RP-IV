@@ -12,4 +12,13 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Start-Process -FilePath 'javaw.exe' -ArgumentList @('-cp', $saida, 'br.edu.unipampa.usina.app.SistemaMvpUI') -WorkingDirectory $PSScriptRoot
+Add-Type -AssemblyName PresentationFramework
+. (Join-Path $PSScriptRoot 'dependencias.ps1')
+try {
+    $classpath = Get-ClasspathMvp $saida
+} catch {
+    [System.Windows.MessageBox]::Show("Driver do banco indisponivel: $($_.Exception.Message)", 'MVP Usina Nuclear')
+    exit 1
+}
+
+Start-Process -FilePath 'javaw.exe' -ArgumentList @('-cp', "`"$classpath`"", 'br.edu.unipampa.usina.app.SistemaMvpUI') -WorkingDirectory $PSScriptRoot

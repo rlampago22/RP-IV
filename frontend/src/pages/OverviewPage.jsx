@@ -1,4 +1,5 @@
 import { useEstado } from '../state/EstadoContext.jsx'
+import PainelContingencia from '../components/PainelContingencia.jsx'
 import { interpretarEvento, reatorDoEvento } from '../data/eventos.js'
 import {
   IconThermometer,
@@ -125,21 +126,27 @@ function Contadores({ contadores, abertos }) {
   )
 }
 
-function Acoes({ tempoReal, alarmes, iniciarTempoReal, pausarTempoReal, reconhecerAlarme, resolverAlarme, mostrarReator }) {
+function Acoes({ tempoReal, travado, alarmes, iniciarTempoReal, pausarTempoReal, reconhecerAlarme, resolverAlarme, mostrarReator }) {
   const alarmePendenteReconhecer = alarmes.find((a) => a.status === 'ATIVO')
   const alarmePendenteResolver = alarmes.find((a) => a.status === 'RECONHECIDO')
   const sufixo = (alarme) => (mostrarReator && alarme ? ` · ${alarme.reatorId ?? 'R-01'}` : '')
   return (
     <div style={{ marginTop: 'auto', paddingTop: 14, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-      <button
-        type="button"
-        className="action-btn2"
-        style={{ background: '#0f766e' }}
-        onClick={() => (tempoReal ? pausarTempoReal() : iniciarTempoReal())}
+      <span
+        title={!tempoReal && travado ? 'Protocolo de contingência ativo: religar o tempo real fica travado até a emergência ser encerrada.' : undefined}
+        style={{ display: 'inline-flex', cursor: !tempoReal && travado ? 'not-allowed' : undefined }}
       >
-        <IconPlay size={14} />
-        {tempoReal ? 'Pausar Tempo Real' : 'Iniciar Tempo Real'}
-      </button>
+        <button
+          type="button"
+          className="action-btn2"
+          style={{ background: '#0f766e', pointerEvents: !tempoReal && travado ? 'none' : undefined }}
+          onClick={() => (tempoReal ? pausarTempoReal() : iniciarTempoReal())}
+          disabled={!tempoReal && travado}
+        >
+          <IconPlay size={14} />
+          {tempoReal ? 'Pausar Tempo Real' : 'Iniciar Tempo Real'}
+        </button>
+      </span>
       <button
         type="button"
         className="action-btn2"
@@ -327,7 +334,7 @@ export default function OverviewPage() {
   const [reator, selecionar] = useReatorSelecionado()
   const { status, tempoReal, sensores, contadores, alarmes, eventos } = estado
   const reatores = estado.reatores ?? []
-  const acoes = { tempoReal, iniciarTempoReal, pausarTempoReal, reconhecerAlarme, resolverAlarme }
+  const acoes = { tempoReal, travado: Boolean(estado.contingencia?.ativa), iniciarTempoReal, pausarTempoReal, reconhecerAlarme, resolverAlarme }
 
   const reatorAtual = reator !== TODOS ? reatores.find((r) => r.id === reator) : null
   const resumo = reatores.length > 0 && !reatorAtual
@@ -375,6 +382,7 @@ export default function OverviewPage() {
 
   return (
     <section>
+      <PainelContingencia />
       <p className="scada-kicker">
         PAINEL DE SUPERVISÃO CENTRAL • {resumo ? `USINA · ${reatores.length} REATORES` : reatorAtual?.id ?? 'R-01'}
       </p>

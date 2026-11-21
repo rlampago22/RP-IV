@@ -55,6 +55,8 @@ export default function DemoPage() {
   const comReatores = (estado.reatores ?? []).length > 0
   const alvo = comReatores && reator !== TODOS ? reator : undefined
   const semAlvo = comReatores && !alvo
+  // RF10 / #99: com protocolo de contingência ativo a API recusa cenários (423).
+  const travado = Boolean(estado.contingencia?.ativa)
   const [scenario, setScenario] = useState('NORMAL')
   const [disparando, setDisparando] = useState(false)
   const [mensagemFeedback, setMensagemFeedback] = useState(null)
@@ -75,7 +77,9 @@ export default function DemoPage() {
     } else {
       setMensagemFeedback({
         tipo: 'erro',
-        texto: 'Não foi possível aplicar o cenário: sem resposta da API. Verifique se o serviço está em execução.',
+        texto: travado
+          ? 'Cenário recusado: há protocolo de contingência ativo.'
+          : 'Não foi possível aplicar o cenário: sem resposta da API. Verifique se o serviço está em execução.',
       })
     }
     setDisparando(false)
@@ -114,6 +118,12 @@ export default function DemoPage() {
           Escolha o reator em que o cenário será disparado.
         </p>
       )}
+      {travado && (
+        <p className="scada-note" role="status">
+          Protocolo de contingência ativo ({estado.contingencia.protocolos.map((p) => p.nome).join(', ')}): cenários,
+          tempo real e novos acessos ficam travados até a emergência ser encerrada.
+        </p>
+      )}
 
       <div className="scada-scenarios">
         {SCENARIOS.map((item) => (
@@ -121,7 +131,7 @@ export default function DemoPage() {
             key={item.key}
             type="button"
             className={`scada-scenario ${scenario === item.key ? 'scada-scenario-active' : ''}`}
-            disabled={disparando || semAlvo}
+            disabled={disparando || semAlvo || travado}
             onClick={() => handleDisparar(item)}
           >
             <strong>{item.title}</strong>

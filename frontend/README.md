@@ -53,4 +53,4 @@ A UI Swing em `mvp/` é **legado de fluxo** (plano B se o React falhar). O visua
 - T03: reconhecer / resolver alarme → `POST /api/alarmes/{id}/...`.
 - T05: Normal / Observação / Falha / Crítico → `POST /api/cenarios/{key}` (reflete em T01–T04).
 - Sem a API Java, o front cai em mock local (badge MOCK) — útil offline, **não** é a demo TOK.
-- Cadeia SHA-256 real: `mvp/dados/auditoria.log` (T04 mostra a timeline do snapshot).
+- Cadeia SHA-256 real: tabela `nucleo.auditoria_evento` no banco (T04 mostra a timeline do snapshot).

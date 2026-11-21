@@ -26,7 +26,7 @@ Todo `PASS` ou `FAIL` deve apontar uma evidência: saída de terminal, teste aut
 | Commit | `5140790` |
 | Java | OpenJDK 21 (javac 21.0.x) |
 | Sistema operacional | Windows 11 |
-| Evidências | Suíte automatizada `TestesMvp.java` (11/11 PASS) + `TestesApiEstado.java` + `dados/auditoria.log` |
+| Evidências | Suíte automatizada `TestesMvp.java` (11/11 PASS) + `TestesApiEstado.java` + tabela `nucleo.auditoria_evento` |
 
 ## Preparação
 
@@ -101,7 +101,7 @@ Todo `PASS` ou `FAIL` deve apontar uma evidência: saída de terminal, teste aut
 | Resultado esperado | A auditoria registra os eventos relevantes na ordem em que foram publicados. |
 | Condição de PASS | Cada registro contém tipo e instante; os registros anteriores permanecem inalterados. |
 | Resultado | [x] PASS  [ ] FAIL  [ ] N/E |
-| Evidência ou observação | `RegistroAuditoria` persiste em `dados/auditoria.log` com hash encadeado SHA-256 e timestamps ISO. |
+| Evidência ou observação | `RegistroAuditoria` persiste na tabela `nucleo.auditoria_evento` do banco (antes `dados/auditoria.log`) com hash encadeado SHA-256 e timestamps ISO. |
 
 ### CT-RF07-01 Autenticar acesso (login Central)
 

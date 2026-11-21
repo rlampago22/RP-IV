@@ -8,6 +8,8 @@ import br.edu.unipampa.usina.apiestado.EncaminhadorEventosSpring;
 import br.edu.unipampa.usina.apiestado.EstadoAgregador;
 import br.edu.unipampa.usina.auditorialogs.AuditoriaSubscriber;
 import br.edu.unipampa.usina.auditorialogs.RegistroAuditoria;
+import br.edu.unipampa.usina.contingencia.FonteHttpContingencia;
+import br.edu.unipampa.usina.contingencia.SincronizadorContingencia;
 import br.edu.unipampa.usina.controlereator.ReatorFacade;
 import br.edu.unipampa.usina.controlereator.Sensor;
 import br.edu.unipampa.usina.segurancaacesso.AcessoFacade;
@@ -18,6 +20,7 @@ import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,7 +40,7 @@ public final class ApiEstadoMain {
 
     public static void main(String[] args) throws IOException {
         EventBus eventBus = new EventBus();
-        RegistroAuditoria registro = new RegistroAuditoria(Path.of("dados", "auditoria.log"));
+        RegistroAuditoria registro = RegistroAuditoria.abrirPadrao();
         new AuditoriaSubscriber(eventBus, registro);
 
         RegistroHistorico historico = new RegistroHistorico(Path.of("dados", "historico-operacional.csv"));
@@ -75,6 +78,14 @@ public final class ApiEstadoMain {
 
         // Só publica enquanto o tempo real estiver ligado (POST /api/tempo-real/iniciar).
         simulador.iniciar();
+
+        // RF10 / #99: o protocolo de contingência é ativado na Central (8081, com digital). Aqui o
+        // núcleo consulta a Central a cada segundo e publica a ativação/encerramento no EventBus;
+        // o EstadoAgregador pausa a simulação e as rotas de rotina e novos acessos ficam travados.
+        acesso.bloquearDuranteContingencia(estado::isContingenciaAtiva);
+        FonteHttpContingencia central = new FonteHttpContingencia();
+        new SincronizadorContingencia(eventBus, central).iniciar(Duration.ofSeconds(1));
+        System.out.println("[CONTINGENCIA] Acompanhando protocolos em " + central.getOrigem());
 
         System.out.println("[API ESTADO] " + REATORES.size() + " reatores simulados: " + String.join(", ", REATORES));
         System.out.println("[API ESTADO] Pressione CTRL+C para encerrar.");

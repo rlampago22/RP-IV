@@ -10,12 +10,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BooleanSupplier;
 
 /**
  * RF07 (credencial simulada) + RF08 — valida acesso a área e persiste {@link RegistroAcesso}.
  * Credenciais de demo (crachá): OPER-01, SUP-01, GUARDA-01.
  */
 public final class AcessoFacade {
+    public static final String RESULTADO_BLOQUEADO = "BLOQUEADO_CONTINGENCIA";
+
     private static final Map<String, Integer> NIVEL_CREDENCIAL = Map.of(
         "OPER-01", 2,
         "SUP-01", 3,
@@ -31,6 +34,8 @@ public final class AcessoFacade {
 
     private final EventBus eventBus;
     private final List<RegistroAcesso> historico = new CopyOnWriteArrayList<>();
+    /** RF10 / #99: com protocolo de contingência ativo, nenhum acesso novo é liberado. */
+    private volatile BooleanSupplier contingenciaAtiva = () -> false;
 
     public AcessoFacade(EventBus eventBus) {
         this.eventBus = eventBus;
@@ -39,8 +44,12 @@ public final class AcessoFacade {
     public RegistroAcesso solicitarAcesso(String credencial, String area) {
         String cred = credencial == null ? "" : credencial.trim().toUpperCase(Locale.ROOT);
         String areaNorm = area == null ? "" : area.trim().toUpperCase(Locale.ROOT);
-        boolean autorizado = autorizar(cred, areaNorm);
-        String resultado = autorizado ? "SUCESSO" : "FALHA";
+        String resultado;
+        if (contingenciaAtiva.getAsBoolean()) {
+            resultado = RESULTADO_BLOQUEADO; // continua registrado e auditado, só não libera
+        } else {
+            resultado = autorizar(cred, areaNorm) ? "SUCESSO" : "FALHA";
+        }
         RegistroAcesso registro = new RegistroAcesso(cred, areaNorm, resultado);
         historico.add(registro);
         eventBus.publicar(new AcessoRegistrado(
@@ -51,6 +60,14 @@ public final class AcessoFacade {
             registro.getResultado()
         ));
         return registro;
+    }
+
+    /**
+     * Liga a regra do protocolo de contingência (evacuação/contenção: "bloquear novos acessos").
+     * Enquanto o fornecedor disser {@code true}, toda solicitação sai como {@value #RESULTADO_BLOQUEADO}.
+     */
+    public void bloquearDuranteContingencia(BooleanSupplier contingenciaAtiva) {
+        this.contingenciaAtiva = contingenciaAtiva == null ? () -> false : contingenciaAtiva;
     }
 
     public List<RegistroAcesso> listarRegistros() {
