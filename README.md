@@ -54,9 +54,12 @@ RP-IV/
 
 ### Banco de dados (Postgres compartilhado do time)
 
-Desde 21/11 o histórico operacional (e, aos poucos, as outras tabelas — reator,
-auditoria) fica em Postgres de verdade, não mais só em CSV/log local. Suba o
-container uma vez, antes do `backend/`:
+Desde 16/11 (#99) a auditoria, e desde 21/11 (#97) também o histórico
+operacional, ficam em banco de verdade — o `mvp/` (núcleo) conecta direto via
+JDBC (`ConexaoBanco`), sem passar pelo `backend/`. As duas tabelas moram no
+schema `nucleo`, criado tanto pela migração Flyway do `backend/` quanto, de
+forma idempotente, pelo próprio `mvp/` ao subir — então a ordem de boot não
+importa. Suba o container uma vez, antes de rodar qualquer um dos dois:
 
 ```bash
 cp .env.example .env        # ajuste a senha
@@ -64,10 +67,13 @@ docker compose up -d        # sobe o Postgres em localhost:5432
 ```
 
 Depois, aponte o `backend/` pra esse mesmo banco (`backend/.env`, perfil
-`postgres` — veja [`backend/README.md`](backend/README.md)). Sem o Postgres
-no ar, o `backend/` continua funcionando no perfil H2 padrão, mas as rotas de
-histórico do `mvp/` caem no CSV local automaticamente (ver
-[`docs/api-estado-contrato.md`](docs/api-estado-contrato.md), seção 5).
+`postgres` — veja [`backend/README.md`](backend/README.md)) e exporte as
+mesmas credenciais pro `mvp/` (`USINA_DB_URL`/`USINA_DB_USUARIO`/
+`USINA_DB_SENHA`, ou `-Dusina.db.url`/... — ver
+`mvp/src/br/edu/unipampa/usina/persistencia/ConexaoBanco.java`). Sem Postgres
+configurado, o `mvp/` usa sozinho um H2 em arquivo (`backend/data/usina`, com
+`AUTO_SERVER=TRUE` — o núcleo e o `backend/` podem abrir o mesmo arquivo ao
+mesmo tempo), então tudo continua funcionando localmente sem Docker.
 
 ### Como rodar (Must expandido)
 

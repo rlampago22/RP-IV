@@ -11,14 +11,10 @@ import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
 import br.edu.unipampa.usina.infraestruturaeventos.FalhaSensorDetectada;
 import br.edu.unipampa.usina.infraestruturaeventos.MedicaoRegistrada;
 import br.edu.unipampa.usina.infraestruturaeventos.ObservacaoRegistrada;
+import br.edu.unipampa.usina.persistencia.ConexaoBanco;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Testes da persistência do histórico operacional (Fase 1 de RF16 / RNF09):
@@ -29,25 +25,19 @@ public final class TestesHistorico {
 
     private TestesHistorico() {}
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         System.out.println("================================================================================");
         System.out.println(" TESTES DO HISTORICO OPERACIONAL (RF16 fase 1 / RNF09)");
         System.out.println("================================================================================");
 
-        Path pasta = Files.createTempDirectory("rpiv-historico");
-        Path arquivo = pasta.resolve("historico-operacional.csv");
-        try {
-            cenarios(arquivo);
-        } finally {
-            apagar(pasta);
-        }
+        cenarios(ConexaoBanco.emMemoria("testes-historico-" + System.nanoTime()));
 
         System.out.println("\n[SUCESSO] Testes do historico operacional passaram com 100% de exito!");
     }
 
-    private static void cenarios(Path arquivo) {
+    private static void cenarios(ConexaoBanco banco) {
         EventBus eventBus = new EventBus();
-        RegistroHistorico registro = new RegistroHistorico(arquivo);
+        RegistroHistorico registro = new RegistroHistorico(banco);
         OperadorDeServico operador = new OperadorDeServico();
         new HistoricoSubscriber(eventBus, registro, operador);
 
@@ -208,7 +198,7 @@ public final class TestesHistorico {
         exigirErro(() -> operador.identificar("Alguem", List.of(), OperadorDeServico.Origem.NAO_IDENTIFICADO),
             "NAO_IDENTIFICADO nao pode ser usado como origem de identificacao.");
 
-        // 14. Ida e volta pelo CSV preserva os campos, inclusive operador e papeis.
+        // 14. Ida e volta pelo CSV (ainda usado no legado e na exportacao) preserva os campos.
         SnapshotOperacional reconstruida = SnapshotOperacional.deLinhaCsv(primeira.linhaCsv());
         exigir(reconstruida != null && reconstruida.equals(primeira),
             "Serializar e desserializar a linha CSV deve preservar todos os campos.");
@@ -221,19 +211,13 @@ public final class TestesHistorico {
         exigir(SnapshotOperacional.deLinhaCsv("lixo;malformado") == null,
             "Linha malformada deve ser ignorada em vez de quebrar a leitura.");
 
-        // 10. RNF09: reinicio recupera tudo o que foi gravado.
+        // 15. RNF09: reinicio (nova conexao ao mesmo banco) recupera tudo o que foi gravado.
         int gravadas = registro.tamanho();
-        RegistroHistorico novaSessao = new RegistroHistorico(arquivo);
+        RegistroHistorico novaSessao = new RegistroHistorico(banco);
         exigir(novaSessao.tamanho() == gravadas,
-            "Reinicio deve recuperar todas as " + gravadas + " linhas do arquivo.");
+            "Reinicio deve recuperar todas as " + gravadas + " linhas do banco.");
         exigir(novaSessao.consultar().get(0).equals(primeira),
             "A primeira linha recuperada deve ser identica a gravada.");
-
-        // 11. Cabecalho gravado uma unica vez.
-        long cabecalhos = lerLinhas(arquivo).stream()
-            .filter(l -> l.startsWith("reator_id"))
-            .count();
-        exigir(cabecalhos == 1, "O cabecalho CSV deve aparecer exatamente uma vez.");
     }
 
     private static MedicaoRegistrada medicao(
@@ -256,28 +240,6 @@ public final class TestesHistorico {
     private static SnapshotOperacional ultima(RegistroHistorico registro) {
         List<SnapshotOperacional> todas = registro.consultar();
         return todas.get(todas.size() - 1);
-    }
-
-    private static List<String> lerLinhas(Path arquivo) {
-        try {
-            return Files.readAllLines(arquivo);
-        } catch (IOException error) {
-            throw new IllegalStateException("Nao foi possivel reler o arquivo de historico.", error);
-        }
-    }
-
-    private static void apagar(Path pasta) {
-        try (Stream<Path> caminhos = Files.walk(pasta)) {
-            caminhos.sorted(Comparator.reverseOrder()).forEach(caminho -> {
-                try {
-                    Files.deleteIfExists(caminho);
-                } catch (IOException ignorada) {
-                    // Pasta temporária; falha de limpeza não invalida o teste.
-                }
-            });
-        } catch (IOException ignorada) {
-            // idem
-        }
     }
 
     private static void exigir(boolean condicao, String mensagem) {

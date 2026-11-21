@@ -104,9 +104,41 @@ as tarefas da semana entre os 5 integrantes.
   [#99](https://github.com/rlampago22/RP-IV/issues/99) (Marcus),
   [#100](https://github.com/rlampago22/RP-IV/issues/100) (Álvaro).
 
+## Atualização (21/11) — issue #97 entregue
+
+PR #94 e #95 já foram mescladas pelo time durante a semana. Ao retomar a
+[#97](https://github.com/rlampago22/RP-IV/issues/97), encontrei a
+`desenvolvimento` 18 commits à frente de `bernardo` — o Marcus já tinha
+entregue a [#99](https://github.com/rlampago22/RP-IV/issues/99) (auditoria em
+banco) com um padrão diferente do que eu havia esboçado: `mvp/` conecta
+**direto** no banco via JDBC (`ConexaoBanco`), sem ponte HTTP pro `backend/`,
+com as tabelas no schema `nucleo` criado idempotentemente pelos dois lados
+(núcleo e Flyway). Refeito o trabalho do dia para seguir essa mesma convenção,
+em vez de duas arquiteturas divergentes para o mesmo problema:
+
+- `RegistroHistorico` reescrito para JDBC puro via `ConexaoBanco` — mesma
+  estrutura de `RegistroAuditoria` (`abrirPadrao()`, `garantirTabela()`
+  idempotente, import do CSV legado uma única vez, `AutoCloseable`), tabela
+  `nucleo.historico_operacional`.
+- Migração Flyway `V7__criar_historico_operacional_nucleo.sql` (V6 já estava
+  ocupada pela auditoria do Marcus).
+- Removida a ponte HTTP que eu tinha prototipado antes de ver o trabalho do
+  Marcus: `EncaminhadorHistoricoSpring`, o proxy em `ApiEstadoHttpServer` e o
+  pacote `backend/.../historico/` inteiro (entidade/repositório/controllers
+  JPA) — sem necessidade, já que o núcleo lê/escreve direto no banco.
+- Docker Compose + `.env.example` (Postgres compartilhado do time) mantidos:
+  continuam valendo independente da arquitetura de persistência escolhida.
+- As 7 suítes do `mvp/` voltaram a passar 100% (rodadas com o driver H2 no
+  classpath, já que os testes agora abrem banco de verdade via
+  `ConexaoBanco.emMemoria(...)`, mesmo padrão usado pelos testes da auditoria).
+- `backend/` compila limpo; a falha de `ProtocoloContingenciaTest` (contexto
+  Spring) é pré-existente — confirmada rodando a suíte com minhas mudanças
+  stashadas, no mesmo commit de base.
+
 ## Pendências
 
-- PR #94 pronta, aguardando decisão de mergear.
-- Migração para banco (reator/sensor-histórico/auditoria) é trabalho da
-  semana, não concluído ainda — este doc e as issues definem só a divisão.
-- Commit/push desta atualização (branch `bernardo`) ainda não feito.
+- Commit/push desta rework (branch `bernardo`) e abertura da PR contra
+  `desenvolvimento`.
+- Testar com Postgres de verdade via `docker compose up -d` (Docker Desktop
+  não respondia localmente até o momento desta entrega); H2 em arquivo cobre
+  a verificação funcional enquanto isso.

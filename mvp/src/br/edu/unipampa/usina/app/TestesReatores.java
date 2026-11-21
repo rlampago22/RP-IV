@@ -18,6 +18,7 @@ import br.edu.unipampa.usina.historicooperacional.OperadorDeServico;
 import br.edu.unipampa.usina.historicooperacional.RegistroHistorico;
 import br.edu.unipampa.usina.historicooperacional.SnapshotOperacional;
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
+import br.edu.unipampa.usina.persistencia.ConexaoBanco;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -25,8 +26,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,22 +43,15 @@ public final class TestesReatores {
         System.out.println(" TESTES DOS 5 REATORES (painel de monitoramento)");
         System.out.println("================================================================================");
 
-        Path pasta = Files.createTempDirectory("rpiv-reatores");
-        try {
-            cenarios(pasta.resolve("historico-operacional.csv"));
-            cenariosPorReatorViaHttp(pasta.resolve("historico-http.csv"));
-        } finally {
-            Files.deleteIfExists(pasta.resolve("historico-http.csv"));
-            Files.deleteIfExists(pasta.resolve("historico-operacional.csv"));
-            Files.deleteIfExists(pasta);
-        }
+        cenarios(ConexaoBanco.emMemoria("testes-reatores-" + System.nanoTime()));
+        cenariosPorReatorViaHttp(ConexaoBanco.emMemoria("testes-reatores-http-" + System.nanoTime()));
 
         System.out.println("\n[SUCESSO] Testes dos 5 reatores passaram com 100% de exito!");
     }
 
-    private static void cenarios(Path arquivoHistorico) {
+    private static void cenarios(ConexaoBanco banco) {
         EventBus eventBus = new EventBus();
-        RegistroHistorico historico = new RegistroHistorico(arquivoHistorico);
+        RegistroHistorico historico = new RegistroHistorico(banco);
         new HistoricoSubscriber(eventBus, historico, new OperadorDeServico());
         new AlarmeFacade(eventBus, new AvaliadorFaixaSegura(), new AlarmeFactory());
         EstadoAgregador estado = new EstadoAgregador(eventBus);
@@ -143,7 +135,7 @@ public final class TestesReatores {
     }
 
     /** Aba Demo com reator escolhido: o cenário cai só naquele reator e não pausa os outros. */
-    private static void cenariosPorReatorViaHttp(Path arquivoHistorico) throws Exception {
+    private static void cenariosPorReatorViaHttp(ConexaoBanco banco) throws Exception {
         EventBus eventBus = new EventBus();
         AlarmeFacade alarmes = new AlarmeFacade(eventBus, new AvaliadorFaixaSegura(), new AlarmeFactory());
         EstadoAgregador estado = new EstadoAgregador(eventBus);
@@ -158,7 +150,7 @@ public final class TestesReatores {
             porta = socket.getLocalPort();
         }
         ApiEstadoHttpServer servidor = new ApiEstadoHttpServer(
-            estado, alarmes, r01, null, new RegistroHistorico(arquivoHistorico), new OperadorDeServico(), porta);
+            estado, alarmes, r01, null, new RegistroHistorico(banco), new OperadorDeServico(), porta);
         servidor.registrarReatores(Map.of("R-01", r01, "R-04", r04), segurados::add);
         servidor.iniciar();
         try {

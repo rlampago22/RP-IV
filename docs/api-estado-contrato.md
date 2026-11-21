@@ -160,7 +160,7 @@ Para subir uma segunda instância sem disputar a porta: `-Dusina.api.porta=18080
 
 ## 5. Consulta do histórico operacional (`GET /api/historico`) — RF16
 
-Fonte: `mvp/src/.../historicooperacional/`. O `HistoricoSubscriber` grava uma linha por reator a cada **ciclo completo** dos 4 sensores RF-1 daquele reator, em `mvp/dados/historico-operacional.csv` (append-only, recuperável entre sessões — RNF09). A rota consulta esse arquivo; `?reator=R-0X` filtra para um reator (sem o parâmetro, traz os 5). Linhas gravadas antes de 16/11 (sem a coluna `reator_id`) são lidas como R-01, que é o que de fato eram.
+Fonte: `mvp/src/.../historicooperacional/`. O `HistoricoSubscriber` grava uma linha por reator a cada **ciclo completo** dos 4 sensores RF-1 daquele reator. Desde 21/11 (#97) a persistência é em banco — tabela `nucleo.historico_operacional`, via `ConexaoBanco`/JDBC (mesmo padrão da auditoria, #99) — e não mais em arquivo; o antigo `mvp/dados/historico-operacional.csv` é importado uma única vez, na primeira subida, se a tabela estiver vazia. A rota consulta o banco; `?reator=R-0X` filtra para um reator (sem o parâmetro, traz os 5). Linhas antigas sem a coluna `reator_id` (gravadas antes de 16/11) são lidas como R-01, que é o que de fato eram.
 
 > **Por que snapshot por ciclo, e não uma linha por medição:** uma `MedicaoRegistrada` pertence a um sensor só. No modelo por medição, filtrar "temperatura entre X e Y **e** pressão entre W e Z" retornaria sempre vazio. Gravando os 4 parâmetros do mesmo ciclo numa linha, o filtro combinado passa a fazer sentido.
 
@@ -228,7 +228,7 @@ Content-Type: text/csv; charset=utf-8
 Content-Disposition: attachment; filename="historico-operacional-2026-10-05T14-30-00Z.csv"
 ```
 
-O conteúdo usa exatamente o mesmo cabeçalho e formato de linha do arquivo persistido — quem abre o download vê a mesma estrutura de `mvp/dados/historico-operacional.csv`.
+O conteúdo usa o mesmo cabeçalho e formato de linha do antigo arquivo persistido (`SnapshotOperacional.CABECALHO`/`linhaCsv()`) — quem abre o download vê a mesma estrutura de sempre, agora servida a partir do banco.
 
 Duas decisões registradas:
 

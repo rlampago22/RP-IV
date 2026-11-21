@@ -16,7 +16,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * Consumidor que deriva o histórico operacional dos eventos do barramento e o persiste linha a
@@ -49,7 +48,6 @@ public final class HistoricoSubscriber implements IEventSubscriber {
 
     private final RegistroHistorico registro;
     private final OperadorDeServico operador;
-    private final Consumer<SnapshotOperacional> aoGravar;
 
     /** Um ciclo por reator — os ids de sensor (1 a 4) se repetem em todos os 5 reatores, então o
      * ciclo de um não pode compartilhar estado com o de outro (ver {@link EstadoCiclo}). */
@@ -59,23 +57,8 @@ public final class HistoricoSubscriber implements IEventSubscriber {
     private final Map<String, String> reatorPorAlarme = new HashMap<>();
 
     public HistoricoSubscriber(EventBus eventBus, RegistroHistorico registro, OperadorDeServico operador) {
-        this(eventBus, registro, operador, snapshot -> { });
-    }
-
-    /**
-     * @param aoGravar chamado com cada linha recém-gravada, depois do CSV local — ponto de
-     *                 extensão pra encaminhar a mesma linha pro banco (ver
-     *                 {@code EncaminhadorHistoricoSpring}), sem acoplar este assinante a HTTP/Spring.
-     */
-    public HistoricoSubscriber(
-        EventBus eventBus,
-        RegistroHistorico registro,
-        OperadorDeServico operador,
-        Consumer<SnapshotOperacional> aoGravar
-    ) {
         this.registro = registro;
         this.operador = operador;
-        this.aoGravar = aoGravar;
         eventBus.assinarTodos(this);
     }
 
@@ -168,7 +151,6 @@ public final class HistoricoSubscriber implements IEventSubscriber {
         );
         registro.registrar(snapshot);
         estado.falhasDesdeUltimaLinha.clear();
-        aoGravar.accept(snapshot);
     }
 
     private boolean cicloCompleto(EstadoCiclo estado) {

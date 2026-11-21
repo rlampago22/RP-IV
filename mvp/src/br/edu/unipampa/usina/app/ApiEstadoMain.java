@@ -5,7 +5,6 @@ import br.edu.unipampa.usina.alarmes.AlarmeFactory;
 import br.edu.unipampa.usina.alarmes.AvaliadorFaixaSegura;
 import br.edu.unipampa.usina.apiestado.ApiEstadoHttpServer;
 import br.edu.unipampa.usina.apiestado.EncaminhadorEventosSpring;
-import br.edu.unipampa.usina.apiestado.EncaminhadorHistoricoSpring;
 import br.edu.unipampa.usina.apiestado.EstadoAgregador;
 import br.edu.unipampa.usina.auditorialogs.AuditoriaSubscriber;
 import br.edu.unipampa.usina.auditorialogs.RegistroAuditoria;
@@ -20,7 +19,6 @@ import br.edu.unipampa.usina.historicooperacional.RegistroHistorico;
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -44,9 +42,9 @@ public final class ApiEstadoMain {
         RegistroAuditoria registro = RegistroAuditoria.abrirPadrao();
         new AuditoriaSubscriber(eventBus, registro);
 
-        RegistroHistorico historico = new RegistroHistorico(Path.of("dados", "historico-operacional.csv"));
+        RegistroHistorico historico = RegistroHistorico.abrirPadrao();
         OperadorDeServico operadorDeServico = new OperadorDeServico();
-        new HistoricoSubscriber(eventBus, historico, operadorDeServico, new EncaminhadorHistoricoSpring());
+        new HistoricoSubscriber(eventBus, historico, operadorDeServico);
 
         AlarmeFacade alarmeFacade = new AlarmeFacade(eventBus, new AvaliadorFaixaSegura(), new AlarmeFactory());
         AcessoFacade acesso = new AcessoFacade(eventBus);

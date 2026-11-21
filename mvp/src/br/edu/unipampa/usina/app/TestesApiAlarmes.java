@@ -10,9 +10,9 @@ import br.edu.unipampa.usina.controlereator.Sensor;
 import br.edu.unipampa.usina.historicooperacional.OperadorDeServico;
 import br.edu.unipampa.usina.historicooperacional.RegistroHistorico;
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
+import br.edu.unipampa.usina.persistencia.ConexaoBanco;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.nio.file.Files;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -33,8 +33,8 @@ public final class TestesApiAlarmes {
         reator.registrarSensor(new Sensor(1L, "TEMPERATURA", "Celsius", 0.0, 350.0, 20.0, 325.0));
 
         int porta = obterPortaLivre();
-        RegistroHistorico historico = new RegistroHistorico(
-            Files.createTempDirectory("rpiv-alarmes").resolve("historico.csv"));
+        RegistroHistorico historico =
+            new RegistroHistorico(ConexaoBanco.emMemoria("testes-api-alarmes-" + System.nanoTime()));
         ApiEstadoHttpServer servidor =
             new ApiEstadoHttpServer(estado, alarmes, reator, null, historico, new OperadorDeServico(), porta);
         servidor.iniciar();

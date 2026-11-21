@@ -16,13 +16,8 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.net.URLDecoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -45,14 +40,6 @@ public final class ApiEstadoHttpServer {
     /** Fuso do relatório de operação: o dia do histórico é o dia local, não o dia UTC. */
     private static final ZoneId FUSO_OPERACAO = ZoneId.of("America/Sao_Paulo");
 
-    /**
-     * Base do histórico em banco (backend Spring). As 3 rotas de histórico tentam primeiro aqui
-     * (dado real, não mocado — pedido do professor em 16/11) e só caem pro caminho local (CSV)
-     * se o backend não responder a tempo. Ver {@link #proxyParaBackend}.
-     */
-    private static final String HISTORICO_BACKEND_PADRAO = "http://localhost:8081/api/historico";
-    private static final Duration TIMEOUT_PROXY = Duration.ofSeconds(2);
-
     private final EstadoAgregador estado;
     private final AlarmeFacade alarmes;
     private final ReatorFacade reator;
@@ -64,9 +51,6 @@ public final class ApiEstadoHttpServer {
     private Map<String, ReatorFacade> reatoresPorId;
     private Consumer<String> segurarSimulacao = reatorId -> { };
     private HttpServer server;
-    private final URI historicoBackend =
-        URI.create(System.getProperty("usina.historico.consulta.destino", HISTORICO_BACKEND_PADRAO));
-    private final HttpClient clienteProxy = HttpClient.newHttpClient();
 
     public ApiEstadoHttpServer(
         EstadoAgregador estado,
@@ -431,9 +415,6 @@ public final class ApiEstadoHttpServer {
 
     /**
      * RF16 — consulta filtrada do histórico operacional. Critérios na query string.
-     *
-     * <p>Tenta primeiro o backend (dado real, em banco); só cai pro CSV local se o backend não
-     * responder a tempo — ver {@link #proxyParaBackend}.
      */
     private void tratarHistorico(HttpExchange exchange) throws IOException {
         if (comCorsEPreflight(exchange, "GET")) {
@@ -441,9 +422,6 @@ public final class ApiEstadoHttpServer {
         }
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
             responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
-            return;
-        }
-        if (proxyParaBackend(exchange, "")) {
             return;
         }
         Map<String, String> parametros = parametrosDaQuery(exchange.getRequestURI().getRawQuery());
@@ -469,9 +447,6 @@ public final class ApiEstadoHttpServer {
             responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
             return;
         }
-        if (proxyParaBackend(exchange, "/dias")) {
-            return;
-        }
         try {
             FiltroHistorico filtro = filtroDe(parametrosDaQuery(exchange.getRequestURI().getRawQuery()));
             responder(exchange, 200, HistoricoJson.escreverDias(
@@ -490,9 +465,6 @@ public final class ApiEstadoHttpServer {
             responder(exchange, 405, "{\"erro\":\"metodo nao suportado\"}");
             return;
         }
-        if (proxyParaBackend(exchange, "/exportar")) {
-            return;
-        }
         Map<String, String> parametros = parametrosDaQuery(exchange.getRequestURI().getRawQuery());
         try {
             FiltroHistorico filtro = filtroDe(parametros);
@@ -503,41 +475,6 @@ public final class ApiEstadoHttpServer {
             responderCsv(exchange, nomeDoArquivo(), csv.toString());
         } catch (FiltroHistorico.FiltroInvalidoException invalido) {
             responder(exchange, 400, "{\"erro\":" + jsonTexto(invalido.getMessage()) + "}");
-        }
-    }
-
-    /**
-     * Repassa a consulta pro histórico em banco (backend Spring), devolvendo a resposta dele tal
-     * e qual (status, corpo e content-type) — o front não percebe a diferença. {@code sufixo} é
-     * {@code ""}, {@code "/dias"} ou {@code "/exportar"}; a query string é encaminhada sem mudar.
-     *
-     * <p>Timeout curto de propósito: se o backend estiver fora do ar (cenário comum, já que o mvp
-     * roda sozinho em boa parte da demo), cai pro caminho local sem travar a resposta ao front.
-     */
-    private boolean proxyParaBackend(HttpExchange exchange, String sufixo) {
-        String query = exchange.getRequestURI().getRawQuery();
-        String destino = historicoBackend + sufixo + (query == null ? "" : "?" + query);
-        try {
-            HttpRequest requisicao = HttpRequest.newBuilder(URI.create(destino))
-                .timeout(TIMEOUT_PROXY)
-                .GET()
-                .build();
-            HttpResponse<byte[]> resposta = clienteProxy.send(requisicao, HttpResponse.BodyHandlers.ofByteArray());
-            String tipo = resposta.headers().firstValue("Content-Type").orElse("application/json; charset=utf-8");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            exchange.getResponseHeaders().add("Content-Type", tipo);
-            resposta.headers().firstValue("Content-Disposition")
-                .ifPresent(valor -> exchange.getResponseHeaders().add("Content-Disposition", valor));
-            exchange.sendResponseHeaders(resposta.statusCode(), resposta.body().length);
-            try (OutputStream saida = exchange.getResponseBody()) {
-                saida.write(resposta.body());
-            }
-            return true;
-        } catch (IOException | InterruptedException indisponivel) {
-            if (Thread.currentThread().isInterrupted()) {
-                Thread.currentThread().interrupt();
-            }
-            return false;
         }
     }
 
