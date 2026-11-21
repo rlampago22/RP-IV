@@ -85,9 +85,10 @@ export default function HistoricoPage() {
     fecharRelatorio,
     alternarGraficos,
     definirAnexarGraficos,
+    reatorAtivo,
   } = useHistorico()
   const [reator] = useReatorSelecionado()
-  const outroReator = reator !== TODOS && reator !== 'R-01'
+  const filtroReator = reator === TODOS ? null : reator
 
   return (
     <section>
@@ -96,14 +97,6 @@ export default function HistoricoPage() {
 
       <div className="scada-nao-imprimir">
         <SeletorReator />
-        {outroReator && (
-          <div className="aviso-outros-reatores" role="status">
-            <span>
-              O histórico ainda é registrado só para o <strong>Reator-01</strong>. Os dados abaixo
-              não são do {nomeReator(reator)}.
-            </span>
-          </div>
-        )}
       </div>
 
       {!selecionada ? (
@@ -117,7 +110,7 @@ export default function HistoricoPage() {
             className="scada-card scada-filtros"
             onSubmit={(e) => {
               e.preventDefault()
-              pesquisarSaidas()
+              pesquisarSaidas(filtroReator)
             }}
           >
             <h2 className="panel-heading">
@@ -175,6 +168,7 @@ export default function HistoricoPage() {
                 {saidas.total === 0
                   ? 'Nenhuma saída de operação no período'
                   : `${saidas.total} saída(s) · dia no fuso ${saidas.fusoHorario}`}
+                {filtroReator && ` · ${nomeReator(filtroReator)}`}
               </h2>
 
               {saidas.total > 0 && (
@@ -198,7 +192,7 @@ export default function HistoricoPage() {
                         <tr
                           key={`${saida.dia}-${saida.operador}-${saida.primeiroRegistro}`}
                           className="scada-linha-clicavel"
-                          onClick={() => abrirSaida(saida)}
+                          onClick={() => abrirSaida(saida, undefined, filtroReator)}
                         >
                           <td className="ev">{diaBr(saida.dia)}</td>
                           <td>
@@ -242,6 +236,7 @@ export default function HistoricoPage() {
             Saída de <strong>{diaBr(selecionada.dia)}</strong> ·{' '}
             {selecionada.operador || 'operador não identificado'} ·{' '}
             {hora(selecionada.primeiroRegistro)} – {hora(selecionada.ultimoRegistro)}
+            {reatorAtivo && ` · ${nomeReator(reatorAtivo)}`}
           </p>
 
           <div className="scada-nao-imprimir" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
@@ -361,7 +356,7 @@ export default function HistoricoPage() {
               {faixasAplicadas ? (
                 <a
                   className="scada-btn scada-btn-green"
-                  href={urlExportacao(selecionada, faixasAplicadas)}
+                  href={urlExportacao(selecionada, faixasAplicadas, reatorAtivo)}
                 >
                   Exportar CSV
                 </a>

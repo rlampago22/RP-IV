@@ -134,7 +134,7 @@ public final class HistoricoSubscriber implements IEventSubscriber {
     }
 
     private void gravar(String reatorId, EstadoCiclo estado, Instant instante) {
-        registro.registrar(new SnapshotOperacional(
+        SnapshotOperacional snapshot = new SnapshotOperacional(
             reatorId,
             instante,
             estado.ultimoValorPorTipo.get(TEMPERATURA),
@@ -148,7 +148,8 @@ public final class HistoricoSubscriber implements IEventSubscriber {
             operador.nome(),
             operador.papeis(),
             operador.origem()
-        ));
+        );
+        registro.registrar(snapshot);
         estado.falhasDesdeUltimaLinha.clear();
     }
 

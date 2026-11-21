@@ -26,19 +26,25 @@ function instanteDoDiaLocal(valorData, fimDoDia) {
   return data.toISOString()
 }
 
-function queryPeriodo({ de, ate, operador }) {
+/** `reator` vem de `useReatorSelecionado()`: `TODOS`/vazio não filtra (API traz os 5). */
+function aplicarReator(parametros, reator) {
+  if (reator && reator !== 'TODOS') parametros.set('reator', reator)
+  return parametros
+}
+
+function queryPeriodo({ de, ate, operador }, reator) {
   const parametros = new URLSearchParams()
   const inicio = instanteDoDiaLocal(de, false)
   const fim = instanteDoDiaLocal(ate, true)
   if (inicio) parametros.set('de', inicio)
   if (fim) parametros.set('ate', fim)
   if (operador) parametros.set('operador', operador)
-  return parametros
+  return aplicarReator(parametros, reator)
 }
 
 /** Primeiro nível: saídas de operação (dia local + operador). */
-export async function buscarDias(filtroPeriodo) {
-  const resposta = await fetch(`${API_BASE_URL}/api/historico/dias?${queryPeriodo(filtroPeriodo)}`)
+export async function buscarDias(filtroPeriodo, reator) {
+  const resposta = await fetch(`${API_BASE_URL}/api/historico/dias?${queryPeriodo(filtroPeriodo, reator)}`)
   const corpo = await resposta.json().catch(() => ({}))
   if (!resposta.ok) {
     throw new Error(corpo.erro ?? `A API respondeu ${resposta.status}.`)
@@ -51,7 +57,7 @@ export async function buscarDias(filtroPeriodo) {
  * parâmetros. Usa `primeiroRegistro`/`ultimoRegistro` da saída em vez do dia inteiro, para o
  * detalhe não invadir o turno do operador seguinte.
  */
-function queryDetalhe(saida, faixas) {
+function queryDetalhe(saida, faixas, reator) {
   const parametros = new URLSearchParams()
   parametros.set('de', saida.primeiroRegistro)
   parametros.set('ate', saida.ultimoRegistro)
@@ -63,11 +69,11 @@ function queryDetalhe(saida, faixas) {
     if (min !== '' && min != null) parametros.set(`${campo}Min`, min)
     if (max !== '' && max != null) parametros.set(`${campo}Max`, max)
   }
-  return parametros
+  return aplicarReator(parametros, reator)
 }
 
-export async function buscarDetalhe(saida, faixas) {
-  const resposta = await fetch(`${API_BASE_URL}/api/historico?${queryDetalhe(saida, faixas)}`)
+export async function buscarDetalhe(saida, faixas, reator) {
+  const resposta = await fetch(`${API_BASE_URL}/api/historico?${queryDetalhe(saida, faixas, reator)}`)
   const corpo = await resposta.json().catch(() => ({}))
   if (!resposta.ok) {
     throw new Error(corpo.erro ?? `A API respondeu ${resposta.status}.`)
@@ -76,8 +82,8 @@ export async function buscarDetalhe(saida, faixas) {
 }
 
 /** URL de download — o navegador baixa pelo Content-Disposition da resposta. */
-export function urlExportacao(saida, faixas) {
-  return `${API_BASE_URL}/api/historico/exportar?${queryDetalhe(saida, faixas)}`
+export function urlExportacao(saida, faixas, reator) {
+  return `${API_BASE_URL}/api/historico/exportar?${queryDetalhe(saida, faixas, reator)}`
 }
 
 export const PERIODO_VAZIO = { de: '', ate: '', operador: '' }

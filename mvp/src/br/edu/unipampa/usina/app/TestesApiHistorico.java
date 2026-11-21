@@ -11,6 +11,7 @@ import br.edu.unipampa.usina.historicooperacional.RegistroHistorico;
 import br.edu.unipampa.usina.historicooperacional.SnapshotOperacional;
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
 import br.edu.unipampa.usina.infraestruturaeventos.EventoDominio;
+import br.edu.unipampa.usina.persistencia.ConexaoBanco;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -18,8 +19,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 
@@ -37,8 +36,8 @@ public final class TestesApiHistorico {
         System.out.println(" TESTES HTTP DA CONSULTA AO HISTORICO (RF16 fase 2)");
         System.out.println("================================================================================");
 
-        Path pasta = Files.createTempDirectory("rpiv-api-historico");
-        RegistroHistorico historico = new RegistroHistorico(pasta.resolve("historico.csv"));
+        RegistroHistorico historico =
+            new RegistroHistorico(ConexaoBanco.emMemoria("testes-api-historico-" + System.nanoTime()));
         semear(historico);
 
         EventBus eventBus = new EventBus();

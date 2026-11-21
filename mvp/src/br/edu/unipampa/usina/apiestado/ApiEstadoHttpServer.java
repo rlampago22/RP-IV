@@ -413,7 +413,9 @@ public final class ApiEstadoHttpServer {
         return valor == null ? "" : valor.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
-    /** RF16 — consulta filtrada do histórico operacional. Critérios na query string. */
+    /**
+     * RF16 — consulta filtrada do histórico operacional. Critérios na query string.
+     */
     private void tratarHistorico(HttpExchange exchange) throws IOException {
         if (comCorsEPreflight(exchange, "GET")) {
             return;

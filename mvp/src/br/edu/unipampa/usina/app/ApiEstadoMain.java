@@ -19,7 +19,6 @@ import br.edu.unipampa.usina.historicooperacional.RegistroHistorico;
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -43,7 +42,7 @@ public final class ApiEstadoMain {
         RegistroAuditoria registro = RegistroAuditoria.abrirPadrao();
         new AuditoriaSubscriber(eventBus, registro);
 
-        RegistroHistorico historico = new RegistroHistorico(Path.of("dados", "historico-operacional.csv"));
+        RegistroHistorico historico = RegistroHistorico.abrirPadrao();
         OperadorDeServico operadorDeServico = new OperadorDeServico();
         new HistoricoSubscriber(eventBus, historico, operadorDeServico);
 

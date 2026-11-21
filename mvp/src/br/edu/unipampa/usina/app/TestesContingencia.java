@@ -29,7 +29,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -69,8 +68,8 @@ public final class TestesContingencia {
         });
 
         int porta = obterPortaLivre();
-        RegistroHistorico historico = new RegistroHistorico(
-            Files.createTempDirectory("rpiv-contingencia").resolve("historico.csv"));
+        RegistroHistorico historico =
+            new RegistroHistorico(ConexaoBanco.emMemoria("testes-contingencia-historico-" + System.nanoTime()));
         ApiEstadoHttpServer servidor = new ApiEstadoHttpServer(
             estado, alarmes, reator, acesso, historico, new OperadorDeServico(), auditoria, porta);
         servidor.iniciar();
