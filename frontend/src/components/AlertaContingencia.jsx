@@ -1,17 +1,25 @@
 import { useEffect, useRef, useState } from 'react'
 import { useEstado } from '../state/EstadoContext.jsx'
+import { avisoDoProtocolo } from '../data/contingencia.js'
+import { falar, silenciar, tocarSirene } from '../services/alertaSonoro.js'
 import { IconAlertTriangle } from './icons.jsx'
 
-/** Quanto tempo o alerta fica na tela. */
-const DURACAO_MS = 5000
+/** Tempo mínimo na tela; com som, fica até o anúncio terminar (com teto). */
+const MINIMO_MS = 6000
+const MAXIMO_MS = 15000
+const FOLGA_APOS_FALA_MS = 1200
+
+const formatarHora = (iso) =>
+  iso ? new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''
 
 /**
- * RF10 / #99 — alerta de tela cheia por 5 s quando um protocolo de contingência é ativado.
+ * RF10 / #99 — alerta de tela cheia quando um protocolo de contingência é ativado: sirene curta e
+ * anúncio por voz do protocolo em vigor.
  *
  * Aparece em todas as sessões abertas (a ativação chega pelo push do núcleo), em qualquer aba. Só
  * dispara para protocolo ativado DEPOIS que a tela abriu: recarregar a página com um protocolo já
  * em vigor não repete o alerta (o painel da Visão Geral e a faixa continuam mostrando).
- * Fecha sozinho, com clique ou com Esc — numa emergência o operador precisa voltar aos sensores.
+ * Fecha sozinho, com clique ou com Esc — e fechar corta o som; o operador precisa voltar aos sensores.
  */
 export default function AlertaContingencia() {
   const { estado } = useEstado()
@@ -33,17 +41,38 @@ export default function AlertaContingencia() {
 
   useEffect(() => {
     if (!alerta) return undefined
-    const fechar = () => setAlerta(null)
-    const temporizador = setTimeout(fechar, DURACAO_MS)
+    let encerrado = false
+    const abertoEm = Date.now()
+    const fechar = () => {
+      if (encerrado) return
+      encerrado = true
+      silenciar()
+      setAlerta(null)
+    }
+
+    const teto = setTimeout(fechar, MAXIMO_MS)
+    let aposFala = null
+    tocarSirene()
+      .then(() => !encerrado && falar(avisoDoProtocolo(alerta.protocolo, alerta.nome).fala))
+      .then(() => {
+        if (encerrado) return
+        const restante = Math.max(MINIMO_MS - (Date.now() - abertoEm), FOLGA_APOS_FALA_MS)
+        aposFala = setTimeout(fechar, restante)
+      })
+
     const aoTeclar = (evento) => evento.key === 'Escape' && fechar()
     window.addEventListener('keydown', aoTeclar)
     return () => {
-      clearTimeout(temporizador)
+      clearTimeout(teto)
+      clearTimeout(aposFala)
       window.removeEventListener('keydown', aoTeclar)
+      if (!encerrado) silenciar()
+      encerrado = true
     }
   }, [alerta])
 
   if (!alerta) return null
+  const aviso = avisoDoProtocolo(alerta.protocolo, alerta.nome)
 
   return (
     <div
@@ -51,25 +80,28 @@ export default function AlertaContingencia() {
       className="alerta-contingencia"
       role="alertdialog"
       aria-live="assertive"
-      aria-label={`Protocolo de contingência ativado: ${alerta.nome}. Evacuar.`}
-      onClick={() => setAlerta(null)}
+      aria-label={`Protocolo de contingência ativado: ${aviso.titulo}. ${aviso.diretriz}`}
+      onClick={() => {
+        silenciar()
+        setAlerta(null)
+      }}
     >
       <div className="alerta-contingencia-caixa">
         <span className="alerta-contingencia-icone" aria-hidden="true">
-          <IconAlertTriangle size={64} />
+          <IconAlertTriangle size={56} />
         </span>
-        <p className="alerta-contingencia-kicker">PROTOCOLO DE CONTINGÊNCIA ATIVADO</p>
+        <p className="alerta-contingencia-kicker">CENTRAL DE SUPERVISÃO · ALERTA DE CONTINGÊNCIA</p>
+        <p className="alerta-contingencia-ativado">PROTOCOLO DE CONTINGÊNCIA ATIVADO</p>
+        <p className="alerta-contingencia-ordem">{aviso.titulo}</p>
+        <p className="alerta-contingencia-diretriz">{aviso.diretriz}</p>
         <p className="alerta-contingencia-protocolo">
-          {alerta.nome} · emergência #{alerta.emergenciaId} · por {alerta.ativadoPor}
-        </p>
-        <p className="alerta-contingencia-ordem">
-          <span>EVACUAR</span>
-          <span>EVACUAR</span>
+          Emergência #{alerta.emergenciaId} · autorizado por {alerta.ativadoPor}
+          {alerta.ativadoEm ? ` · ${formatarHora(alerta.ativadoEm)}` : ''}
         </p>
         <div className="alerta-contingencia-barra" aria-hidden="true">
-          <span style={{ animationDuration: `${DURACAO_MS}ms` }} />
+          <span />
         </div>
-        <p className="alerta-contingencia-dica">Clique ou Esc para fechar</p>
+        <p className="alerta-contingencia-dica">Aviso sonoro em transmissão · clique ou Esc para fechar</p>
       </div>
     </div>
   )

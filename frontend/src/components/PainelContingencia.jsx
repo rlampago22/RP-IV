@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { useEstado } from '../state/EstadoContext.jsx'
 import { useEmergencias } from '../state/useEmergencias.js'
 import { IconAlertTriangle } from './icons.jsx'
+import { avisoDoProtocolo } from '../data/contingencia.js'
 
 const formatarHora = (iso) =>
   iso ? new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'
@@ -27,7 +28,9 @@ export default function PainelContingencia() {
         <div>
           <p className="contingencia-painel-kicker">MODO DE CONTINGÊNCIA · USINA EM EMERGÊNCIA</p>
           <h2 className="contingencia-painel-titulo">
-            {ativos.length === 1 ? ativos[0].nome : `${ativos.length} protocolos de contingência ativos`}
+            {ativos.length === 1
+              ? avisoDoProtocolo(ativos[0].protocolo, ativos[0].nome).titulo
+              : `${ativos.length} PROTOCOLOS DE CONTINGÊNCIA ATIVOS`}
           </h2>
         </div>
         <NavLink to="/emergencia" className="scada-btn contingencia-painel-btn">
@@ -40,6 +43,7 @@ export default function PainelContingencia() {
         const passos = emergencia?.protocolo?.passos ?? []
         return (
           <div key={ativo.emergenciaId} className="contingencia-painel-protocolo">
+            <p className="contingencia-painel-diretriz">{avisoDoProtocolo(ativo.protocolo, ativo.nome).diretriz}</p>
             <p className="contingencia-painel-meta">
               Emergência #{ativo.emergenciaId}
               {emergencia ? ` · ${emergencia.descricao}` : ''} · ativado por <strong>{ativo.ativadoPor}</strong> às{' '}
