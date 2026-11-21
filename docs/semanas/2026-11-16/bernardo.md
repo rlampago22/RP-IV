@@ -135,10 +135,26 @@ em vez de duas arquiteturas divergentes para o mesmo problema:
   Spring) é pré-existente — confirmada rodando a suíte com minhas mudanças
   stashadas, no mesmo commit de base.
 
-## Pendências
+## Fechamento (21/11) — issue #97 concluída
 
-- Commit/push desta rework (branch `bernardo`) e abertura da PR contra
-  `desenvolvimento`.
-- Testar com Postgres de verdade via `docker compose up -d` (Docker Desktop
-  não respondia localmente até o momento desta entrega); H2 em arquivo cobre
-  a verificação funcional enquanto isso.
+- [PR #102](https://github.com/rlampago22/RP-IV/pull/102) mesclada em
+  `desenvolvimento`; issue
+  [#97](https://github.com/rlampago22/RP-IV/issues/97) fechada.
+- Docker Desktop estava com uma pasta de sockets internos corrompida
+  (`AppData\Local\Docker\run`), travando a subida do daemon — resolvido
+  renomeando a pasta (apagar os arquivos um a um falhava, a pasta inteira
+  não). Com o daemon de pé, `docker compose up -d` subiu o Postgres real
+  (porta `5433` nesta máquina — a `5432` padrão já estava em uso por outro
+  projeto meu).
+- Testado ponta a ponta com Postgres real: backend (perfil `postgres`,
+  migrações V1–V7 aplicadas) + núcleo `mvp/` (JDBC direto) + frontend, todos
+  apontando pro mesmo container. Disparei um cenário crítico no R-03 pelo
+  Demo e confirmei em 3 camadas — `psql` na tabela
+  `nucleo.historico_operacional`, `GET /api/historico?reator=R-03` e a tela
+  de Histórico — que a linha gravada tem o reator, a temperatura e os
+  sensores em alarme corretos.
+- Esse teste manual revelou um bug real e pré-existente na tela de
+  Histórico do frontend: o seletor de reator nunca repassava `?reator=` pra
+  API (ficou faltando desde a PR #95, 16/11), e ainda mostrava um aviso fixo
+  dizendo que só cobria o R-01. Corrigido no mesmo PR — ver commit
+  `fix(frontend): filtrar historico por reator de verdade (RF16/RF17)`.
