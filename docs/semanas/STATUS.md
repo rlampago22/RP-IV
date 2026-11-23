@@ -77,6 +77,12 @@ híbrida explícita (EDA + camadas/MVC).
 | José | [#80](https://github.com/rlampago22/RP-IV/issues/80) | Alarmes consumindo o push + GoF | `jose` — atualizada com `desenvolvimento` |
 | Marcus | [#81](https://github.com/rlampago22/RP-IV/issues/81) | Auditoria 2FA + roteiro de demo | `marcus` — já em dia com `desenvolvimento` |
 
+## Semana 16/11 — discussão e persistência
+
+| Aluno | Issue | Tarefa | Status |
+|-------|-------|--------|--------|
+| José | [#98](https://github.com/rlampago22/RP-IV/issues/98) | Padrões GoF/framework e candidatos a refatoração | Em andamento |
+
 ---
 
 ## Como rodar (MVP completo)
