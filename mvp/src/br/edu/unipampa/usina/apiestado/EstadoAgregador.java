@@ -3,6 +3,7 @@ package br.edu.unipampa.usina.apiestado;
 import br.edu.unipampa.usina.infraestruturaeventos.AlarmeEmitido;
 import br.edu.unipampa.usina.infraestruturaeventos.AlarmeReconhecido;
 import br.edu.unipampa.usina.infraestruturaeventos.AlarmeResolvido;
+import br.edu.unipampa.usina.infraestruturaeventos.CadastroReatorAtualizado;
 import br.edu.unipampa.usina.infraestruturaeventos.EventBus;
 import br.edu.unipampa.usina.infraestruturaeventos.EventoDominio;
 import br.edu.unipampa.usina.infraestruturaeventos.FalhaSensorDetectada;
@@ -117,6 +118,8 @@ public final class EstadoAgregador implements IEventSubscriber {
             tempoReal.set(false);
         } else if (evento instanceof ProtocoloContingenciaEncerrado encerrado) {
             contingencias.remove(encerrado.emergenciaId());
+        } else if (evento instanceof CadastroReatorAtualizado cadastro) {
+            aplicarCadastro(cadastro);
         } else if (evento instanceof AlarmeResolvido resolvido) {
             alarmes.computeIfPresent(
                 resolvido.alarmeId(),
@@ -126,6 +129,23 @@ public final class EstadoAgregador implements IEventSubscriber {
                     resolvido.solucao()
                 )
             );
+        }
+    }
+
+    /**
+     * Issue #96: reator retirado sai do painel (os alarmes dele ficam, são histórico); reator
+     * alterado perde o sensor que saiu do cadastro. Reator incluído aparece com a 1ª medição.
+     */
+    private void aplicarCadastro(CadastroReatorAtualizado cadastro) {
+        if (cadastro.acao() == CadastroReatorAtualizado.Acao.RETIRADO) {
+            reatores.remove(cadastro.reatorId());
+            return;
+        }
+        EstadoDoReator reator = reatores.get(cadastro.reatorId());
+        if (reator != null) {
+            reator.ultimaPorSensor.keySet().retainAll(cadastro.sensores());
+            reator.seriePorSensor.keySet().retainAll(cadastro.sensores());
+            reator.sensoresEmAtencao.retainAll(cadastro.sensores());
         }
     }
 

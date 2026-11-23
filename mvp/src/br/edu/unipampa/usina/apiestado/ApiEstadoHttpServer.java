@@ -48,8 +48,9 @@ public final class ApiEstadoHttpServer {
     private final OperadorDeServico operadorDeServico;
     private final RegistroAuditoria auditoria;
     private final int porta;
-    private Map<String, ReatorFacade> reatoresPorId;
-    private Consumer<String> segurarSimulacao = reatorId -> { };
+    /** Trocado inteiro pelo sincronizador do cadastro (#96) enquanto as threads HTTP leem. */
+    private volatile Map<String, ReatorFacade> reatoresPorId;
+    private volatile Consumer<String> segurarSimulacao = reatorId -> { };
     private HttpServer server;
 
     public ApiEstadoHttpServer(
@@ -97,6 +98,11 @@ public final class ApiEstadoHttpServer {
     public void registrarReatores(Map<String, ReatorFacade> reatores, Consumer<String> segurarSimulacao) {
         this.reatoresPorId = Map.copyOf(reatores);
         this.segurarSimulacao = segurarSimulacao == null ? reatorId -> { } : segurarSimulacao;
+    }
+
+    /** Issue #96: o cadastro mudou com o núcleo no ar — cenário em reator retirado passa a dar 404. */
+    public void atualizarReatores(Map<String, ReatorFacade> reatores) {
+        this.reatoresPorId = Map.copyOf(reatores);
     }
 
     public void iniciar() throws IOException {

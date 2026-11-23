@@ -53,15 +53,24 @@ public final class ReatorFacade {
         return reatorId;
     }
 
-    public void registrarSensor(Sensor sensor) {
+    public synchronized void registrarSensor(Sensor sensor) {
         sensores.put(sensor.id(), sensor);
     }
 
-    public Sensor obterSensor(long sensorId) {
+    /**
+     * Troca os sensores pelos do cadastro (issue #96: faixas ajustadas na tela Reatores valem a
+     * partir da próxima leitura, sem reiniciar o núcleo).
+     */
+    public synchronized void substituirSensores(List<Sensor> novos) {
+        sensores.clear();
+        novos.forEach(sensor -> sensores.put(sensor.id(), sensor));
+    }
+
+    public synchronized Sensor obterSensor(long sensorId) {
         return sensores.get(sensorId);
     }
 
-    public List<Sensor> listarSensores() {
+    public synchronized List<Sensor> listarSensores() {
         return List.copyOf(sensores.values());
     }
 
