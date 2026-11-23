@@ -245,18 +245,33 @@ Duas decisões registradas:
 
 ---
 
-## 6. Push de estado por SSE — Observer V2
+## 6. Push de dado crítico por SSE + polling da rotina (issue #96)
 
-O frontend não faz mais polling. O estado chega por push, e o canal fica no **Spring
-(8081)**, não nesta API: `GET /api/eventos` devolve um `SseEmitter` e exige sessão
-autenticada, então só quem fez login recebe o fluxo.
+Pedido do professor em 16/11: **dado crítico dispara push imediato; dado rotineiro continua
+por polling.** O frontend busca `GET /api/estado` a cada 2 s (rotina) e mantém aberto o canal
+SSE, por onde o núcleo empurra na hora **só** os eventos críticos:
+
+| Vai por push imediato | Fica para o polling (até 2 s) |
+|---|---|
+| `ALARME_EMITIDO` — leitura fora da faixa segura | `MEDICAO_REGISTRADA` |
+| `FALHA_SENSOR_DETECTADA` | `OBSERVACAO_REGISTRADA` (faixa de atenção) |
+| `PROTOCOLO_CONTINGENCIA_ATIVADO` / `_ENCERRADO` | `ALARME_RECONHECIDO`, `ALARME_RESOLVIDO`, `ACESSO_REGISTRADO` |
+
+O gatilho é o `EncaminhadorEventosSpring` (lista em `TIPOS_CRITICOS`): uma leitura fora da
+faixa segura vira `ALARME_EMITIDO` no `AlarmeFacade`, e esse evento é encaminhado ao Spring no
+mesmo instante, sem esperar a próxima consulta. Não é um `CREATE TRIGGER` de banco: o mesmo
+código precisa rodar no H2 (testes/demo) e no Postgres, e o evento já existe no barramento antes
+de qualquer gravação.
+
+O canal SSE fica no **Spring (8081)**, não nesta API: `GET /api/eventos` devolve um
+`SseEmitter` e exige sessão autenticada, então só quem fez login recebe o push.
 
 Como o `EventBus` vive no processo do `mvp/` e o Spring não tem referência a ele, há uma
 ponte entre os dois:
 
 ```text
 EventBus (mvp, 8080)
-   └─ EncaminhadorEventosSpring   (assinante global, como auditoria e histórico)
+   └─ EncaminhadorEventosSpring   (assinante global; só repassa TIPOS_CRITICOS)
          └─ POST http://localhost:8081/api/eventos/publicar   {tipo, estado}
                └─ EventoPushController  (Spring, 8081)
                      └─ SseEmitter  ->  EventSource no navegador
@@ -278,7 +293,7 @@ silêncio quando o Spring está fora do ar — com um único aviso no console.
 
 | Campo | Valor |
 |-------|-------|
-| `event` | tipo do evento de domínio — `MEDICAO_REGISTRADA`, `OBSERVACAO_REGISTRADA`, `FALHA_SENSOR_DETECTADA`, `ALARME_EMITIDO`, `ALARME_RECONHECIDO`, `ALARME_RESOLVIDO`, `ACESSO_REGISTRADO` |
+| `event` | tipo do evento crítico — `ALARME_EMITIDO`, `FALHA_SENSOR_DETECTADA`, `PROTOCOLO_CONTINGENCIA_ATIVADO`, `PROTOCOLO_CONTINGENCIA_ENCERRADO` |
 | `data` | `EstadoSnapshot` completo (seção 4) |
 
 ```text
@@ -290,7 +305,7 @@ data: {"status":"CRITICO","alarmes":[{...,"status":"ATIVO"}],...}
 
 ## 7. Consumo no frontend
 
-`frontend/src/api/estado.js` define `ESTADO_MOCK` (mesmo formato acima) usado como fallback quando o `fetch` falha. O estado chega por **push**: `frontend/src/api/eventos.js` abre o `EventSource` de `/api/eventos` na Central (8081) e publica cada mensagem no sujeito `frontend/src/state/estadoObservavel.js`; `EstadoContext.jsx` apenas observa esse sujeito. Não há mais polling. T01 (`OverviewPage.jsx`), T02 (`SensoresPage.jsx` — seeds Normal/Observação + histórico) e o shell (badge/banner em `main.jsx`) leem exclusivamente desse contexto. A aba **Monitoramento** (`MonitoramentoPage.jsx`) lê `reatores[]` do mesmo contexto; cada bloco de reator é memorizado pelo `atualizadoEm` do seu reator, então só redesenha quando chega leitura dele.
+`frontend/src/api/estado.js` define `ESTADO_MOCK` (mesmo formato acima) usado como fallback quando o `fetch` falha. O estado chega por dois produtores que publicam no mesmo sujeito `frontend/src/state/EstadoObservavel.js` (que descarta estado repetido): o **polling** de `/api/estado` a cada 2 s em `EstadoContext.jsx` (rotina) e o **push** de `frontend/src/api/eventos.js`, que abre o `EventSource` de `/api/eventos` na Central (8081) e publica cada evento crítico assim que chega. Se o SSE cair, a tela não vai para o mock: os alarmes passam a chegar pelo polling, no máximo um ciclo depois. T01 (`OverviewPage.jsx`), T02 (`SensoresPage.jsx` — seeds Normal/Observação + histórico) e o shell (badge/banner em `main.jsx`) leem exclusivamente desse contexto. A aba **Monitoramento** (`MonitoramentoPage.jsx`) lê `reatores[]` do mesmo contexto; cada bloco de reator é memorizado pelo `atualizadoEm` do seu reator, então só redesenha quando chega leitura dele.
 
 **Reator selecionado entre abas:** todas as abas têm o mesmo seletor (`components/SeletorReator.jsx`) e a escolha fica na URL (`?reator=R-03`, ver `state/reatorSelecionado.js`). O menu repassa o parâmetro, então trocar de aba mantém o filtro. Para o filtro não esconder alarme sem avisar, o banner de alarme do topo ignora o filtro e cada aba filtrada mostra quantos alarmes ativos existem em outros reatores. O selo do topo mostra a usina inteira.
 
@@ -313,3 +328,25 @@ O script compila e roda todos os suites em sequência, abortando no primeiro que
 | `TestesHistorico` | Amostragem por ciclo, status derivado, operador de serviço e recuperação após reinício (RNF09) |
 | `TestesApiHistorico` | `GET /api/historico`: período, faixas, combinação **E**, operador, limite/truncamento, HTTP 400 em critério inválido, e as rotas de turno |
 | `TestesReatores` | 5 reatores: estado separado por reator, lâmpada verde/amarela/vermelha, alarme com reator de origem, série com teto de 60 pontos, campos do R-01 preservados, histórico com linha própria por reator (não mais isolado no R-01) e cenário via HTTP com `?reator=` (só o reator alvo muda, tempo real segue ligado, 404 para reator inexistente, sem parâmetro mantém o comportamento antigo) |
+| `TestesCadastroReatores` | Cadastro em banco (#96): carga inicial igual à V8, idempotência, reator desativado/alterado direto no banco, simulador partindo dos setpoints do banco, **sincronizador** (inclui, ajusta, retira e reativa reator sem reiniciar: simulador, rotas de cenário, painel e evento `CADASTRO_REATOR_ATUALIZADO`) e pico de radiação calculado da faixa cadastrada |
+| `TestesPushCritico` | Só `TIPOS_CRITICOS` vão por push para a Central; leitura normal e de observação ficam para o polling |
+
+## 9. Cadastro de reatores (issue #96)
+
+Reatores, sensores, faixas e setpoints ficam em `nucleo.reator` / `nucleo.sensor_reator` (migração V8; o núcleo cria as tabelas e a carga inicial se o backend ainda não migrou). Quem altera é a tela **Reatores** do front, só para o `ADMINISTRADOR_SISTEMA`, pela Central (8081):
+
+| Rota (8081) | O que faz |
+|---|---|
+| `GET /api/reatores` | Todos os reatores (em operação e fora), com os sensores |
+| `GET /api/reatores/padrao` | Faixas e setpoints com que um reator novo entra |
+| `POST /api/reatores` | Inclui o próximo (`R-06`, `Reator-06`…) com os 4 sensores RF-1; corpo opcional `{"sensores":[{"sensorId":1,"setpoint":300}, …]}` |
+| `POST /api/reatores/{id}` | Ajusta faixas/setpoints dos sensores informados (os outros ficam) |
+| `POST /api/reatores/{id}/retirar` · `/reativar` | Tira de operação / devolve. Não há exclusão: alarmes, histórico e auditoria apontam para o reator. O `R-01` (principal) não sai |
+
+- Todas as escritas são **ações críticas** (digital, RNF08 → 428 sem confirmação) e entram na trilha encadeada da Central como `REATOR_INCLUIDO:R-06`, `REATOR_AJUSTADO:…`, `REATOR_RETIRADO:…`, `REATOR_REATIVADO:…`.
+- Validação (backend e tela): `limite mín. < atenção mín. ≤ setpoint ≤ atenção máx. < limite máx.`
+- Tudo por `POST` porque o CORS da Central só libera `GET`/`POST`.
+
+**Sem reiniciar o núcleo:** o `SincronizadorCadastroReatores` relê o cadastro a cada 2 s e aplica só a diferença — reator novo ganha facade, entra no `SimuladorReatores` e publica a leitura inicial; reator ajustado troca os sensores na facade (faixa nova vale na próxima leitura) e os setpoints no simulador (o valor vai se movendo até o novo ponto); reator retirado sai das rotas de cenário e do simulador. Cada mudança publica `CADASTRO_REATOR_ATUALIZADO` no EventBus: a auditoria do núcleo registra e o `EstadoAgregador` inclui ou tira o reator de `reatores[]` — o front não precisa saber do cadastro.
+
+**Limitação conhecida:** as linhas de referência da faixa de atenção nos gráficos do front vêm de `frontend/src/data/sensores.js` (fixas por tipo de sensor). A lâmpada amarela e os alarmes seguem a faixa cadastrada (decididos no núcleo); só a linha tracejada do gráfico não acompanha uma faixa alterada.

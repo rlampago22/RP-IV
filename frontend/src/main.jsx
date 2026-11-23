@@ -14,6 +14,7 @@ import MonitoramentoPage from './pages/MonitoramentoPage.jsx'
 import SegurancaPage from './pages/SegurancaPage.jsx'
 import CelularSimuladoPage from './pages/CelularSimuladoPage.jsx'
 import EmergenciaPage from './pages/EmergenciaPage.jsx'
+import ReatoresPage from './pages/ReatoresPage.jsx'
 import FaixaEmergencia from './components/FaixaEmergencia.jsx'
 import AlertaContingencia from './components/AlertaContingencia.jsx'
 import { EstadoProvider, useEstado } from './state/EstadoContext.jsx'
@@ -33,6 +34,7 @@ import {
   IconPower,
   IconLock,
   IconAlertTriangle,
+  IconCore,
 } from './components/icons.jsx'
 
 const TABS = [
@@ -46,6 +48,9 @@ const TABS = [
   { to: '/emergencia', text: 'Emergência', Icon: IconAlertTriangle },
   { to: '/seguranca', text: 'Segurança', Icon: IconLock },
 ]
+
+/** Issue #96: cadastro de reatores — aba só aparece para o Administrador do Sistema. */
+const ABA_REATORES = { to: '/reatores', text: 'Reatores', Icon: IconCore }
 
 /** Fallback do selo quando a API não manda `reatores` (API antiga ou mock): status do R-01. */
 const BADGE_TEXTO = {
@@ -213,7 +218,7 @@ function Shell({ usuario, onLogout }) {
       </header>
 
       <nav className="scada-tabs">
-        {TABS.map((tab) => (
+        {(usuario.papeis.includes('ADMINISTRADOR_SISTEMA') ? [...TABS, ABA_REATORES] : TABS).map((tab) => (
           <NavLink
             key={tab.to}
             to={{ pathname: tab.to, search: buscaMenu }}
@@ -260,6 +265,7 @@ function Shell({ usuario, onLogout }) {
           <Route path="/demo" element={<DemoPage />} />
           <Route path="/emergencia" element={<EmergenciaPage />} />
           <Route path="/seguranca" element={<SegurancaPage usuario={usuario} />} />
+          <Route path="/reatores" element={<ReatoresPage usuario={usuario} />} />
         </Routes>
       </main>
       <ConfirmacaoAlarme

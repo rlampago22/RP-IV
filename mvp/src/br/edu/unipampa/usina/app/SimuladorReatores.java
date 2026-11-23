@@ -4,19 +4,21 @@ import br.edu.unipampa.usina.controlereator.ReatorFacade;
 import br.edu.unipampa.usina.controlereator.Sensor;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 /**
- * Telemetria simulada dos 5 reatores, cada um no seu próprio ritmo.
+ * Telemetria simulada dos reatores do cadastro, cada um no seu próprio ritmo.
  *
  * <p><b>Sem sincronia:</b> cada reator agenda a própria próxima leitura com um intervalo sorteado
  * entre {@link #INTERVALO_MIN_MS} e {@link #INTERVALO_MAX_MS}. No painel, um reator atualiza
@@ -26,12 +28,17 @@ import java.util.function.BooleanSupplier;
  * <p><b>Uma thread só:</b> os reatores dividem um agendador de thread única. Os ritmos continuam
  * independentes (cada um tem a sua agenda), mas as publicações no EventBus nunca acontecem ao
  * mesmo tempo, porque os assinantes (alarmes, histórico) não foram escritos para concorrência.
+ * Pelo mesmo motivo, ajuste e retirada de reator (#96) rodam nessa thread.
+ *
+ * <p><b>Cadastro vivo (#96):</b> {@link #adicionar}, {@link #atualizar} e {@link #remover} mudam
+ * o conjunto de reatores com o núcleo no ar — quem chama é o {@code SincronizadorCadastroReatores}.
  *
  * <p><b>Picos de radiação:</b> de vez em quando um reator entra num pico com forma fixa — sobe,
  * fica no topo um tick e desce — para a lâmpada passar por amarelo (faixa de atenção) ou vermelho
  * (acima do limite seguro). O pico vermelho fica acima do limite em <b>um único tick</b>: o
  * {@code AlarmeFacade} emite um alarme por leitura violada, e um pico longo encheria a lista de
- * alarmes repetidos.
+ * alarmes repetidos. A forma é calculada a partir da faixa cadastrada do sensor (atenção máxima e
+ * limite máximo), então continua amarela/vermelha se o Administrador mudar a faixa.
  */
 public final class SimuladorReatores {
     static final long INTERVALO_MIN_MS = 2_000;
@@ -44,48 +51,91 @@ public final class SimuladorReatores {
     /** Entre os picos, a fração que passa do limite seguro (vermelho); o resto fica no amarelo. */
     private static final double FRACAO_PICO_CRITICO = 0.3;
 
-    private static final long SENSOR_TEMPERATURA = 1L;
-    private static final long SENSOR_PRESSAO = 2L;
-    private static final long SENSOR_RADIACAO = 3L;
-    private static final long SENSOR_FLUXO = 4L;
+    /** Único sensor com comportamento próprio (os picos); os demais seguem o passeio aleatório. */
+    static final long SENSOR_RADIACAO = 3L;
 
-    private final List<ReatorSimulado> reatores;
+    private final Map<String, ReatorSimulado> reatores = new ConcurrentHashMap<>();
     private final BooleanSupplier ligado;
     private final ScheduledExecutorService agenda = Executors.newSingleThreadScheduledExecutor(tarefa -> {
         Thread thread = new Thread(tarefa, "simulador-reatores");
         thread.setDaemon(true);
         return thread;
     });
+    private boolean iniciado;
 
     /**
-     * @param reatores facades com os 4 sensores RF-1 já registrados
-     * @param ligado   consultado a cada leitura — com o tempo real pausado, as agendas seguem
-     *                 rodando mas não publicam nada
+     * @param reatores  facades com os sensores do cadastro já registrados
+     * @param setpoints ponto de operação de cada sensor, por id de reator e id de sensor — vem do
+     *                  cadastro no banco ({@code nucleo.sensor_reator}, issue #96); só os sensores
+     *                  com setpoint são simulados
+     * @param ligado    consultado a cada leitura — com o tempo real pausado, as agendas seguem
+     *                  rodando mas não publicam nada
      */
-    public SimuladorReatores(List<ReatorFacade> reatores, BooleanSupplier ligado) {
+    public SimuladorReatores(List<ReatorFacade> reatores, Map<String, Map<Long, Double>> setpoints, BooleanSupplier ligado) {
         this.ligado = ligado;
-        this.reatores = new ArrayList<>();
-        for (int i = 0; i < reatores.size(); i++) {
-            this.reatores.add(new ReatorSimulado(reatores.get(i), i));
+        for (ReatorFacade reator : reatores) {
+            this.reatores.put(reator.getReatorId(), new ReatorSimulado(reator, exigirSetpoints(reator, setpoints.get(reator.getReatorId()))));
         }
     }
 
     /** Publica uma leitura inicial de cada sensor, para o painel abrir com dados. */
     public void semear() {
-        for (ReatorSimulado reator : reatores) {
+        for (ReatorSimulado reator : reatores.values()) {
             reator.publicarLeituraAtual();
         }
     }
 
-    public void iniciar() {
-        for (ReatorSimulado reator : reatores) {
-            // Atraso inicial diferente para cada um: sem isso, os 5 começariam juntos.
-            agendar(reator, 500 + reator.aleatorio.nextInt(4_000));
+    public synchronized void iniciar() {
+        iniciado = true;
+        for (ReatorSimulado reator : reatores.values()) {
+            agendarPrimeira(reator);
         }
     }
 
     public void parar() {
         agenda.shutdownNow();
+    }
+
+    /** Ids dos reatores sendo simulados agora. */
+    public List<String> reatoresSimulados() {
+        return List.copyOf(reatores.keySet());
+    }
+
+    /**
+     * Reator novo no cadastro (#96): publica a leitura inicial na hora (o painel já o mostra) e, se a
+     * simulação estiver rodando, começa a agenda dele.
+     */
+    public synchronized void adicionar(ReatorFacade facade, Map<Long, Double> setpoints) {
+        ReatorSimulado novo = new ReatorSimulado(facade, exigirSetpoints(facade, setpoints));
+        ReatorSimulado anterior = reatores.put(facade.getReatorId(), novo);
+        if (anterior != null) {
+            anterior.ativo = false;
+        }
+        naAgenda(novo::publicarLeituraAtual);
+        if (iniciado) {
+            agendarPrimeira(novo);
+        }
+    }
+
+    /** Setpoints ajustados no cadastro: a simulação passa a puxar os valores para o novo ponto. */
+    public void atualizar(String reatorId, Map<Long, Double> setpoints) {
+        ReatorSimulado reator = reatores.get(reatorId);
+        if (reator == null) {
+            return;
+        }
+        Map<Long, Double> novos = exigirSetpoints(reator.facade, setpoints);
+        naAgenda(() -> reator.trocarSetpoints(novos));
+    }
+
+    /**
+     * Reator retirado do cadastro. Roda na thread do simulador e só volta depois: quando o chamador
+     * publica a retirada, nenhuma leitura daquele reator está a caminho para "ressuscitá-lo" no painel.
+     */
+    public void remover(String reatorId) {
+        ReatorSimulado reator = reatores.remove(reatorId);
+        if (reator != null) {
+            naAgenda(() -> reator.ativo = false);
+        }
     }
 
     /**
@@ -97,26 +147,80 @@ public final class SimuladorReatores {
      * manobra corretiva que normaliza o reator.
      */
     public void segurar(String reatorId, long duracaoMs) {
-        long ate = System.currentTimeMillis() + duracaoMs;
-        for (ReatorSimulado reator : reatores) {
-            if (reator.facade.getReatorId().equals(reatorId)) {
-                reator.seguradoAte = ate;
-            }
+        ReatorSimulado reator = reatores.get(reatorId);
+        if (reator != null) {
+            reator.seguradoAte = System.currentTimeMillis() + duracaoMs;
         }
     }
 
+    /**
+     * Forma do pico de radiação para a faixa do sensor: subida, topo, descida. Com a faixa padrão
+     * (atenção 4,2, limite 5,0) reproduz os valores de antes do #96: topo amarelo entre 4,45 e 4,85,
+     * topo vermelho entre 5,15 e 5,5 — só o ponto do topo passa do limite.
+     */
+    static List<Double> formaDoPico(double base, double atencaoMaxima, double limiteMaximo, boolean critico, Random aleatorio) {
+        double faixa = limiteMaximo - atencaoMaxima;
+        double topo = critico
+            ? limiteMaximo + faixa * (0.1875 + aleatorio.nextDouble() * 0.4375)
+            : atencaoMaxima + faixa * (0.3125 + aleatorio.nextDouble() * 0.5);
+        return List.of(
+            base + (topo - base) * 0.45,
+            critico ? atencaoMaxima + faixa * (0.5 + aleatorio.nextDouble() * 0.3125) : topo - faixa * 0.1875,
+            topo,
+            critico ? atencaoMaxima + faixa * (0.375 + aleatorio.nextDouble() * 0.375) : topo - faixa * 0.25,
+            base + (topo - base) * 0.35
+        );
+    }
+
+    private static Map<Long, Double> exigirSetpoints(ReatorFacade reator, Map<Long, Double> setpoints) {
+        if (setpoints == null || setpoints.isEmpty()) {
+            throw new IllegalArgumentException("Reator " + reator.getReatorId() + " sem setpoints cadastrados.");
+        }
+        return setpoints;
+    }
+
+    /**
+     * Executa na thread do simulador e espera terminar (mesma thread das leituras, então não há
+     * corrida com elas). Com o simulador parado (testes), executa direto.
+     */
+    private void naAgenda(Runnable tarefa) {
+        try {
+            agenda.submit(tarefa).get();
+        } catch (RejectedExecutionException parado) {
+            tarefa.run();
+        } catch (InterruptedException interrompido) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException falha) {
+            throw new IllegalStateException(falha.getCause().getMessage(), falha.getCause());
+        }
+    }
+
+    private void agendarPrimeira(ReatorSimulado reator) {
+        // Atraso inicial diferente para cada um: sem isso, todos começariam juntos.
+        agendar(reator, 500 + reator.aleatorio.nextInt(4_000));
+    }
+
     private void agendar(ReatorSimulado reator, long atrasoMs) {
-        agenda.schedule(() -> {
-            try {
-                if (ligado.getAsBoolean() && System.currentTimeMillis() >= reator.seguradoAte) {
-                    reator.avancar();
+        try {
+            agenda.schedule(() -> {
+                if (!reator.ativo) {
+                    return; // retirado do cadastro: a agenda dele termina aqui
                 }
-            } catch (RuntimeException falha) {
-                System.err.println("[SIMULADOR] " + reator.facade.getReatorId() + ": " + falha.getMessage());
-            } finally {
-                agendar(reator, reator.proximoIntervaloMs());
-            }
-        }, atrasoMs, TimeUnit.MILLISECONDS);
+                try {
+                    if (ligado.getAsBoolean() && System.currentTimeMillis() >= reator.seguradoAte) {
+                        reator.avancar();
+                    }
+                } catch (RuntimeException falha) {
+                    System.err.println("[SIMULADOR] " + reator.facade.getReatorId() + ": " + falha.getMessage());
+                } finally {
+                    if (reator.ativo) {
+                        agendar(reator, reator.proximoIntervaloMs());
+                    }
+                }
+            }, atrasoMs, TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException parado) {
+            // simulador encerrado
+        }
     }
 
     /** Estado da simulação de um reator: valores atuais, ponto de operação e pico em andamento. */
@@ -128,16 +232,15 @@ public final class SimuladorReatores {
         final Deque<Double> picoRadiacao = new ArrayDeque<>();
         /** Lido pela thread do agendador, escrito pela thread HTTP. */
         volatile long seguradoAte;
+        /** Falso depois de retirado do cadastro: a agenda para no próximo tick. */
+        volatile boolean ativo = true;
 
-        ReatorSimulado(ReatorFacade facade, int indice) {
+        ReatorSimulado(ReatorFacade facade, Map<Long, Double> pontosDeOperacao) {
             this.facade = facade;
             this.aleatorio = new Random();
-            // Cada reator opera num ponto um pouco diferente, para os gráficos não saírem iguais.
-            double deslocamento = (indice - 2) * 0.5;
-            setpoints.put(SENSOR_TEMPERATURA, 310.0 + deslocamento * 3);
-            setpoints.put(SENSOR_PRESSAO, 150.0 + deslocamento);
-            setpoints.put(SENSOR_RADIACAO, 2.4 + deslocamento * 0.15);
-            setpoints.put(SENSOR_FLUXO, 1100.0 + deslocamento * 20);
+            // Cada reator opera num ponto um pouco diferente (cadastrado no banco), para os
+            // gráficos não saírem iguais.
+            setpoints.putAll(pontosDeOperacao);
             atuais.putAll(setpoints);
         }
 
@@ -149,8 +252,19 @@ public final class SimuladorReatores {
             atuais.forEach(facade::receberLeitura);
         }
 
+        /** Sensor que continua mantém o valor atual (sem salto no gráfico); sensor novo parte do setpoint. */
+        void trocarSetpoints(Map<Long, Double> novos) {
+            setpoints.clear();
+            setpoints.putAll(novos);
+            atuais.keySet().retainAll(novos.keySet());
+            novos.forEach(atuais::putIfAbsent);
+            if (!setpoints.containsKey(SENSOR_RADIACAO)) {
+                picoRadiacao.clear();
+            }
+        }
+
         void avancar() {
-            if (picoRadiacao.isEmpty() && aleatorio.nextDouble() < CHANCE_PICO) {
+            if (setpoints.containsKey(SENSOR_RADIACAO) && picoRadiacao.isEmpty() && aleatorio.nextDouble() < CHANCE_PICO) {
                 iniciarPico();
             }
             for (Long sensorId : setpoints.keySet()) {
@@ -166,19 +280,14 @@ public final class SimuladorReatores {
             }
         }
 
-        /**
-         * Forma do pico: subida, topo, descida. O topo amarelo fica entre a faixa de atenção
-         * (4,2) e o limite (5,0); o vermelho passa do limite só no ponto do topo.
-         */
         private void iniciarPico() {
+            Sensor radiacao = facade.obterSensor(SENSOR_RADIACAO);
+            if (radiacao == null) {
+                return;
+            }
             boolean critico = aleatorio.nextDouble() < FRACAO_PICO_CRITICO;
-            double topo = critico ? 5.15 + aleatorio.nextDouble() * 0.35 : 4.45 + aleatorio.nextDouble() * 0.4;
-            double base = atuais.get(SENSOR_RADIACAO);
-            picoRadiacao.add(base + (topo - base) * 0.45);
-            picoRadiacao.add(critico ? 4.6 + aleatorio.nextDouble() * 0.25 : topo - 0.15);
-            picoRadiacao.add(topo);
-            picoRadiacao.add(critico ? 4.5 + aleatorio.nextDouble() * 0.3 : topo - 0.2);
-            picoRadiacao.add(base + (topo - base) * 0.35);
+            picoRadiacao.addAll(formaDoPico(
+                atuais.get(SENSOR_RADIACAO), radiacao.atencaoMaxima(), radiacao.limiteMaximo(), critico, aleatorio));
         }
 
         /**

@@ -23,10 +23,13 @@ import { EstadoObservavel } from './EstadoObservavel.js'
  * objeto observado" da UI, não um estado de uma tela específica — cada
  * <EstadoProvider> apenas se assina nele.
  *
- * V2: quem publica aqui é o push do back-end (`produzirPorPush`), via SSE da
- * Central. Saiu a leitura periódica da V1 — o estado chega quando o evento
- * acontece, não de 3 em 3 segundos. Como previsto na V1, só o produtor mudou:
- * o contrato assinar()/update() que as telas usam permanece o mesmo.
+ * Produtores (issue #96, pedido do professor em 16/11): dado rotineiro por
+ * polling, dado crítico por push. `produzirEstado` busca `/api/estado` a cada
+ * INTERVALO_POLLING_MS e, em paralelo, mantém aberto o SSE da Central, por onde
+ * o núcleo empurra na hora só os eventos críticos (leitura fora da faixa
+ * segura, falha de sensor, contingência). Os dois publicam no mesmo sujeito,
+ * que descarta estado repetido — então as telas continuam com o mesmo contrato
+ * assinar()/update() e não sabem por qual caminho o dado chegou.
  */
 const estadoObservavel = new EstadoObservavel()
 
@@ -35,30 +38,70 @@ const EstadoContext = createContext(null)
 let produtorIniciado = false
 let assinantesAtivos = 0
 
-/**
- * Produtor V2: abre o fluxo SSE da Central e publica cada mensagem no sujeito.
- *
- * A primeira carga ainda é um fetch, para a tela não ficar vazia esperando o
- * próximo evento. Daí em diante não há temporizador nenhum — o EventSource
- * reconecta sozinho se a conexão cair.
- *
- * Devolve a função que encerra o fluxo.
- */
-function produzirPorPush(aoFalhar) {
-  buscarEstado()
-    .then((dados) => {
-      estadoObservavel.publicar(dados)
-      aoFalhar(null)
-    })
-    .catch((erro) => aoFalhar(erro?.message || 'API indisponivel'))
+/** Intervalo do polling do dado rotineiro. Os reatores leem a cada 2 a 8 s. */
+export const INTERVALO_POLLING_MS = 2000
 
-  return conectarEventos(
+/**
+ * Conta as ações do operador. Uma consulta do polling que saiu antes de uma
+ * ação e voltou depois dela traz estado velho; com o contador, ela é descartada
+ * em vez de desfazer na tela o resultado da ação por até um ciclo.
+ */
+let versaoAcoes = 0
+
+/**
+ * Produtor do sujeito: polling de `/api/estado` (rotina) + SSE da Central
+ * (crítico, imediato).
+ *
+ * `aoResultado(null)` = API respondeu; `aoResultado(mensagem)` = API fora.
+ * Falha só do SSE não derruba a tela para o mock: os dados continuam chegando
+ * pelo polling, e um alarme chega no máximo um ciclo depois. Fica um aviso no
+ * console (uma vez) para quem estiver depurando.
+ *
+ * Devolve a função que encerra os dois.
+ */
+function produzirEstado(aoResultado) {
+  let consultaEmAndamento = false
+  let avisouSse = false
+
+  const consultar = async () => {
+    if (consultaEmAndamento) return
+    consultaEmAndamento = true
+    const versao = versaoAcoes
+    try {
+      const dados = await buscarEstado()
+      if (versao === versaoAcoes) {
+        estadoObservavel.publicar(dados)
+      }
+      aoResultado(null)
+    } catch (erro) {
+      aoResultado(erro?.message || 'API indisponivel')
+    } finally {
+      consultaEmAndamento = false
+    }
+  }
+
+  consultar()
+  const intervalo = setInterval(consultar, INTERVALO_POLLING_MS)
+
+  const fecharSse = conectarEventos(
     (dados) => {
       estadoObservavel.publicar(dados)
-      aoFalhar(null)
+      aoResultado(null)
     },
-    (erro) => aoFalhar(erro?.message || 'Canal de eventos indisponivel'),
+    (erro) => {
+      if (!avisouSse) {
+        avisouSse = true
+        console.warn(
+          `[push] ${erro?.message || 'Canal de eventos indisponivel'} — alarmes chegam pelo polling (${INTERVALO_POLLING_MS} ms).`,
+        )
+      }
+    },
   )
+
+  return () => {
+    clearInterval(intervalo)
+    fecharSse()
+  }
 }
 
 export function EstadoProvider({ children, operadorNome = 'Operador de Reator (UI Web)' }) {
@@ -85,10 +128,15 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
     let pararProdutor = null
     if (!produtorIniciado) {
       produtorIniciado = true
-      pararProdutor = produzirPorPush((mensagemErro) => {
+      pararProdutor = produzirEstado((mensagemErro) => {
         if (mensagemErro) {
           setOrigemMock(true)
           setErroApi(mensagemErro)
+        } else {
+          // API voltou: sai do mock mesmo que o estado não tenha mudado
+          // (o sujeito não notifica estado repetido).
+          setOrigemMock(false)
+          setErroApi('')
         }
       })
     }
@@ -104,13 +152,14 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
   }, [])
 
   const executarAcao = useCallback(async (acao, fallbackMock) => {
-    // Se um poll estiver em andamento, espera terminar em vez de descartar o clique
+    // Se outra ação estiver em andamento, espera terminar em vez de descartar o clique
     // (antes o botão falhava com "confira se a API está rodando" mesmo com a API no ar).
     for (let tentativa = 0; emVooRef.current && tentativa < 60; tentativa++) {
       await new Promise((resolve) => setTimeout(resolve, 50))
     }
     if (emVooRef.current) return false
     emVooRef.current = true
+    versaoAcoes += 1
     try {
       const dados = await acao()
       // Ação do operador também passa pelo sujeito único — mesma garantia de
@@ -132,6 +181,8 @@ export function EstadoProvider({ children, operadorNome = 'Operador de Reator (U
       }
       return false
     } finally {
+      // De novo no fim: uma consulta que saiu DURANTE a ação também pode trazer estado de antes dela.
+      versaoAcoes += 1
       emVooRef.current = false
     }
   }, [])

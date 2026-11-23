@@ -10,8 +10,8 @@ import br.edu.unipampa.usina.auditorialogs.AuditoriaSubscriber;
 import br.edu.unipampa.usina.auditorialogs.RegistroAuditoria;
 import br.edu.unipampa.usina.contingencia.FonteHttpContingencia;
 import br.edu.unipampa.usina.contingencia.SincronizadorContingencia;
+import br.edu.unipampa.usina.controlereator.CadastroReatores;
 import br.edu.unipampa.usina.controlereator.ReatorFacade;
-import br.edu.unipampa.usina.controlereator.Sensor;
 import br.edu.unipampa.usina.segurancaacesso.AcessoFacade;
 import br.edu.unipampa.usina.historicooperacional.HistoricoSubscriber;
 import br.edu.unipampa.usina.historicooperacional.OperadorDeServico;
@@ -32,8 +32,8 @@ import java.util.Map;
 public final class ApiEstadoMain {
     /** Padrão 8080; {@code -Dusina.api.porta=...} sobe outra instância sem disputar a porta. */
     private static final int PORTA = Integer.getInteger("usina.api.porta", 8080);
-    /** Reatores da usina. O primeiro é o principal: cenários do T05, T01, T02 e histórico. */
-    private static final List<String> REATORES = List.of("R-01", "R-02", "R-03", "R-04", "R-05");
+    /** De quanto em quanto tempo o núcleo relê o cadastro de reatores (#96). */
+    private static final Duration INTERVALO_CADASTRO = Duration.ofSeconds(2);
 
     private ApiEstadoMain() {}
 
@@ -54,18 +54,30 @@ public final class ApiEstadoMain {
         // ordem de inscrição, então o snapshot encaminhado já inclui o evento que o disparou.
         new EncaminhadorEventosSpring(eventBus, estado);
 
-        // Cada reator tem a sua facade (e o seu repositório de medições), todas no mesmo
-        // barramento — alarmes, auditoria e o painel observam os 5 sem saber quantos são.
-        List<ReatorFacade> reatores = new ArrayList<>();
-        for (String reatorId : REATORES) {
-            ReatorFacade reator = new ReatorFacade(eventBus, reatorId);
-            registrarSensoresRf1(reator);
-            reatores.add(reator);
+        // #96: quais reatores existem, os sensores de cada um, as faixas e os setpoints vêm do
+        // cadastro no banco (nucleo.reator / nucleo.sensor_reator), não mais do código.
+        // A conexão fica aberta: o sincronizador relê o cadastro durante toda a execução.
+        CadastroReatores cadastro = CadastroReatores.abrirPadrao();
+        List<CadastroReatores.ReatorCadastrado> cadastrados = cadastro.listarAtivos();
+        if (cadastrados.isEmpty()) {
+            throw new IllegalStateException("Nenhum reator ativo em " + CadastroReatores.TABELA_REATOR + ".");
         }
+
+        // Cada reator tem a sua facade (e o seu repositório de medições), todas no mesmo
+        // barramento — alarmes, auditoria e o painel observam todos sem saber quantos são.
+        List<ReatorFacade> reatores = new ArrayList<>();
+        Map<String, Map<Long, Double>> setpoints = new LinkedHashMap<>();
+        for (CadastroReatores.ReatorCadastrado cadastrado : cadastrados) {
+            ReatorFacade reator = new ReatorFacade(eventBus, cadastrado.id());
+            cadastrado.sensores().forEach(reator::registrarSensor);
+            reatores.add(reator);
+            setpoints.put(cadastrado.id(), cadastrado.setpoints());
+        }
+        // O primeiro na ordem do cadastro é o principal: cenários do T05, T01, T02 e histórico.
         ReatorFacade principal = reatores.get(0);
 
-        // Leitura inicial de todos: o painel já abre com os 5 reatores e o T01 com os 4 parâmetros RF-1.
-        SimuladorReatores simulador = new SimuladorReatores(reatores, estado::isTempoRealAtivo);
+        // Leitura inicial de todos: o painel já abre com todos os reatores e o T01 com os parâmetros RF-1.
+        SimuladorReatores simulador = new SimuladorReatores(reatores, setpoints, estado::isTempoRealAtivo);
         simulador.semear();
 
         ApiEstadoHttpServer servidor =
@@ -78,6 +90,11 @@ public final class ApiEstadoMain {
         // Só publica enquanto o tempo real estiver ligado (POST /api/tempo-real/iniciar).
         simulador.iniciar();
 
+        // #96: reator incluído, ajustado ou retirado na tela Reatores (Central, 8081) entra aqui em
+        // até INTERVALO_CADASTRO, sem reiniciar o núcleo.
+        new SincronizadorCadastroReatores(cadastro, eventBus, simulador, cadastrados, porId, servidor::atualizarReatores)
+            .iniciar(INTERVALO_CADASTRO);
+
         // RF10 / #99: o protocolo de contingência é ativado na Central (8081, com digital). Aqui o
         // núcleo consulta a Central a cada segundo e publica a ativação/encerramento no EventBus;
         // o EstadoAgregador pausa a simulação e as rotas de rotina e novos acessos ficam travados.
@@ -86,15 +103,8 @@ public final class ApiEstadoMain {
         new SincronizadorContingencia(eventBus, central).iniciar(Duration.ofSeconds(1));
         System.out.println("[CONTINGENCIA] Acompanhando protocolos em " + central.getOrigem());
 
-        System.out.println("[API ESTADO] " + REATORES.size() + " reatores simulados: " + String.join(", ", REATORES));
+        System.out.println("[API ESTADO] " + reatores.size() + " reatores (cadastro em " + CadastroReatores.TABELA_REATOR
+            + "): " + String.join(", ", porId.keySet()));
         System.out.println("[API ESTADO] Pressione CTRL+C para encerrar.");
-    }
-
-    /** Os 4 parâmetros RF-1, com as mesmas faixas em todos os reatores. */
-    private static void registrarSensoresRf1(ReatorFacade reator) {
-        reator.registrarSensor(new Sensor(1L, "TEMPERATURA", "Celsius", 0.0, 350.0, 20.0, 325.0));
-        reator.registrarSensor(new Sensor(2L, "PRESSAO", "bar", 0.0, 160.0, 10.0, 155.0));
-        reator.registrarSensor(new Sensor(3L, "RADIACAO", "mSv/h", 0.0, 5.0, 0.1, 4.2));
-        reator.registrarSensor(new Sensor(4L, "FLUXO_RESFRIAMENTO", "m3/h", 500.0, 1500.0, 600.0, 1400.0));
     }
 }

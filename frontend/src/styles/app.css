@@ -1515,3 +1515,23 @@ button.scada-btn:disabled {
   .alerta-contingencia-ordem,
   .alerta-contingencia-barra span { animation: none; }
 }
+
+/* Issue #96 — tela Reatores (cadastro, Administrador do Sistema) */
+.reatores-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.reatores-sub { color: var(--dim); font-size: 11px; font-weight: 400; }
+.reatores-faixa { white-space: nowrap; }
+.reatores-acoes { white-space: nowrap; text-align: right; }
+.reatores-acoes .scada-btn + .scada-btn { margin-left: 6px; }
+.reatores-botoes { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.reatores-edicao input {
+  width: 100%;
+  min-width: 84px;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #0b1220;
+  color: var(--text);
+  font: inherit;
+  font-family: var(--mono);
+}
+.reatores-edicao input:focus { outline: 2px solid var(--cyan); outline-offset: 1px; }

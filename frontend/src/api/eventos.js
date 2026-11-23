@@ -1,28 +1,29 @@
 /**
- * Produtor de estado por push (SSE) — substitui o polling do EstadoContext.
+ * Canal de push (SSE) para dado crítico — complementa o polling do EstadoContext.
+ *
+ * Issue #96: dado rotineiro chega por polling de `/api/estado`; por aqui só chega o que não
+ * pode esperar o próximo ciclo — leitura fora da faixa segura (ALARME_EMITIDO), falha de
+ * sensor e protocolo de contingência. O filtro fica no núcleo (EncaminhadorEventosSpring).
  *
  * O fluxo vem da Central, em `GET /api/eventos` no Spring (8081), e não da API do núcleo
- * (8080): o canal exige sessão autenticada, então só quem fez login recebe o push. O
- * processo do mvp alimenta esse canal encaminhando cada evento do EventBus.
+ * (8080): o canal exige sessão autenticada, então só quem fez login recebe o push.
  *
  * Cada mensagem traz o mesmo JSON de `GET /api/estado`, então o formato consumido pelas
- * telas não muda — muda só quem empurra e quando.
+ * telas não muda — muda só quem entrega e quando.
  *
  * O EventSource reconecta sozinho quando a conexão cai, por isso aqui não há laço de
  * retry; só o aviso para a UI poder sinalizar que o canal está fora.
  */
 import { API_BASE_URL } from '../services/authApi.js'
 
-/** Tipos publicados por mvp/infraestruturaeventos, mais o nome usado na abertura. */
+/**
+ * Tipos que o núcleo empurra (mesma lista de EncaminhadorEventosSpring.TIPOS_CRITICOS), mais o
+ * nome usado na abertura.
+ */
 export const TIPOS_CONHECIDOS = [
   'snapshot',
-  'MEDICAO_REGISTRADA',
-  'OBSERVACAO_REGISTRADA',
-  'FALHA_SENSOR_DETECTADA',
   'ALARME_EMITIDO',
-  'ALARME_RECONHECIDO',
-  'ALARME_RESOLVIDO',
-  'ACESSO_REGISTRADO',
+  'FALHA_SENSOR_DETECTADA',
   'PROTOCOLO_CONTINGENCIA_ATIVADO',
   'PROTOCOLO_CONTINGENCIA_ENCERRADO',
 ]
