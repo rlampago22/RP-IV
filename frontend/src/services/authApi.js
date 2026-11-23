@@ -45,4 +45,11 @@ export const authApi = {
   criarEmergencia: (tipo, descricao) => request('/api/emergencias', { method: 'POST', body: JSON.stringify({ tipo, descricao }) }),
   ativarProtocolo: (id, protocolo) => request(`/api/emergencias/${id}/protocolo`, { method: 'POST', body: JSON.stringify({ protocolo }) }),
   encerrarEmergencia: (id) => request(`/api/emergencias/${id}/encerrar`, { method: 'POST' }),
+  // Issue #96 — cadastro de reatores (Administrador). Incluir, ajustar, retirar e reativar pedem a digital.
+  listarReatores: () => request('/api/reatores'),
+  sensoresPadrao: () => request('/api/reatores/padrao'),
+  incluirReator: (sensores) => request('/api/reatores', { method: 'POST', body: JSON.stringify({ sensores }) }),
+  ajustarReator: (id, sensores) => request(`/api/reatores/${id}`, { method: 'POST', body: JSON.stringify({ sensores }) }),
+  retirarReator: (id) => request(`/api/reatores/${id}/retirar`, { method: 'POST' }),
+  reativarReator: (id) => request(`/api/reatores/${id}/reativar`, { method: 'POST' }),
 }
