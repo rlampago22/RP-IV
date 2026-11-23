@@ -79,7 +79,15 @@ Não duplica o conteúdo — só organiza links.
 
 ---
 
-## 8. Entrega Marco 1 (pacote)
+## 8. Padrões de projeto
+
+[`marco2/04-padroes-projeto.md`](marco2/04-padroes-projeto.md) — Observer,
+Strategy, Factory, Facade, Spring DI/IoC, Repository e composição React, com
+propostas de refatoração para o Swing e a API HTTP.
+
+---
+
+## 9. Entrega Marco 1 (pacote)
 
 Índice do rascunho: [`marco1/README.md`](marco1/README.md)  
 Pacote consolidado (quando fechado): `marco1/ENTREGA-MARCO1.md`
